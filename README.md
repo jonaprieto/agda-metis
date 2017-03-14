@@ -1,4 +1,4 @@
-# Agda-Metis [![Build Status](https://travis-ci.org/jonaprieto/agda-metis.svg?branch=master)](https://travis-ci.org/jonaprieto/agda-metis)
+# Agda-Metis [![Build Status](https://travis-ci.org/jonaprieto/agda-metis.svg?branch=master)](https://travis-ci.org/jonaprieto/agda-metis) [![DOI](https://zenodo.org/badge/84973849.svg)](https://zenodo.org/badge/latestdoi/84973849)
 
 This library aims to provide the necessary functions and theorems to reconstruct
 proofs found by the automatic theorem prover, [Metis](https://github.com/gilith/metis).
@@ -33,7 +33,7 @@ Find more information about installing libraries in Agda
 
 ### References
 
-- Joe Leslie-Hurd. *Metis, an Automatic Theorem Prover.*.
+- Joe Leslie-Hurd. *Metis, an Automatic Theorem Prover.*
   http://www.gilith.com/software/metis/index.html and https://github.com/gilith/metis.
 
 - Jonathan Prieto-Cubides and Alejandro Gomez-Londoño. 
