@@ -11,9 +11,12 @@ open import Data.Bool.Base
   using (Bool ; true ; false)
   renaming (_∨_ to _or_ ; _∧_ to _and_)
 
+
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using (⌊_⌋)
 open import Data.Prop.Properties n using (eq)
+
+-- open import Data.List
 
 open import Function using (id)
 
@@ -32,7 +35,7 @@ simplify ⊥        = ⊥
 simplify (φ ⇒ φ₁) = φ ⇒ φ₁
 simplify ((φ ⇒ ψ) ∧ ω) with ⌊ eq φ ω ⌋
 ... | true  = simplify ψ
-... | false = (φ ⇒ ψ) ∧ ω -- simplify ((¬ φ ∨ ψ) ∧ ω)
+... | false = (φ ⇒ ψ) ∧ ω
 
 simplify ((φ ⇔ (ψ ⇔ ω)) ∧ ρ) with ⌊ eq φ ρ ⌋ | ⌊ eq ψ ρ ⌋ | ⌊ eq ω ρ ⌋
 ... | true | _    | _     = simplify (ψ ⇔ ω)
@@ -78,7 +81,6 @@ simplify (φ ∧ ψ ∧ ω) with isOpposite φ ψ or isOpposite φ ω or isOppos
 ... | true   = ⊥
 ... | false = φ ∧ ψ ∧ ω
 
-
 simplify (φ ∧ ψ) with ⌊ eq φ ψ ⌋
 simplify (φ ∧ ψ) | true  = simplify φ
 simplify (φ ∧ ψ) | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
@@ -90,6 +92,9 @@ simplify (φ ∨ ψ) | true = simplify φ
 simplify (φ ∨ ψ) | false with  ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
 simplify (φ ∨ ψ) | false | false | false = φ ∨ ψ
 simplify (φ ∨ ψ) | false | _     | _     = ⊤
+simplify (¬ Var x) = ¬ Var x
+simplify (¬ (φ ⇔ φ₁)) = simplify (¬ φ) ⇔ simplify (¬ φ₁)
+simplify (¬ (¬ φ)) = simplify φ
 simplify φ = φ
 
 
@@ -107,3 +112,19 @@ atp-simplify {Γ} {⊥}     = id
 atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} = atp-step-simplify
 atp-simplify {Γ} {¬ φ ∧ ψ}       = atp-step-simplify
 atp-simplify {Γ} {φ}             = atp-step-simplify
+
+
+-- open import Data.List using (List ; [] ; _∷_ ; _++_ ; [_])
+--
+-- toAnd : Prop → List Prop
+-- toAnd (φ ∧ ψ) = toAnd φ ++ toAnd ψ
+-- toAnd φ = [ φ ]
+--
+--
+-- -- Plan:
+-- simplify2 : List Prop → Prop
+-- simplify2 []     = ⊤
+-- simplify2 [ φ ]  = ?
+-- simplify2 (φ ∷ ψ   φs) with ⌊ eq φ ψ ⌋
+-- ... | true  = simplify2 (ψ ∷ φs)
+-- ... | false = ?
