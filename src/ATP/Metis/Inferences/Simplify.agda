@@ -12,7 +12,7 @@ open import Data.Bool.Base
   renaming (_∨_ to _or_ ; _∧_ to _and_)
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n using (⌊_⌋)
+open import Data.Prop.Dec n        using (⌊_⌋)
 open import Data.Prop.Properties n using (eq)
 
 open import Function using (id)
@@ -33,8 +33,6 @@ simplify (φ ⇒ φ₁) = φ ⇒ φ₁
 simplify ((φ ⇒ ψ) ∧ ω) with ⌊ eq φ ω ⌋
 ... | true  = simplify ψ
 ... | false = (φ ⇒ ψ) ∧ ω -- simplify ((¬ φ ∨ ψ) ∧ ω)
-
--- For now, it is off course ugly. :(
 
 simplify ((φ ⇔ (ψ ⇔ ω)) ∧ ρ) with ⌊ eq φ ρ ⌋ | ⌊ eq ψ ρ ⌋ | ⌊ eq ω ρ ⌋
 ... | true | _    | _     = simplify (ψ ⇔ ω)
@@ -92,23 +90,20 @@ simplify (φ ∨ ψ) | true = simplify φ
 simplify (φ ∨ ψ) | false with  ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
 simplify (φ ∨ ψ) | false | false | false = φ ∨ ψ
 simplify (φ ∨ ψ) | false | _     | _     = ⊤
-
 simplify φ = φ
 
 
--- ATP.
-
 postulate
-  atp-step : ∀ {Γ} {φ} → (f : Prop → Prop) → Γ ⊢ φ → Γ ⊢ f φ
+  atp-step-simplify :
+      ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ simplify φ
 
 
 atp-simplify : ∀ {Γ : Ctxt} {φ : Prop} → Γ ⊢ φ → Γ ⊢ simplify φ
-atp-simplify {Γ} {Var x} = id --id
-atp-simplify {Γ} {⊤}     = id -- id
-atp-simplify {Γ} {⊥}     = id -- id
-atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} seq =
-  atp-step (λ _ → simplify (φ₁ ∧ ¬ φ₂)) seq
-atp-simplify {Γ} {¬ φ ∧ ψ} =
-  atp-step (λ _ → simplify (¬ φ ∧ ψ))
-atp-simplify {Γ} {φ} seq = id (atp-step (λ _ → simplify φ) seq)
-
+atp-simplify {Γ} {Var x} = id
+atp-simplify {Γ} {⊤}     = id
+atp-simplify {Γ} {⊥}     = id
+atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} = atp-step-simplify
+atp-simplify {Γ} {¬ φ ∧ ψ}       = atp-step-simplify
+atp-simplify {Γ} {φ}             = atp-step-simplify

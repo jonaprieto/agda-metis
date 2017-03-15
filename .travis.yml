@@ -1,10 +1,8 @@
-# This file was adapted from https://github.com/hvr/multi-ghc-travis
 os:
   osx
-# Here starts the actual work to be performed for the package under test;
-# any command which exits with a non-zero exit code causes the build to fail.
 
 before_install:
+  - export CMDPWD=`pwd`
   - brew update
   - brew install ghc
   - brew install agda
@@ -14,8 +12,7 @@ before_install:
   - git clone http://github.com/jonaprieto/agda-prop.git
   - echo /usr/local/lib/agda-prop/agda-prop.agda-lib >>~/.agda/libraries
   - echo agda-prop >>~/.agda/defaults
-  
+  - cd $CMDPWD
+
 script:
   - agda src/ATP/Metis.agda
-
-# EOF
