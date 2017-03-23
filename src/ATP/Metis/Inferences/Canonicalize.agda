@@ -1,11 +1,13 @@
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- Agda-Metis Library.
 -- Canonicalize inference rule.
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 open import Data.Nat using (ℕ)
 
 module ATP.Metis.Inferences.Canonicalize (n : ℕ) where
+
+------------------------------------------------------------------------------
 
 open import Data.Bool.Base                   using (true ; false)
 
@@ -18,6 +20,7 @@ open import Data.Prop.Theorems.Negation n    using (¬-⊤ ; ¬-⊥₁)
 
 open import Function                         using (_$_ ; id)
 
+------------------------------------------------------------------------------
 
 canonicalize : Prop → Prop
 canonicalize (φ ⇒ ψ)     = ¬ φ ∨ ψ

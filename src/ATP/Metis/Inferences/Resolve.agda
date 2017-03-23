@@ -1,11 +1,13 @@
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- Agda-Metis Library.
 -- Resolve inference rule.
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 open import Data.Nat using (ℕ)
 
 module ATP.Metis.Inferences.Resolve (n : ℕ) where
+
+------------------------------------------------------------------------------
 
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using (yes ; no ; ⌊_⌋)
@@ -16,7 +18,7 @@ open import Data.Prop.Theorems.Disjunction n using (∨-comm ; lem1 ; lem2)
 
 open import Function               using (_$_ ; id ; _∘_ )
 
--- Resolve theorems.
+------------------------------------------------------------------------------
 
 atp-resolve₀ : ∀ {Γ} {L C D}
              → Γ ⊢ L ∨ C → Γ ⊢ ¬ L ∨ D

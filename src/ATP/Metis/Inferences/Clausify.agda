@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 -- Agda-Metis Library.
--- Specialize inference rule.
+-- Clausify inference rule.
 ------------------------------------------------------------------------------
 
 open import Data.Nat using (ℕ)
 
-module ATP.Metis.Inferences.Specialize (n : ℕ) where
+module ATP.Metis.Inferences.Clausify (n : ℕ) where
 
 ------------------------------------------------------------------------------
 
@@ -14,8 +14,8 @@ open import Function using (_$_ ; id)
 
 ------------------------------------------------------------------------------
 
-specialize : Prop → Prop
-specialize = id
+clausify : Prop → Prop
+clausify = id
 
-atp-specialize : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ specialize φ
-atp-specialize = id
+atp-clausify : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ clausify φ
+atp-clausify = id

@@ -1,26 +1,25 @@
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- Agda-Metis Library.
 -- Simplify inference rule.
-------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 open import Data.Nat using (ℕ)
 
 module ATP.Metis.Inferences.Simplify (n : ℕ) where
 
+------------------------------------------------------------------------------
+
 open import Data.Bool.Base
   using (Bool ; true ; false)
   renaming (_∨_ to _or_ ; _∧_ to _and_)
-
 
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using (⌊_⌋)
 open import Data.Prop.Properties n using (eq)
 
--- open import Data.List
-
 open import Function using (id)
 
--- Simplify inference.
+------------------------------------------------------------------------------
 
 isOpposite : Prop → Prop → Bool
 isOpposite (¬ (¬ φ)) ψ = isOpposite φ ψ
@@ -113,6 +112,14 @@ atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} = atp-step-simplify
 atp-simplify {Γ} {¬ φ ∧ ψ}       = atp-step-simplify
 atp-simplify {Γ} {φ}             = atp-step-simplify
 
+
+-- thm-simplify₀ : ∀ {Γ} {φ ψ}
+--               → Γ ⊢ φ
+--               → Γ ⊢ ¬ φ ⇔ ψ
+--               → Γ ⊢ ¬ ψ
+--
+-- thm-simplify₀ {Γ}{φ}{ψ} =
+--   {! ¬-intro  !}
 
 -- open import Data.List using (List ; [] ; _∷_ ; _++_ ; [_])
 --

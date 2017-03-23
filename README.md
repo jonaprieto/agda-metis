@@ -1,7 +1,10 @@
 # Agda-Metis [![Build Status](https://travis-ci.org/jonaprieto/agda-metis.svg?branch=master)](https://travis-ci.org/jonaprieto/agda-metis) [![DOI](https://zenodo.org/badge/84973849.svg)](https://zenodo.org/badge/latestdoi/84973849)
 
-This library aims to provide the necessary functions and theorems to reconstruct
-proofs found by the automatic theorem prover, [Metis](https://github.com/gilith/metis).
+This library aims to provide the necessary functions and theorems for [Athena][athena]
+to reconstruct proofs found by the automatic theorem prover
+, [Metis](https://github.com/gilith/metis).
+
+[athena]: http://github.com/jonaprieto/athena
 
 ### Requirements
 
@@ -36,6 +39,5 @@ Find more information about installing libraries in Agda
 - Joe Leslie-Hurd. *Metis, an Automatic Theorem Prover.*
   http://www.gilith.com/software/metis/index.html and https://github.com/gilith/metis.
 
-- Jonathan Prieto-Cubides and Alejandro Gomez-Londoño. 
+- Jonathan Prieto-Cubides and Alejandro Gomez-Londoño.
   [*A proof tool for translating TSTP proofs to Agda code*](https://github.com/jonaprieto/tstp2agda/tree/deep)
-
