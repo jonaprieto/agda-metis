@@ -29,7 +29,8 @@ conjunct φ ω = φ
 
 atp-conjunct : ∀ {Γ} {φ}
              → (ω : Prop)
-             → Γ ⊢ φ → Γ ⊢ conjunct φ ω
+             → Γ ⊢ φ
+             → Γ ⊢ conjunct φ ω
 
 atp-conjunct {Γ} {φ ∧ ψ} ω seq with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | _     = ∧-proj₁ seq

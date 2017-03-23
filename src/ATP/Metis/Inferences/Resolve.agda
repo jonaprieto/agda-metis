@@ -16,7 +16,8 @@ open import Data.Prop.Properties n using (eq)
 open import Data.Prop.Theorems.Conjunction n using (∧-morgan₁)
 open import Data.Prop.Theorems.Disjunction n using (∨-comm ; lem1 ; lem2)
 
-open import Function               using (_$_ ; id ; _∘_ )
+open import Data.Bool using (true ; false)
+open import Function  using (_$_ ; id ; _∘_ )
 
 ------------------------------------------------------------------------------
 

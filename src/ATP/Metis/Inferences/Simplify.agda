@@ -104,7 +104,10 @@ postulate
     → Γ ⊢ simplify φ
 
 
-atp-simplify : ∀ {Γ : Ctxt} {φ : Prop} → Γ ⊢ φ → Γ ⊢ simplify φ
+atp-simplify : ∀ {Γ} {φ}
+             → Γ ⊢ φ
+             → Γ ⊢ simplify φ
+
 atp-simplify {Γ} {Var x} = id
 atp-simplify {Γ} {⊤}     = id
 atp-simplify {Γ} {⊥}     = id

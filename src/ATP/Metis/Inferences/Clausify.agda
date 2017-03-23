@@ -17,5 +17,8 @@ open import Function using (_$_ ; id)
 clausify : Prop → Prop
 clausify = id
 
-atp-clausify : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ clausify φ
+atp-clausify : ∀ {Γ} {φ}
+             → Γ ⊢ φ
+             → Γ ⊢ clausify φ
+
 atp-clausify = id

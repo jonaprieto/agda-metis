@@ -17,5 +17,8 @@ open import Function using (_$_ ; id)
 specialize : Prop → Prop
 specialize = id
 
-atp-specialize : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ specialize φ
+atp-specialize : ∀ {Γ} {φ}
+               → Γ ⊢ φ
+               → Γ ⊢ specialize φ
+               
 atp-specialize = id

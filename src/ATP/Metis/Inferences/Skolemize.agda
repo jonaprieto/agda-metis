@@ -17,5 +17,8 @@ open import Function using (_$_ ; id)
 skolemize : Prop → Prop
 skolemize = id
 
-atp-skolemize : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ skolemize φ
+atp-skolemize : ∀ {Γ} {φ}
+              → Γ ⊢ φ
+              → Γ ⊢ skolemize φ
+
 atp-skolemize = id

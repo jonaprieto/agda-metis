@@ -28,11 +28,9 @@ strip φ = φ
 
 
 postulate
-  atp-step-strip :
-      ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ strip φ
-
+  atp-step-strip : ∀ {Γ} {φ}
+                 → Γ ⊢ φ
+                 → Γ ⊢ strip φ
 
 atp-strip : ∀ {Γ : Ctxt} {φ : Prop} → Γ ⊢ φ → Γ ⊢ strip φ
 atp-strip {Γ} {Var x}          = id
