@@ -5,7 +5,7 @@
 
 open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Strip ( n : ℕ ) where
+module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 

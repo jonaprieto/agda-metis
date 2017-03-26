@@ -5,7 +5,7 @@
 
 open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Conjunct ( n : ℕ ) where
+module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 

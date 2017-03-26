@@ -5,7 +5,7 @@
 
 open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Canonicalize ( n : ℕ ) where
+module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
