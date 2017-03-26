@@ -14,10 +14,10 @@ open import Data.Bool.Base
   renaming ( _∨_ to _or_; _∧_ to _and_ )
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n        using (⌊_⌋)
-open import Data.Prop.Properties n using (eq)
+open import Data.Prop.Dec n        using ( ⌊_⌋ )
+open import Data.Prop.Properties n using ( eq )
 
-open import Function               using (id)
+open import Function               using ( id )
 
 ------------------------------------------------------------------------------
 

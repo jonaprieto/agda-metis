@@ -24,7 +24,7 @@ conjunct (φ ∧ ψ) ω with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | _     = φ
 ... | false | true  = ψ
 ... | false | false = conjunct φ ω
-conjunct φ ω = φ
+conjunct φ ω        = φ
 
 
 atp-conjunct : ∀ {Γ} {φ}
@@ -36,10 +36,10 @@ atp-conjunct {Γ} {φ ∧ ψ} ω seq with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | _     = ∧-proj₁ seq
 ... | false | true  = ∧-proj₂ seq
 ... | false | false = atp-conjunct {Γ = Γ} {φ = φ} ω (∧-proj₁ seq)
-atp-conjunct {Γ} {Var x} ω  = id
-atp-conjunct {Γ} {⊤} ω      = id
-atp-conjunct {Γ} {⊥} ω      = id
-atp-conjunct {Γ} {φ ∨ φ₁} ω = id
-atp-conjunct {Γ} {φ ⇒ φ₁} ω = id
-atp-conjunct {Γ} {φ ⇔ φ₁} ω = id
-atp-conjunct {Γ} {¬ φ} ω    = id
+atp-conjunct {_} {Var x} _  = id
+atp-conjunct {_} {⊤} _      = id
+atp-conjunct {_} {⊥} _      = id
+atp-conjunct {_} {φ ∨ φ₁} _ = id
+atp-conjunct {_} {φ ⇒ φ₁} _ = id
+atp-conjunct {_} {φ ⇔ φ₁} _ = id
+atp-conjunct {_} {¬ φ} _    = id
