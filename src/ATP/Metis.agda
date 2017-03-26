@@ -2,9 +2,9 @@
 -- Agda-Metis Library.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis (n : ℕ) where
+module ATP.Metis ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 

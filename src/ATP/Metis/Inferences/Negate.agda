@@ -3,9 +3,9 @@
 -- Negate inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Negate (n : ℕ) where
+module ATP.Metis.Inferences.Negate ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 

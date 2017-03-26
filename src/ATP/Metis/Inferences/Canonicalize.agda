@@ -3,22 +3,22 @@
 -- Canonicalize inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Canonicalize (n : ℕ) where
+module ATP.Metis.Inferences.Canonicalize ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Bool.Base                   using (true ; false)
+open import Data.Bool.Base                   using ( true; false )
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n                  using (⌊_⌋)
-open import Data.Prop.Properties n           using (eq)
+open import Data.Prop.Dec n                  using ( ⌊_⌋ )
+open import Data.Prop.Properties n           using ( eq )
 
-open import Data.Prop.Theorems.Implication n using (⇒-equiv)
-open import Data.Prop.Theorems.Negation n    using (¬-⊤ ; ¬-⊥₁)
+open import Data.Prop.Theorems.Implication n using ( ⇒-equiv )
+open import Data.Prop.Theorems.Negation n    using ( ¬-⊤; ¬-⊥₁ )
 
-open import Function                         using (_$_ ; id)
+open import Function                         using ( _$_; id )
 
 ------------------------------------------------------------------------------
 

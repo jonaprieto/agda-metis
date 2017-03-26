@@ -3,21 +3,21 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Simplify (n : ℕ) where
+module ATP.Metis.Inferences.Simplify ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
 open import Data.Bool.Base
-  using (Bool ; true ; false)
-  renaming (_∨_ to _or_ ; _∧_ to _and_)
+  using    ( Bool; true; false )
+  renaming ( _∨_ to _or_; _∧_ to _and_ )
 
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using (⌊_⌋)
 open import Data.Prop.Properties n using (eq)
 
-open import Function using (id)
+open import Function               using (id)
 
 ------------------------------------------------------------------------------
 

@@ -3,16 +3,16 @@
 -- Strip inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Strip (n : ℕ) where
+module ATP.Metis.Inferences.Strip ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Theorems.Negation n using (¬-⊤ ; ¬-⊥₁)
+open import Data.Prop.Theorems.Negation n using ( ¬-⊤; ¬-⊥₁ )
 
-open import Function using (id)
+open import Function                      using ( id )
 
 ------------------------------------------------------------------------------
 

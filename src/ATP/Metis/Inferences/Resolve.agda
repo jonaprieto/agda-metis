@@ -3,21 +3,21 @@
 -- Resolve inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ)
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Inferences.Resolve (n : ℕ) where
+module ATP.Metis.Inferences.Resolve ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n        using (yes ; no ; ⌊_⌋)
-open import Data.Prop.Properties n using (eq)
+open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
+open import Data.Prop.Properties n           using ( eq )
 
-open import Data.Prop.Theorems.Conjunction n using (∧-morgan₁)
-open import Data.Prop.Theorems.Disjunction n using (∨-comm ; lem1 ; lem2)
+open import Data.Prop.Theorems.Conjunction n using ( ∧-morgan₁ )
+open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2 )
 
-open import Data.Bool using (true ; false)
-open import Function  using (_$_ ; id ; _∘_ )
+open import Data.Bool                        using ( true; false )
+open import Function                         using ( _$_; id; _∘_  )
 
 ------------------------------------------------------------------------------
 
@@ -75,6 +75,7 @@ atp-resolve₄ {Γ} {L} {C} seq₁ seq₂ =
       (∨-intro₁ C seq₂)
       seq₁)
 
+
 atp-resolve₅ : ∀ {Γ} {L C}
              → Γ ⊢ C ∨ ¬ L
              → Γ ⊢ L
@@ -108,6 +109,7 @@ atp-resolve₈ : ∀ {Γ} {φ}
              → Γ ⊢ ⊥
 
 atp-resolve₈ seq₁ seq₂ = ¬-elim seq₂ seq₁
+
 
 atp-resolve₉ : ∀ {Γ} {φ}
              → Γ ⊢ ¬ φ → Γ ⊢ φ
