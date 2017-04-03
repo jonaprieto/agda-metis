@@ -13,5 +13,5 @@ open import Data.Prop.Syntax n
 
 ------------------------------------------------------------------------------
 
-atp-neg : Prop → Prop
-atp-neg φ = ¬ φ
+atp-negate : Prop → Prop
+atp-negate φ = ¬ φ
