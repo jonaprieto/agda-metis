@@ -20,14 +20,13 @@ open import Data.Prop.Properties n using ( eq )
 open import Function               using ( id )
 
 ------------------------------------------------------------------------------
-
+{-
 isOpposite : Prop → Prop → Bool
 isOpposite (¬ (¬ φ)) ψ = isOpposite φ ψ
 isOpposite φ (¬ (¬ ψ)) = isOpposite φ ψ
 isOpposite φ ψ = ⌊ eq φ (¬ ψ) ⌋ or ⌊ eq (¬ φ) ψ ⌋
 
 
-simplify : Prop → Prop → Prop
 simplify (φ ⇒ ψ) ω with ⌊ eq φ ω ⌋
 ... | true  = ψ
 ... | false = (φ ⇒ ψ) ∧ ω
@@ -73,7 +72,9 @@ simplify (φ ∨ ψ) ω with isOpposite ω (¬ φ)
 simplify (φ ∧ ψ) ω with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
 ... | true   = ⊥
 ... | false = φ ∧ ψ ∧ ω
+-}
 
+simplify : Prop → Prop → Prop
 simplify φ ψ with ⌊ eq φ ψ ⌋
 simplify φ ψ | true  = φ
 simplify φ ψ | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
