@@ -52,6 +52,6 @@ atp-canonicalize {Γ} {φ ∨ φ₁}     = id
 atp-canonicalize {Γ} {φ ⇒ φ₁}     = ⇒-equiv
 atp-canonicalize {Γ} {¬ (φ ⇒ φ₁)} = atp-step-canonicalize
 
-atp-canonicalize {Γ} {¬ ⊤}     = ¬-⊤
-atp-canonicalize {Γ} {¬ ⊥}     = ¬-⊥₁
-atp-canonicalize {Γ} {φ}       = atp-step-canonicalize
+atp-canonicalize {Γ} {¬ ⊤}        = ¬-⊤
+atp-canonicalize {Γ} {¬ ⊥}        = ¬-⊥₁
+atp-canonicalize {Γ} {φ}          = atp-step-canonicalize
