@@ -20,13 +20,18 @@ open import Data.Prop.Properties n using ( eq )
 open import Function               using ( id )
 
 ------------------------------------------------------------------------------
-{-
+
 isOpposite : Prop → Prop → Bool
 isOpposite (¬ (¬ φ)) ψ = isOpposite φ ψ
 isOpposite φ (¬ (¬ ψ)) = isOpposite φ ψ
 isOpposite φ ψ = ⌊ eq φ (¬ ψ) ⌋ or ⌊ eq (¬ φ) ψ ⌋
 
+simplify : Prop → Prop → Prop
 
+simplify ⊥ φ      = ⊥
+simplify φ ⊥      = ⊥
+
+{-
 simplify (φ ⇒ ψ) ω with ⌊ eq φ ω ⌋
 ... | true  = ψ
 ... | false = (φ ⇒ ψ) ∧ ω
@@ -44,8 +49,6 @@ simplify (φ ⇔ (ψ ⇔ ω)) ρ with ⌊ eq φ ρ ⌋ | ⌊ eq ψ ρ ⌋ | ⌊ 
 ...                                       | false = φ ⇔ (ψ ⇔ ω)
 simplify (¬ ⊥)  φ = φ
 simplify (¬ ⊤)  φ = ⊥
-simplify ⊥ φ      = ⊥
-simplify φ ⊥      = ⊥
 simplify ⊤ φ      = φ
 simplify φ ⊤      = φ
 
@@ -68,13 +71,16 @@ simplify (φ ∨ ψ) ω with isOpposite ω (¬ φ)
 ...         | false = (φ ∨ ψ) ∧ ω
 
 
+-}
 
 simplify (φ ∧ ψ) ω with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
 ... | true   = ⊥
 ... | false = φ ∧ ψ ∧ ω
--}
 
-simplify : Prop → Prop → Prop
+simplify ω (φ ∧ ψ) with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
+... | true   = ⊥
+... | false = φ ∧ ψ ∧ ω
+
 simplify φ ψ with ⌊ eq φ ψ ⌋
 simplify φ ψ | true  = φ
 simplify φ ψ | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
@@ -125,4 +131,3 @@ atp-simplify {Γ} {φ}             = atp-step-simplify
 -- simplify2 (φ ∷ ψ   φs) with ⌊ eq φ ψ ⌋
 -- ... | true  = simplify2 (ψ ∷ φs)
 -- ... | false = ?
- 

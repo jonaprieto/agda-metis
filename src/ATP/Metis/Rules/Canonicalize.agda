@@ -33,6 +33,7 @@ canonicalize (¬ ⊥)       = ⊤
 canonicalize φ           = φ
 
 
+
 postulate
   atp-step-canonicalize :
       ∀ {Γ} {φ}
