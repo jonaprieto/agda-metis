@@ -14,9 +14,10 @@ open import Data.Bool.Base
   renaming ( _∨_ to _or_; _∧_ to _and_ )
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n        using ( ⌊_⌋ )
-open import Data.Prop.Properties n using ( eq )
+open import Data.Prop.Dec n        using ( ⌊_⌋ ; yes ; no )
+open import Data.Prop.Properties n using ( eq ; subst )
 
+open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 open import Function               using ( id )
 
 ------------------------------------------------------------------------------
@@ -26,10 +27,6 @@ isOpposite (¬ (¬ φ)) ψ = isOpposite φ ψ
 isOpposite φ (¬ (¬ ψ)) = isOpposite φ ψ
 isOpposite φ ψ = ⌊ eq φ (¬ ψ) ⌋ or ⌊ eq (¬ φ) ψ ⌋
 
-simplify : Prop → Prop → Prop
-
-simplify ⊥ φ      = ⊥
-simplify φ ⊥      = ⊥
 
 {-
 simplify (φ ⇒ ψ) ω with ⌊ eq φ ω ⌋
@@ -73,20 +70,24 @@ simplify (φ ∨ ψ) ω with isOpposite ω (¬ φ)
 
 -}
 
-simplify (φ ∧ ψ) ω with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
-... | true   = ⊥
-... | false = φ ∧ ψ ∧ ω
+simplify : Prop → Prop → Prop
 
-simplify ω (φ ∧ ψ) with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
-... | true   = ⊥
-... | false = φ ∧ ψ ∧ ω
+simplify ⊥ φ      = ⊥
+simplify φ ⊥      = ⊥
+
+-- simplify (φ ∧ ψ) ω with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
+-- ... | true   = ⊥
+-- ... | false = φ ∧ ψ ∧ ω
+
+-- simplify ω (φ ∧ ψ) with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
+-- ... | true   = ⊥
+-- ... | false = φ ∧ ψ ∧ ω
 
 simplify φ ψ with ⌊ eq φ ψ ⌋
-simplify φ ψ | true  = φ
+simplify φ ψ | true  = ψ
 simplify φ ψ | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
 simplify φ ψ | false | false | false = φ ∧ ψ
 simplify φ ψ | false | _     | _     = ⊥
-
 
 postulate
   atp-simplify :
@@ -95,39 +96,21 @@ postulate
     → Γ ⊢ ψ
     → Γ ⊢ simplify φ ψ
 
-
-{-
-atp-simplify : ∀ {Γ} {φ}
+atp-simplify2 : ∀ {Γ} {φ ψ}
              → Γ ⊢ φ
-             → Γ ⊢ simplify φ
+             → Γ ⊢ ψ
+             → Γ ⊢ simplify φ ψ
 
-atp-simplify {Γ} {Var x} = id
-atp-simplify {Γ} {⊤}     = id
-atp-simplify {Γ} {⊥}     = id
-atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} = atp-step-simplify
-atp-simplify {Γ} {¬ φ ∧ ψ}       = atp-step-simplify
-atp-simplify {Γ} {φ}             = atp-step-simplify
--}
-
--- thm-simplify₀ : ∀ {Γ} {φ ψ}
---               → Γ ⊢ φ
---               → Γ ⊢ ¬ φ ⇔ ψ
---               → Γ ⊢ ¬ ψ
---
--- thm-simplify₀ {Γ}{φ}{ψ} =
---   {! ¬-intro  !}
-
--- open import Data.List using (List ; [] ; _∷_ ; _++_ ; [_])
---
--- toAnd : Prop → List Prop
--- toAnd (φ ∧ ψ) = toAnd φ ++ toAnd ψ
--- toAnd φ = [ φ ]
---
---
--- -- Plan:
--- simplify2 : List Prop → Prop
--- simplify2 []     = ⊤
--- simplify2 [ φ ]  = ?
--- simplify2 (φ ∷ ψ   φs) with ⌊ eq φ ψ ⌋
--- ... | true  = simplify2 (ψ ∷ φs)
--- ... | false = ?
+atp-simplify2 {Γ}{⊥}{_} seq₁ _    = seq₁
+atp-simplify2 {Γ}{φ}{⊥} seq₁ seq₂ = ⊥-elim (simplify φ ⊥) seq₂
+atp-simplify2 {Γ}{φ}{ψ} seq₁ seq₂ with eq (simplify φ ψ) ψ
+... | yes p1 = subst (sym p1) seq₂
+... | no ¬p1 with eq (simplify φ ψ) (φ ∧ ψ)
+...   | yes p2 = subst {Γ = Γ} (sym p2) (∧-intro seq₁ seq₂)
+...   | no ¬p2 with eq φ (¬ ψ) | eq (¬ φ) ψ | eq (φ ∧ ψ) (simplify φ ψ)
+...     | yes φ≡¬ψ | _        | _ = ⊥-elim  (simplify φ ψ)
+                                    (¬-elim (subst φ≡¬ψ seq₁) seq₂)
+...     | no φ≢¬ψ  | yes ¬φ≡ψ | _ = ⊥-elim (simplify φ ψ)
+                                    (¬-elim (subst (sym ¬φ≡ψ) seq₂) seq₁)
+...     | no φ≢¬ψ  | no ¬φ≢ψ  | yes p3 = subst p3 (∧-intro seq₁ seq₂)
+...     | no φ≢¬ψ  | no ¬φ≢ψ  | no ¬p3 = {!!}
