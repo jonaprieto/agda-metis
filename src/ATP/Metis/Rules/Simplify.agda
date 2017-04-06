@@ -86,7 +86,7 @@ simplify φ ⊥      = ⊥
 simplify φ ψ with ⌊ eq φ ψ ⌋
 simplify φ ψ | true  = ψ
 simplify φ ψ | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
-simplify φ ψ | false | false | false = φ ∧ ψ
+simplify φ ψ | false | false | false = φ ∨ ψ
 simplify φ ψ | false | _     | _     = ⊥
 
 postulate
@@ -103,14 +103,23 @@ atp-simplify2 : ∀ {Γ} {φ ψ}
 
 atp-simplify2 {Γ}{⊥}{_} seq₁ _    = seq₁
 atp-simplify2 {Γ}{φ}{⊥} seq₁ seq₂ = ⊥-elim (simplify φ ⊥) seq₂
+
+
 atp-simplify2 {Γ}{φ}{ψ} seq₁ seq₂ with eq (simplify φ ψ) ψ
 ... | yes p1 = subst (sym p1) seq₂
 ... | no ¬p1 with eq (simplify φ ψ) (φ ∧ ψ)
 ...   | yes p2 = subst {Γ = Γ} (sym p2) (∧-intro seq₁ seq₂)
-...   | no ¬p2 with eq φ (¬ ψ) | eq (¬ φ) ψ | eq (φ ∧ ψ) (simplify φ ψ)
-...     | yes φ≡¬ψ | _        | _ = ⊥-elim  (simplify φ ψ)
-                                    (¬-elim (subst φ≡¬ψ seq₁) seq₂)
-...     | no φ≢¬ψ  | yes ¬φ≡ψ | _ = ⊥-elim (simplify φ ψ)
-                                    (¬-elim (subst (sym ¬φ≡ψ) seq₂) seq₁)
-...     | no φ≢¬ψ  | no ¬φ≢ψ  | yes p3 = subst p3 (∧-intro seq₁ seq₂)
+...   | no ¬p2 with eq φ (¬ ψ) | eq (¬ φ) ψ | eq (simplify φ ψ) ⊥
+...     | yes φ≡¬ψ | _        | _ = ⊥-elim
+                                      (simplify φ ψ)
+                                       (¬-elim (subst φ≡¬ψ seq₁) seq₂)
+...     | no φ≢¬ψ  | yes ¬φ≡ψ | _ = ⊥-elim
+                                      (simplify φ ψ)
+                                      (¬-elim (subst (sym ¬φ≡ψ) seq₂) seq₁)
+...     | no φ≢¬ψ  | no ¬φ≢ψ  | yes p3 = ?
+--  ⊥-elim (simplify φ ψ) falsium
+--             where
+               -- falsium : Γ ⊢ ⊥
+               -- falsium = subst p3 (atp-simplify2 seq₁ seq₂)
+
 ...     | no φ≢¬ψ  | no ¬φ≢ψ  | no ¬p3 = {!!}
