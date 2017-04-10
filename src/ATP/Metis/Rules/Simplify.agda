@@ -3,6 +3,8 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
+{-# OPTIONS --exact-split #-}
+
 open import Data.Nat using ( ℕ )
 
 module ATP.Metis.Rules.Simplify ( n : ℕ ) where
@@ -14,120 +16,116 @@ open import Data.Bool.Base
   renaming ( _∨_ to _or_; _∧_ to _and_ )
 
 open import Data.Prop.Syntax n
-open import Data.Prop.Dec n        using ( ⌊_⌋ )
-open import Data.Prop.Properties n using ( eq )
+open import Data.Prop.Dec n        using ( ⌊_⌋; yes; no )
+open import Data.Prop.Properties n using ( eq ; subst )
+open import Data.Prop.Theorems n
 
 open import Function               using ( id )
+open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 
 ------------------------------------------------------------------------------
 
-isOpposite : Prop → Prop → Bool
-isOpposite (¬ (¬ φ)) ψ = isOpposite φ ψ
-isOpposite φ (¬ (¬ ψ)) = isOpposite φ ψ
-isOpposite φ ψ = ⌊ eq φ (¬ ψ) ⌋ or ⌊ eq (¬ φ) ψ ⌋
+------------------------------------------------------------------------------
+-- Simplify function takes the first formula of the input
+-- and tries to simplify it based on the second one of the input.
+------------------------------------------------------------------------------
 
 simplify : Prop → Prop → Prop
 
-simplify ⊥ φ      = ⊥
-simplify φ ⊥      = ⊥
+simplify ⊤       φ = ⊤
+simplify ⊥       φ = ⊥
+simplify (Var x) ψ = Var x
 
-{-
+simplify (¬ φ)  ψ with ⌊ eq φ ψ ⌋
+... | true  = ⊥
+... | false = ¬ φ ∧ ψ
+
+
+simplify (φ ⇔ ψ) ω with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
+... | true  | false = ψ
+... | true  | true  = ψ
+... | false | true  = φ
+... | false | false = (φ ⇔ ψ) ∧ ω
+
+
 simplify (φ ⇒ ψ) ω with ⌊ eq φ ω ⌋
 ... | true  = ψ
 ... | false = (φ ⇒ ψ) ∧ ω
 
-simplify (φ ⇔ (ψ ⇔ ω)) ρ with ⌊ eq φ ρ ⌋ | ⌊ eq ψ ρ ⌋ | ⌊ eq ω ρ ⌋
-... | true | _    | _     = (ψ ⇔ ω)
-... | _    | true | _     = (φ ⇔ ω)
-... | _    | _    | true  = (φ ⇔ ψ)
-... | _    | _    | false with ⌊ eq (φ ⇔ ψ) ρ ⌋
-...                       | true  = ω
-...                       | false with ⌊ eq (φ ⇔ ω) ρ ⌋
-...                               | true  = ψ
-...                               | false with ⌊ eq (ψ ⇔ ω) ρ ⌋
-...                                       | true = φ
-...                                       | false = φ ⇔ (ψ ⇔ ω)
-simplify (¬ ⊥)  φ = φ
-simplify (¬ ⊤)  φ = ⊥
-simplify ⊤ φ      = φ
-simplify φ ⊤      = φ
-
-simplify φ  (ψ ∨ ω) with isOpposite φ (¬ ψ)
+simplify (ψ ∨ ω) φ with ⌊ eq φ (¬ ψ) ⌋
 ... | true  = ω
-... | false with isOpposite φ (¬ ω)
+... | false with ⌊ eq φ (¬ ω) ⌋
 ...         | true  = ψ
-...         | false = φ ∧ (ψ ∨ ω)
+...         | false = (ψ ∨ ω) ∧ φ
 
-simplify (φ ∨ ψ) (ω ∧ ρ) with isOpposite φ ω | isOpposite ψ ρ
-... | true | _    = ψ ∧ ρ
-... | _    | true = φ ∧ ρ
-... | _    | _    = (φ ∨ ψ) ∧ ω ∧ ρ
-
-
-simplify (φ ∨ ψ) ω with isOpposite ω (¬ φ)
-... | true  = ψ
-... | false with isOpposite ω (¬ ψ)
-...         | true  = φ
-...         | false = (φ ∨ ψ) ∧ ω
+simplify (φ ∧ ψ) ω with ⌊ eq φ (¬ ω) ⌋ or ⌊ eq ω (¬ φ) ⌋
+... | true  = ⊥
+... | false with  ⌊ eq ψ (¬ ω) ⌋ or ⌊ eq ω (¬ ψ) ⌋
+...         | true  = ⊥
+...         | false = (φ ∧ ψ) ∧ ω
 
 
--}
+------------------------------------------------------------------------------
+-- Simplies preservs theorems, it just simplifies them.
+------------------------------------------------------------------------------
 
-simplify (φ ∧ ψ) ω with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
-... | true   = ⊥
-... | false = φ ∧ ψ ∧ ω
-
-simplify ω (φ ∧ ψ) with isOpposite φ ψ or isOpposite φ ω or isOpposite ψ ω
-... | true   = ⊥
-... | false = φ ∧ ψ ∧ ω
-
-simplify φ ψ with ⌊ eq φ ψ ⌋
-simplify φ ψ | true  = φ
-simplify φ ψ | false with ⌊ eq φ (¬ ψ) ⌋ | ⌊ eq (¬ φ) ψ ⌋
-simplify φ ψ | false | false | false = φ ∧ ψ
-simplify φ ψ | false | _     | _     = ⊥
-
-
-postulate
-  atp-simplify :
-      ∀ {Γ} {φ ψ}
-    → Γ ⊢ φ
-    → Γ ⊢ ψ
-    → Γ ⊢ simplify φ ψ
-
-
-{-
-atp-simplify : ∀ {Γ} {φ}
+atp-simplify : ∀ {Γ} {φ ψ}
              → Γ ⊢ φ
-             → Γ ⊢ simplify φ
+             → Γ ⊢ ψ
+             → Γ ⊢ simplify φ ψ
 
-atp-simplify {Γ} {Var x} = id
-atp-simplify {Γ} {⊤}     = id
-atp-simplify {Γ} {⊥}     = id
-atp-simplify {Γ} {φ = φ₁ ∧ ¬ φ₂} = atp-step-simplify
-atp-simplify {Γ} {¬ φ ∧ ψ}       = atp-step-simplify
-atp-simplify {Γ} {φ}             = atp-step-simplify
--}
+------------------------------------------------------------------------------
+atp-simplify {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ = Γ⊢Varx
+------------------------------------------------------------------------------
 
--- thm-simplify₀ : ∀ {Γ} {φ ψ}
---               → Γ ⊢ φ
---               → Γ ⊢ ¬ φ ⇔ ψ
---               → Γ ⊢ ¬ ψ
---
--- thm-simplify₀ {Γ}{φ}{ψ} =
---   {! ¬-intro  !}
+------------------------------------------------------------------------------
+atp-simplify {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ
+... | yes φ≡ψ  = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
+... | no  φ≢ψ  = ∧-intro Γ⊢¬φ Γ⊢ψ
+------------------------------------------------------------------------------
 
--- open import Data.List using (List ; [] ; _∷_ ; _++_ ; [_])
---
--- toAnd : Prop → List Prop
--- toAnd (φ ∧ ψ) = toAnd φ ++ toAnd ψ
--- toAnd φ = [ φ ]
---
---
--- -- Plan:
--- simplify2 : List Prop → Prop
--- simplify2 []     = ⊤
--- simplify2 [ φ ]  = ?
--- simplify2 (φ ∷ ψ   φs) with ⌊ eq φ ψ ⌋
--- ... | true  = simplify2 (ψ ∷ φs)
--- ... | false = ?
+------------------------------------------------------------------------------
+atp-simplify {Γ} {φ ⇔ ψ} {ω} Γ⊢φ⇔ψ Γ⊢ω with eq φ ω | eq ψ ω
+... | yes φ≡ω | yes ψ≡ω = subst (sym ψ≡ω) Γ⊢ω
+... | yes φ≡ω | no  ψ≢ω = ⇔-elim₁ (subst (sym φ≡ω) Γ⊢ω) Γ⊢φ⇔ψ
+... | no _    | yes ψ≡ω = ⇔-elim₂ (subst (sym ψ≡ω) Γ⊢ω) Γ⊢φ⇔ψ
+... | no _    | no  ψ≢ω = ∧-intro Γ⊢φ⇔ψ Γ⊢ω
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+atp-simplify {Γ} {φ ⇒ ψ} {ω} Γ⊢φ⇒ψ Γ⊢ω with eq φ ω
+... | yes φ≡ω = ⇒-elim Γ⊢φ⇒ψ (subst (sym φ≡ω) Γ⊢ω)
+... | no  φ≢ω = ∧-intro Γ⊢φ⇒ψ Γ⊢ω
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+atp-simplify {Γ} {ψ ∨ ω} {φ} Γ⊢ψ∨ω Γ⊢φ with eq φ (¬ ψ)
+... | yes φ≡¬ψ  = resolve₇ Γ⊢ψ∨ω Γ⊢¬ψ
+    where
+      Γ⊢¬ψ : Γ ⊢ ¬ ψ
+      Γ⊢¬ψ = subst φ≡¬ψ Γ⊢φ
+
+... | no  φ≢¬ψ  with eq φ (¬ ω)
+...         | yes φ≡¬ω = resolve₆ Γ⊢ψ∨ω Γ⊢¬ω
+            where
+              Γ⊢¬ω : Γ ⊢ ¬ ω
+              Γ⊢¬ω = subst φ≡¬ω Γ⊢φ
+
+...         | no  φ≢¬ω = ∧-intro Γ⊢ψ∨ω Γ⊢φ
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+atp-simplify {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | eq ω (¬ φ)
+... | yes φ≡¬ω | _        = ¬-elim (subst φ≡¬ω (∧-proj₁ Γ⊢φ∧ψ)) Γ⊢ω
+... | no  _    | yes ω≡¬φ = ¬-elim (subst ω≡¬φ Γ⊢ω) (∧-proj₁ Γ⊢φ∧ψ)
+
+... | no  _    | no  ω≢¬φ with eq ψ (¬ ω) | eq ω (¬ ψ)
+...    | yes ψ≡¬ω | _        = ¬-elim (subst ψ≡¬ω (∧-proj₂ Γ⊢φ∧ψ)) Γ⊢ω
+...    | no   _   | yes ω≡¬ψ = ¬-elim (subst ω≡¬ψ Γ⊢ω) (∧-proj₂ Γ⊢φ∧ψ)
+...    | no   _   | no  ω≢¬ψ = ∧-intro Γ⊢φ∧ψ Γ⊢ω
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+atp-simplify {Γ} {⊤}   {φ} _     Γ⊢φ = ⊤-intro
+atp-simplify {Γ} {⊥}   {_} Γ⊢⊥   _   = Γ⊢⊥
+------------------------------------------------------------------------------

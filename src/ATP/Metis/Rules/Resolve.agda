@@ -13,7 +13,7 @@ open import Data.Prop.Syntax n
 open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
 open import Data.Prop.Properties n           using ( eq )
 
-open import Data.Prop.Theorems.Conjunction n using ( ∧-morgan₁ )
+open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
 open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2 )
 
 open import Data.Bool                        using ( true; false )
@@ -27,7 +27,7 @@ atp-resolve₀ : ∀ {Γ} {L C D}
 
 atp-resolve₀ {Γ} {L}{C}{D} seq₁ seq₂ =
   lem1 $
-    ∧-morgan₁ $
+    ∧-dmorgan₁ $
       ¬-intro $
         ¬-elim
           (lem2 {Γ = Γ , ¬ C ∧ ¬ D} $
