@@ -3,7 +3,7 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
-{-# OPTIONS --exact-split #-}
+-- {-# OPTIONS --exact-split #-}
 
 open import Data.Nat using ( ℕ )
 
@@ -152,15 +152,64 @@ atp-simplify₀ {Γ} {⊥} {_} Γ⊢⊥  _   = Γ⊢⊥
 ------------------------------------------------------------------------------
 
 hard-simplify : Prop → Prop → Prop
-hard-simplify φ ψ with simplify φ ψ
-... | ⊥      = simplify φ φ
-... | Var x  = simplify ψ φ
-... | ⊤      = simplify ψ φ
-... | w ∧ w₁ = simplify ψ φ
-... | w ∨ w₁ = simplify ψ φ
-... | w ⇒ w₁ = simplify ψ φ
-... | w ⇔ w₁ = simplify ψ φ
-... | ¬ w    = simplify ψ φ
+hard-simplify φ ψ with simplify φ ψ | simplify ψ φ
+... | ⊥      | _        = simplify φ ψ
+... | Var x | (Var x₁)  = simplify φ ψ
+... | Var x | ⊤         = simplify φ ψ
+... | Var x | ⊥         = simplify ψ φ
+... | Var x | (r ∧ r₁)  = simplify φ ψ
+... | Var x | (r ∨ r₁)  = simplify φ ψ
+... | Var x | (r ⇒ r₁)  = simplify φ ψ
+... | Var x | (r ⇔ r₁)  = simplify φ ψ
+... | Var x | (¬ r)     = simplify φ ψ
+... | ⊤ | Var x         = simplify φ ψ
+... | ⊤ | ⊤             = simplify φ ψ
+... | ⊤ | ⊥             = simplify ψ φ
+... | ⊤ | r ∧ r₁        = simplify φ ψ
+... | ⊤ | r ∨ r₁        = simplify φ ψ
+... | ⊤ | r ⇒ r₁        = simplify φ ψ
+... | ⊤ | r ⇔ r₁        = simplify φ ψ
+... | ⊤ | ¬ r           = simplify φ ψ
+... | w ∧ w₁ | (Var x)  = simplify φ ψ
+... | w ∧ w₁ | ⊤        = simplify φ ψ
+... | w ∧ w₁ | ⊥        = simplify ψ φ
+... | w ∧ w₁ | (r ∧ r₁) = simplify φ ψ
+... | w ∧ w₁ | (r ∨ r₁) = simplify φ ψ
+... | w ∧ w₁ | (r ⇒ r₁) = simplify φ ψ
+... | w ∧ w₁ | (r ⇔ r₁) = simplify φ ψ
+... | w ∧ w₁ | (¬ r)    = simplify φ ψ
+... | w ∨ w₁ | (Var x)  = simplify φ ψ
+... | w ∨ w₁ | ⊤        = simplify φ ψ
+... | w ∨ w₁ | ⊥        = simplify ψ φ
+... | w ∨ w₁ | (r ∧ r₁) = simplify φ ψ
+... | w ∨ w₁ | (r ∨ r₁) = simplify φ ψ
+... | w ∨ w₁ | (r ⇒ r₁) = simplify φ ψ
+... | w ∨ w₁ | (r ⇔ r₁) = simplify φ ψ
+... | w ∨ w₁ | (¬ r)    = simplify φ ψ
+... | w ⇒ w₁ | (Var x)  = simplify φ ψ
+... | w ⇒ w₁ | ⊤        = simplify φ ψ
+... | w ⇒ w₁ | ⊥        = simplify ψ φ
+... | w ⇒ w₁ | (r ∧ r₁) = simplify φ ψ
+... | w ⇒ w₁ | (r ∨ r₁) = simplify φ ψ
+... | w ⇒ w₁ | (r ⇒ r₁) = simplify φ ψ
+... | w ⇒ w₁ | (r ⇔ r₁) = simplify φ ψ
+... | w ⇒ w₁ | (¬ r)    = simplify φ ψ
+... | w ⇔ w₁ | (Var x)  = simplify φ ψ
+... | w ⇔ w₁ | ⊤        = simplify φ ψ
+... | w ⇔ w₁ | ⊥        = simplify ψ φ
+... | w ⇔ w₁ | (r ∧ r₁) = simplify φ ψ
+... | w ⇔ w₁ | (r ∨ r₁) = simplify φ ψ
+... | w ⇔ w₁ | (r ⇒ r₁) = simplify φ ψ
+... | w ⇔ w₁ | (r ⇔ r₁) = simplify φ ψ
+... | w ⇔ w₁ | (¬ r)    = simplify φ ψ -- simplify φ ψ
+... | ¬ w | (Var x)     = simplify φ ψ
+... | ¬ w | ⊤           = simplify φ ψ
+... | ¬ w | ⊥           = simplify ψ φ
+... | ¬ w | (r ∧ r₁)    = simplify φ ψ
+... | ¬ w | (r ∨ r₁)    = simplify φ ψ
+... | ¬ w | (r ⇒ r₁)    = simplify φ ψ
+... | ¬ w | (r ⇔ r₁)    = simplify φ ψ
+... | ¬ w | (¬ r)       = simplify φ ψ
 
 ------------------------------------------------------------------------------
 -- atp-simplify.
@@ -172,13 +221,62 @@ atp-simplify : ∀ {Γ} {φ ψ}
   → Γ ⊢ hard-simplify φ ψ
 
 ------------------------------------------------------------------------------
-atp-simplify {Γ}{φ}{ψ} Γ⊢φ Γ⊢ψ with simplify φ ψ
-... | Var x  = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ⊤      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ⊥      = atp-simplify₀ Γ⊢φ Γ⊢φ
-... | x ∧ x₁ = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | x ∨ x₁ = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | x ⇒ x₁ = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | x ⇔ x₁ = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ¬ x    = atp-simplify₀ Γ⊢ψ Γ⊢φ
-------------------------------------------------------------------------------
+atp-simplify {Γ}{φ}{ψ} Γ⊢φ Γ⊢ψ with simplify φ ψ | simplify ψ φ
+... | ⊥     | _         = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | (Var x₁)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | ⊤         = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | ⊥         = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | Var x | (r ∧ r₁)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | (r ∨ r₁)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | (r ⇒ r₁)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | (r ⇔ r₁)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | Var x | (¬ r)     = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | Var x         = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | ⊤             = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | ⊥             = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | ⊤ | r ∧ r₁        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | r ∨ r₁        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | r ⇒ r₁        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | r ⇔ r₁        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ⊤ | ¬ r           = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | (Var x)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | ⊤        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | ⊥        = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | w ∧ w₁ | (r ∧ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | (r ∨ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | (r ⇒ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | (r ⇔ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∧ w₁ | (¬ r)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | (Var x)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | ⊤        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | ⊥        = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | w ∨ w₁ | (r ∧ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | (r ∨ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | (r ⇒ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | (r ⇔ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ∨ w₁ | (¬ r)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | (Var x)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | ⊤        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | ⊥        = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | w ⇒ w₁ | (r ∧ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | (r ∨ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | (r ⇒ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | (r ⇔ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇒ w₁ | (¬ r)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | (Var x)  = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | ⊤        = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | ⊥        = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | w ⇔ w₁ | (r ∧ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | (r ∨ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | (r ⇒ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | (r ⇔ r₁) = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | w ⇔ w₁ | (¬ r)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | (Var x)     = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | ⊤           = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | ⊥           = atp-simplify₀ Γ⊢ψ Γ⊢φ
+... | ¬ w | (r ∧ r₁)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | (r ∨ r₁)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | (r ⇒ r₁)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | (r ⇔ r₁)    = atp-simplify₀ Γ⊢φ Γ⊢ψ
+... | ¬ w | (¬ r)       = atp-simplify₀ Γ⊢φ Γ⊢ψ
+-- ------------------------------------------------------------------------------
