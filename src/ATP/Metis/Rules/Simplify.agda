@@ -34,12 +34,19 @@ simplify : Prop → Prop → Prop
 
 simplify ⊤       φ = ⊤
 simplify ⊥       φ = ⊥
-simplify (Var x) ψ = Var x
-
-simplify (¬ φ)  ψ with ⌊ eq φ ψ ⌋
+simplify (Var x) ψ with ⌊ eq ⊥ ψ ⌋
 ... | true  = ⊥
-... | false = ¬ φ ∧ ψ
+... | false = Var x
 
+simplify (¬ φ)  ψ with ⌊ eq φ ψ ⌋ |  ⌊ eq ⊥ φ ⌋ | ⌊ eq ⊤ φ ⌋
+... | true  | true  | true  = ⊥
+... | true  | true  | false = ⊥
+... | true  | false | true  = ⊥
+... | true  | false | false = ⊥
+... | false | true  | true  = ⊥
+... | false | true  | false = ψ
+... | false | false | true  = ⊥
+... | false | false | false = ¬ φ ∧ ψ
 
 simplify (φ ⇔ ψ) ω with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | false = ψ
@@ -75,13 +82,22 @@ atp-simplify : ∀ {Γ} {φ ψ}
              → Γ ⊢ simplify φ ψ
 
 ------------------------------------------------------------------------------
-atp-simplify {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ = Γ⊢Varx
+atp-simplify {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ with eq ⊥ ψ
+... | yes ⊥≡ψ = subst (sym ⊥≡ψ) Γ⊢ψ
+... | no  ⊥≢ψ = Γ⊢Varx
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
-atp-simplify {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ
-... | yes φ≡ψ  = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
-... | no  φ≢ψ  = ∧-intro Γ⊢¬φ Γ⊢ψ
+atp-simplify {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ | eq ⊥ φ | eq ⊤ φ
+... | yes φ≡ψ | yes ⊥≡φ | yes ⊤≡φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
+... | yes φ≡ψ | yes ⊥≡φ | no  ⊤≢φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
+... | yes φ≡ψ | no  ⊥≢φ | yes ⊤≡φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
+... | yes φ≡ψ | no  ⊥≢φ | no  ⊤≢φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
+... | no  φ≢ψ | yes ⊥≡φ | yes ⊤≡φ = ¬-⊤ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
+... | no  φ≢ψ | yes ⊥≡φ | no  ⊤≢φ = Γ⊢ψ
+... | no  φ≢ψ | no  ⊥≢φ | yes ⊤≡φ = ¬-⊤ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
+... | no  φ≢ψ | no  ⊥≢φ | no  ⊤≢φ = ∧-intro Γ⊢¬φ Γ⊢ψ
+
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -126,6 +142,6 @@ atp-simplify {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | eq 
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
-atp-simplify {Γ} {⊤}   {φ} _     Γ⊢φ = ⊤-intro
-atp-simplify {Γ} {⊥}   {_} Γ⊢⊥   _   = Γ⊢⊥
+atp-simplify {Γ} {⊤} {φ} _    Γ⊢φ = ⊤-intro
+atp-simplify {Γ} {⊥} {_} Γ⊢⊥  _   = Γ⊢⊥
 ------------------------------------------------------------------------------
