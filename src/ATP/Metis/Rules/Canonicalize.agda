@@ -15,8 +15,9 @@ open import Data.Prop.Syntax n
 open import Data.Prop.Dec n                  using ( ⌊_⌋ ; yes ; no )
 open import Data.Prop.Properties n           using ( eq ; subst )
 
-open import Data.Prop.Theorems.Implication n using ( ⇒-equiv ; ⇒-neg ; th244e )
+open import Data.Prop.Theorems.Implication n using ( ⇒-equiv ; th244e )
 open import Data.Prop.Theorems.Negation n    using ( ¬-⊤; ¬-⊥₁ )
+open import Data.Prop.Theorems.Mixies n      using ( neg-⇒ )
 
 open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym ; trans)
 open import Function                         using ( _$_; id ; _∘_ )
@@ -58,9 +59,9 @@ atp-canonicalize {Γ} {f@(¬ (φ ⇒ ψ))} seq with eq φ ψ
 ... | no  _  =
           ∧-intro
             (atp-canonicalize
-              (∧-proj₁ (⇒-neg seq)))
+              (∧-proj₁ (neg-⇒ seq)))
             (atp-canonicalize
-              (∧-proj₂ (⇒-neg seq)))
+              (∧-proj₂ (neg-⇒ seq)))
 
 atp-canonicalize {Γ} {¬ ⊤}        = ¬-⊤
 atp-canonicalize {Γ} {¬ ⊥}        = ¬-⊥₁
