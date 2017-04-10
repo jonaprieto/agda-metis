@@ -3,7 +3,7 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
--- {-# OPTIONS --exact-split #-}
+{-# OPTIONS --exact-split #-}
 
 open import Data.Nat using ( ℕ )
 
