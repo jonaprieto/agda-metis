@@ -4,4 +4,3 @@ depend:
   agda-prop
 include:
   src/
-  test/

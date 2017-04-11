@@ -3,46 +3,85 @@
 -- Strip inference rule.
 ------------------------------------------------------------------------------
 
+-- {-# OPTIONS --exact-split #-}
+{-# OPTIONS --allow-unsolved-metas #-}
+
+
 open import Data.Nat using ( ℕ )
 
 module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Prop.Syntax n
-open import Data.Prop.Theorems.Negation n using ( ¬-⊤; ¬-⊥₁ )
-
 open import Data.Bool
   renaming ( _∧_ to _&&_; _∨_ to _||_ )
   using    ( Bool; true; false; if_then_else_ )
+
 open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl)
+open import Data.Prop.Syntax n
+open import Data.Prop.Theorems.Negation n using ( ¬-⊤; ¬-⊥₁ )
 
 open import Function                      using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
 strip : Prop → Prop
-strip (Var x) = (Var x)
-strip (¬ ⊤)   = ⊥
-strip (¬ ⊥)   = ⊤
-strip (¬ φ)   = ¬ φ
-strip (φ₁ ∨ φ₂ ∨ φ₃)   = (¬ φ₁) ∧ (¬ φ₂) ⇒ φ₃
-strip (φ ∨ ψ)          = (¬ φ) ⇒ ψ
-strip (φ₁ ⇒ (φ₂ ⇒ φ₃)) = φ₁ ∧ strip (φ₂ ⇒ φ₃)
-strip φ = φ
+
+strip (Var x)  = {!!}
+strip ⊤        = {!!}
+strip ⊥        = {!!}
+strip (φ ∧ φ₁) = {!!}
+
+strip (φ ∨ Var x)     = {!!}
+strip (φ ∨ ⊤)         = {!!}
+strip (φ ∨ ⊥)         = {!!}
+strip (φ ∨ (φ₁ ∧ φ₂)) = {!!}
+strip (φ ∨ (φ₁ ∨ φ₂)) = {!!}
+strip (φ ∨ (φ₁ ⇒ φ₂)) = {!!}
+strip (φ ∨ (φ₁ ⇔ φ₂)) = {!!}
+strip (φ ∨ ¬ φ₁)      = {!!}
+
+strip (φ ⇒ φ₁)        = {!!}
+
+strip (φ ⇔ Var x)   = {!!}
+strip (φ ⇔ ⊤)       = {!!}
+strip (φ ⇔ ⊥)       = {!!}
+strip (φ ⇔ φ₁ ∧ φ₂) = {!!}
+strip (φ ⇔ φ₁ ∨ φ₂) = {!!}
+strip (φ ⇔ φ₁ ⇒ φ₂) = {!!}
+strip (φ ⇔ φ₁ ⇔ φ₂) = {!!}
+strip (φ ⇔ ¬ φ₁)    = {!!}
+
+strip (¬ Var x)     = {!!}
+strip (¬ ⊤)         = {!!}
+strip (¬ ⊥)         = {!!}
+strip (¬ (φ ∧ φ₁))  = {!!}
+strip (¬ (φ ∨ φ₁))  = {!!}
+strip (¬ (φ ⇒ φ₁))  = {!!}
+strip (¬ (φ ⇔ φ₁))  = {!!}
+strip (¬ (¬ φ))     = {!!}
+
+
+-- strip (Var x) = (Var x)
+-- strip (¬ ⊤)   = ⊥
+-- strip (¬ ⊥)   = ⊤
+-- strip (¬ φ)   = ¬ φ
+-- strip (φ₁ ∨ φ₂ ∨ φ₃)   = (¬ φ₁) ∧ (¬ φ₂) ⇒ φ₃
+-- strip (φ ∨ ψ)          = ¬ φ ⇒ ψ
+-- strip (φ₁ ⇒ (φ₂ ⇒ φ₃)) = φ₁ ∧ strip (φ₂ ⇒ φ₃)
+-- strip φ                = φ
 
 
 postulate
-  atp-step-strip : ∀ {Γ} {φ}
+  atp-strip : ∀ {Γ} {φ}
                  → Γ ⊢ φ
                  → Γ ⊢ strip φ
 
-atp-strip : ∀ {Γ : Ctxt} {φ : Prop} → Γ ⊢ φ → Γ ⊢ strip φ
-atp-strip {Γ} {Var x}          = id
-atp-strip {Γ} {φ₁ ⇒ (φ₂ ⇒ φ₃)} = atp-step-strip
-atp-strip {Γ} {¬ ⊤}            = ¬-⊤
-atp-strip {Γ} {¬ ⊥}            = ¬-⊥₁
-atp-strip {Γ} {φ}              = atp-step-strip
+-- atp-strip2 : ∀ {Γ} {φ}
+--           → Γ ⊢ φ
+--           → Γ ⊢ strip φ
+
+-- atp-strip {Γ}  (Var x) = (Var x)
 
 
 ------------------------------------------------------------------------------
@@ -148,4 +187,4 @@ splitGoal fm = flat $ splitGoal₀ fm
     flat (fm ∷ fms) = foldl (_∧_) fm fms
 
 postulate atp-splitGoal : ∀ {Γ} {φ}
-                        → Γ ⊢ (splitGoal φ ⇒ φ)
+                        → Γ ⊢ splitGoal φ ⇒ φ

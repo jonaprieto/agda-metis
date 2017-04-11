@@ -15,9 +15,9 @@ open import Data.Bool.Base
   using    ( Bool; true; false )
   renaming ( _∨_ to _or_; _∧_ to _and_ )
 
-open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using ( ⌊_⌋; yes; no )
 open import Data.Prop.Properties n using ( eq ; subst )
+open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
 
 open import Function               using ( id ; _∘_ ; _$_ )
@@ -69,7 +69,6 @@ simplify (φ ∧ ψ) ω with ⌊ eq φ (¬ ω) ⌋ or ⌊ eq ω (¬ φ) ⌋
 ... | false with ⌊ eq ψ (¬ ω) ⌋ or ⌊ eq ω (¬ ψ) ⌋
 ...         | false = (φ ∧ ψ) ∧ ω
 ...         | true  = ⊥
-
 
 ------------------------------------------------------------------------------
 -- atp-simplify₀.
