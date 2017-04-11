@@ -11,37 +11,33 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 open import Data.Bool.Base                   using ( true; false )
 
-open import Data.Prop.Syntax n
 open import Data.Prop.Dec n                  using ( ⌊_⌋ ; yes ; no )
 open import Data.Prop.Properties n           using ( eq ; subst )
+open import Data.Prop.Syntax n
 
 open import Data.Prop.Theorems.Implication n using ( ⇒-equiv ; th244e )
-open import Data.Prop.Theorems.Negation n    using ( ¬-⊤; ¬-⊥₁ )
 open import Data.Prop.Theorems.Mixies n      using ( neg-⇒ )
+open import Data.Prop.Theorems.Negation n    using ( ¬-⊤; ¬-⊥₁ )
 
-open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym ; trans)
 open import Function                         using ( _$_; id ; _∘_ )
+open import Relation.Binary.PropositionalEquality
+  using ( _≡_; refl; sym ; trans)
 
 ------------------------------------------------------------------------------
 
 canonicalize : Prop → Prop
 canonicalize (φ ⇒ ψ)     = ¬ φ ∨ ψ
 canonicalize (¬ (φ ⇒ ψ)) with ⌊ eq φ ψ ⌋
-... | true  = ⊥
 ... | false = canonicalize φ ∧ canonicalize (¬ ψ)
+... | true  = ⊥
+canonicalize (¬ (¬ φ))   = canonicalize φ
 canonicalize (¬ ⊤)       = ⊥
 canonicalize (¬ ⊥)       = ⊤
-canonicalize (¬ (¬ φ))   = canonicalize φ
 canonicalize φ           = φ
 
-
-
-postulate
-  atp-step-canonicalize :
-      ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ canonicalize φ
-
+------------------------------------------------------------------------------
+-- atp-canonicalize.
+------------------------------------------------------------------------------
 
 atp-canonicalize : ∀ {Γ} {φ}
                  → Γ ⊢ φ
