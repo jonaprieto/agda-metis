@@ -7,7 +7,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 
-open import Data.Nat using ( ℕ )
+open import Data.Nat using ( ℕ ; zero ; suc )
 
 module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
@@ -17,77 +17,17 @@ open import Data.Bool
   renaming ( _∧_ to _&&_; _∨_ to _||_ )
   using    ( Bool; true; false; if_then_else_ )
 
-open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl)
+open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
 open import Data.Prop.Syntax n
-open import Data.Prop.Theorems.Negation n using ( ¬-⊤; ¬-⊥₁ )
+open import Data.Prop.Theorems n
 
-open import Function                      using ( _$_; id )
+open import Function                      using ( _$_; id; _∘_ )
 
 ------------------------------------------------------------------------------
-
-strip : Prop → Prop
-
-strip (Var x)  = {!!}
-strip ⊤        = {!!}
-strip ⊥        = {!!}
-strip (φ ∧ φ₁) = {!!}
-
-strip (φ ∨ Var x)     = {!!}
-strip (φ ∨ ⊤)         = {!!}
-strip (φ ∨ ⊥)         = {!!}
-strip (φ ∨ (φ₁ ∧ φ₂)) = {!!}
-strip (φ ∨ (φ₁ ∨ φ₂)) = {!!}
-strip (φ ∨ (φ₁ ⇒ φ₂)) = {!!}
-strip (φ ∨ (φ₁ ⇔ φ₂)) = {!!}
-strip (φ ∨ ¬ φ₁)      = {!!}
-
-strip (φ ⇒ φ₁)        = {!!}
-
-strip (φ ⇔ Var x)   = {!!}
-strip (φ ⇔ ⊤)       = {!!}
-strip (φ ⇔ ⊥)       = {!!}
-strip (φ ⇔ φ₁ ∧ φ₂) = {!!}
-strip (φ ⇔ φ₁ ∨ φ₂) = {!!}
-strip (φ ⇔ φ₁ ⇒ φ₂) = {!!}
-strip (φ ⇔ φ₁ ⇔ φ₂) = {!!}
-strip (φ ⇔ ¬ φ₁)    = {!!}
-
-strip (¬ Var x)     = {!!}
-strip (¬ ⊤)         = {!!}
-strip (¬ ⊥)         = {!!}
-strip (¬ (φ ∧ φ₁))  = {!!}
-strip (¬ (φ ∨ φ₁))  = {!!}
-strip (¬ (φ ⇒ φ₁))  = {!!}
-strip (¬ (φ ⇔ φ₁))  = {!!}
-strip (¬ (¬ φ))     = {!!}
-
-
--- strip (Var x) = (Var x)
--- strip (¬ ⊤)   = ⊥
--- strip (¬ ⊥)   = ⊤
--- strip (¬ φ)   = ¬ φ
--- strip (φ₁ ∨ φ₂ ∨ φ₃)   = (¬ φ₁) ∧ (¬ φ₂) ⇒ φ₃
--- strip (φ ∨ ψ)          = ¬ φ ⇒ ψ
--- strip (φ₁ ⇒ (φ₂ ⇒ φ₃)) = φ₁ ∧ strip (φ₂ ⇒ φ₃)
--- strip φ                = φ
-
-
-postulate
-  atp-strip : ∀ {Γ} {φ}
-                 → Γ ⊢ φ
-                 → Γ ⊢ strip φ
-
--- atp-strip2 : ∀ {Γ} {φ}
---           → Γ ⊢ φ
---           → Γ ⊢ strip φ
-
--- atp-strip {Γ}  (Var x) = (Var x)
-
 
 ------------------------------------------------------------------------------
 -- Spliting the goal.
 ------------------------------------------------------------------------------
-
 
 listMkConj : List Prop → Prop
 listMkConj []         = ⊤
@@ -140,13 +80,12 @@ flatEquiv fm = flat [] [ fm ]
   where
     flat : List Prop → List Prop → List Prop
     flat acc []              = acc
-    flat acc ((p ⇔ q) ∷ fms) = flat (p ∷ acc) (q ∷ fms)
+    flat acc (p ⇔ q ∷ fms) = flat (p ∷ acc) (q ∷ fms)
     flat acc (⊤ ∷ fms)       = flat acc fms
     flat acc (fm ∷ fms)      = flat (fm ∷ acc) fms
 
 strip-⇔ : Prop → Prop
 strip-⇔ fm = listMkEquiv $ stripEquiv fm
-
 
 splitGoal₀ : Prop → List Prop
 splitGoal₀ fm = split [] true fm
@@ -177,7 +116,6 @@ splitGoal₀ fm = split [] true fm
             addAsms [] goal   = goal
             addAsms asms goal = (listMkConj asms) ⇒ goal
 
-
 splitGoal : Prop → Prop
 splitGoal fm = flat $ splitGoal₀ fm
   where
@@ -188,3 +126,153 @@ splitGoal fm = flat $ splitGoal₀ fm
 
 postulate atp-splitGoal : ∀ {Γ} {φ}
                         → Γ ⊢ splitGoal φ ⇒ φ
+
+------------------------------------------------------------------------------
+-- Strip rule.
+------------------------------------------------------------------------------
+
+strip : Prop → Prop
+
+strip fm@(Var x)  = fm
+strip ⊤           = ⊤
+strip ⊥           = ⊥
+strip fm@(φ ∧ φ₁) = fm
+
+strip fm@(φ ∨ Var x)     = fm
+strip fm@(φ ∨ ⊤)         = ⊤
+strip fm@(φ ∨ ⊥)         = ¬ φ ⇒ ⊥
+strip fm@(φ ∨ (φ₁ ∧ φ₂)) = fm
+strip fm@(φ ∨ (φ₁ ∨ φ₂)) = (¬ φ ∧ ¬ φ₁) ⇒ φ₂
+strip fm@(φ ∨ (φ₁ ⇒ φ₂)) = (¬ φ ∧ φ₁) ⇒ φ₂
+strip fm@(φ ∨ (φ₁ ⇔ φ₂)) = fm
+strip fm@(φ ∨ ¬ φ₁)      = ¬ φ ⇒ ¬ φ₁
+
+-- split over the second term
+-- strip fm@(φ ∨ ψ)         = ¬ φ ⇒ ψ
+
+
+strip fm@(φ ⇒ Var x) = fm
+strip fm@(φ ⇒ ⊤) = ⊤
+strip fm@(φ ⇒ ⊥) = fm
+strip fm@(φ ⇒ φ₁ ∧ φ₂) = fm -- generate two subgoals φ⇒φ₁ and φ⇒φ₂
+strip fm@(φ ⇒ φ₁ ∨ φ₂) = (φ ∧ ¬ φ₁) ⇒ φ₂
+strip fm@(φ ⇒ φ₁ ⇒ φ₂) = (φ ∧ φ₁) ⇒ φ₂
+strip fm@(φ ⇒ φ₁ ⇔ φ₂) = fm -- none
+strip fm@(φ ⇒ ¬ φ₁) = fm
+
+-- this strip doesn't apply
+strip fm@(φ ⇔ Var x)   = fm
+strip fm@(φ ⇔ ⊤)       = fm
+strip fm@(φ ⇔ ⊥)       = fm
+strip fm@(φ ⇔ φ₁ ∧ φ₂) = fm
+strip fm@(φ ⇔ φ₁ ∨ φ₂) = fm
+strip fm@(φ ⇔ φ₁ ⇒ φ₂) = fm
+strip fm@(φ ⇔ φ₁ ⇔ φ₂) = fm
+strip fm@(φ ⇔ ¬ φ₁)    = fm
+
+strip fm@(¬ Var x)     = fm
+strip fm@(¬ ⊤)         = ⊥
+strip fm@(¬ ⊥)         = ⊤
+strip fm@(¬ (φ ∧ φ₁))  = φ ⇒ ¬ φ₁
+strip fm@(¬ (φ ∨ φ₁))  = fm
+strip fm@(¬ (φ ⇒ φ₁))  = fm
+strip fm@(¬ (φ ⇔ φ₁))  = fm
+strip (¬ (¬ φ))         = strip φ
+
+------------------------------------------------------------------------------
+-- atp-strip.
+------------------------------------------------------------------------------
+
+atp-strip : ∀ {Γ} {φ}
+          → Γ ⊢ φ
+          → Γ ⊢ strip φ
+
+atp-strip {Γ} {Var x}  = id
+atp-strip {Γ} {⊤}      = id
+atp-strip {Γ} {⊥}      = id
+atp-strip {Γ} {φ ∧ φ₁} = id
+
+atp-strip {Γ} {φ ∨ Var x}     = id
+atp-strip {Γ} {φ ∨ ⊤}         = λ _ → ⊤-intro
+atp-strip {Γ} {φ ∨ ⊥}         = ∨-to-¬⇒
+atp-strip {Γ} {φ ∨ (φ₁ ∧ φ₂)} = id
+atp-strip {Γ} {φ ∨ (φ₁ ∨ φ₂)} Γ⊢φ∨⟪φ₁∨φ₂⟫ =
+  subst⊢⇒₁
+    (⇒-intro
+      (¬∧¬-to-¬∨ (assume {Γ = Γ} (¬ φ ∧ ¬ φ₁))))
+    (∨-to-¬⇒
+      (∨-assoc₁ Γ⊢φ∨⟪φ₁∨φ₂⟫))
+
+atp-strip {Γ} {φ ∨ (φ₁ ⇒ φ₂)} Γ⊢φ∨⟪φ₁⇒φ₂⟫ =
+  subst⊢⇒₁
+    (⇒-trans thm1 thm2)
+    (∨-to-¬⇒
+      (∨-assoc₁
+        (subst⊢∨₂
+          (⇒-intro (⇒-to-¬∨ (assume {Γ = Γ} (φ₁ ⇒ φ₂))))
+          Γ⊢φ∨⟪φ₁⇒φ₂⟫)))
+  where
+    ⇒-to-¬¬ : ∀ {Γ} → Γ ⊢ φ₁ ⇒ ¬ (¬ φ₁)
+    ⇒-to-¬¬ {Γ} =
+      ⇒-intro $
+        ¬¬-equiv₂ (assume {Γ = Γ} φ₁)
+
+    thm1 : Γ ⊢ (¬ φ ∧ φ₁) ⇒ (¬ φ ∧ ¬ (¬ φ₁))
+    thm1 =
+      ⇒-intro
+      (subst⊢∧₂
+        (⇒-to-¬¬ {Γ = Γ , ¬ φ ∧ φ₁})
+        (assume {Γ = Γ} (¬ φ ∧ φ₁)))
+
+    thm2 : Γ ⊢ (¬ φ ∧ ¬ (¬ φ₁)) ⇒ ¬ (φ ∨ ¬ φ₁)
+    thm2 =
+      ⇒-intro
+        (∨-dmorgan₂
+          (assume {Γ = Γ} (¬ φ ∧ ¬ (¬ φ₁))))
+
+atp-strip {Γ} {φ ∨ (φ₁ ⇔ φ₂)} = id
+atp-strip {Γ} {φ ∨ ¬ φ₁}      = ∨-to-¬⇒
+
+atp-strip {Γ} {φ ⇒ Var x} = id
+atp-strip {Γ} {φ ⇒ ⊤} = λ _ → ⊤-intro
+atp-strip {Γ} {φ ⇒ ⊥} = id
+atp-strip {Γ} {φ ⇒ φ₁ ∧ φ₂} = id
+
+atp-strip {Γ} {φ ⇒ (φ₁ ∨ φ₂)} Γ⊢φ⇒⟪φ₁∨φ₂⟫ =
+  ⇒-intro
+    (⇒-elim
+      (⇒-intro
+        (∨-elim {Γ = Γ , φ ∧ ¬ φ₁}
+          (⊥-elim φ₂
+            (¬-elim
+              (weaken φ₁
+                (∧-proj₂
+                  (assume {Γ = Γ} (φ ∧ ¬ φ₁))))
+              (assume {Γ = Γ , φ ∧ ¬ φ₁} φ₁)))
+          (assume {Γ = Γ , φ ∧ ¬ φ₁ } φ₂)))
+      (⇒-elim
+        (weaken (φ ∧ ¬ φ₁) Γ⊢φ⇒⟪φ₁∨φ₂⟫)
+        (∧-proj₁
+          (assume {Γ = Γ} (φ ∧ ¬ φ₁)))))
+
+atp-strip {Γ} {φ ⇒ φ₁ ⇒ φ₂} = ⇒⇒-to-∧⇒
+atp-strip {Γ} {φ ⇒ φ₁ ⇔ φ₂} = id
+atp-strip {Γ} {φ ⇒ ¬ φ₁}    = id
+
+atp-strip {Γ} {φ ⇔ Var x}   = id
+atp-strip {Γ} {φ ⇔ ⊤}       = id
+atp-strip {Γ} {φ ⇔ ⊥}       = id
+atp-strip {Γ} {φ ⇔ φ₁ ∧ φ₂} = id
+atp-strip {Γ} {φ ⇔ φ₁ ∨ φ₂} = id
+atp-strip {Γ} {φ ⇔ φ₁ ⇒ φ₂} = id
+atp-strip {Γ} {φ ⇔ φ₁ ⇔ φ₂} = id
+atp-strip {Γ} {φ ⇔ ¬ φ₁}    = id
+
+atp-strip {Γ} {¬ Var x}     = id
+atp-strip {Γ} {¬ ⊤}         = ¬⊤-to-⊥
+atp-strip {Γ} {¬ ⊥}         = ¬⊥-to-⊤
+atp-strip {Γ} {¬ (φ ∧ φ₁)}  Γ⊢¬⟪φ∧φ₁⟫ = ¬∨-to-⇒ (∧-dmorgan₁ Γ⊢¬⟪φ∧φ₁⟫)
+atp-strip {Γ} {¬ (φ ∨ φ₁)}  = id
+atp-strip {Γ} {¬ (φ ⇒ φ₁)}  = id
+atp-strip {Γ} {¬ (φ ⇔ φ₁)}  = id
+atp-strip {Γ} {¬ (¬ φ)} Γ⊢¬¬φ = atp-strip (¬¬-equiv₁ Γ⊢¬¬φ)
