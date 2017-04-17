@@ -4,6 +4,7 @@ export AGDADOC ?= $(AGDA) --html
 .PHONY: clean
 clean:
 	find src/ -type f -name "*.agdai" -delete
+	find src/ -type f -name "*.DS_Store" -delete
 	rm -Rf html/
 
 .PHONY : test

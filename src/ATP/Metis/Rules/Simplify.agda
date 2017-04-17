@@ -85,9 +85,9 @@ atp-simplify₀ {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ with eq ⊥ ψ
 
 atp-simplify₀ {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ | eq ⊥ φ | eq ⊤ φ
 ... | no  φ≢ψ | no  ⊥≢φ | no  ⊤≢φ = ∧-intro Γ⊢¬φ Γ⊢ψ
-... | no  φ≢ψ | no  ⊥≢φ | yes ⊤≡φ = ¬-⊤ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
+... | no  φ≢ψ | no  ⊥≢φ | yes ⊤≡φ = ¬⊤-to-⊥ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
 ... | no  φ≢ψ | yes ⊥≡φ | no  ⊤≢φ = Γ⊢ψ
-... | no  φ≢ψ | yes ⊥≡φ | yes ⊤≡φ = ¬-⊤ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
+... | no  φ≢ψ | yes ⊥≡φ | yes ⊤≡φ = ¬⊤-to-⊥ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
 ... | yes φ≡ψ | no  ⊥≢φ | no  ⊤≢φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
 ... | yes φ≡ψ | no  ⊥≢φ | yes ⊤≡φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
 ... | yes φ≡ψ | yes ⊥≡φ | no  ⊤≢φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)

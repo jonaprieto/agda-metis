@@ -14,10 +14,7 @@ open import Data.Bool.Base                   using ( true; false )
 open import Data.Prop.Dec n                  using ( ⌊_⌋ ; yes ; no )
 open import Data.Prop.Properties n           using ( eq ; subst )
 open import Data.Prop.Syntax n
-
-open import Data.Prop.Theorems.Implication n using ( ⇒-equiv ; th244e )
-open import Data.Prop.Theorems.Mixies n      using ( neg-⇒ )
-open import Data.Prop.Theorems.Negation n    using ( ¬-⊤; ¬-⊥₁ )
+open import Data.Prop.Theorems n
 
 open import Function                         using ( _$_; id ; _∘_ )
 open import Relation.Binary.PropositionalEquality
@@ -48,19 +45,17 @@ atp-canonicalize {Γ} {⊤}           = id
 atp-canonicalize {Γ} {⊥}           = id
 atp-canonicalize {Γ} {φ ∧ φ₁}      = id
 atp-canonicalize {Γ} {φ ∨ φ₁}      = id
-atp-canonicalize {Γ} {φ ⇒ φ₁}      = ⇒-equiv
-atp-canonicalize {Γ} {¬ (¬ φ)} seq = atp-canonicalize (⇒-elim th244e seq)
-atp-canonicalize {Γ} {f@(¬ (φ ⇒ ψ))} seq with eq φ ψ
-... | yes p1 = ¬-elim seq (⇒-intro (subst p1 (assume {Γ = Γ} φ)))
-... | no  _  =
+atp-canonicalize {Γ} {φ ⇒ φ₁}      = ⇒-to-¬∨
+atp-canonicalize {Γ} {¬ (¬ φ)}     = atp-canonicalize ∘ ¬¬-equiv₁
+atp-canonicalize {Γ} {¬ (φ ⇒ ψ)} Γ⊢¬⟪φ⇒ψ⟫ with eq φ ψ
+... | yes φ≡ψ = ¬-elim Γ⊢¬⟪φ⇒ψ⟫ (⇒-intro (subst φ≡ψ (assume {Γ = Γ} φ)))
+... | no  φ≢ψ  =
           ∧-intro
-            (atp-canonicalize
-              (∧-proj₁ (neg-⇒ seq)))
-            (atp-canonicalize
-              (∧-proj₂ (neg-⇒ seq)))
+            (atp-canonicalize (∧-proj₁ (¬⇒-to-∧¬ Γ⊢¬⟪φ⇒ψ⟫)))
+            (atp-canonicalize (∧-proj₂ (¬⇒-to-∧¬ Γ⊢¬⟪φ⇒ψ⟫)))
 
-atp-canonicalize {Γ} {¬ ⊤}        = ¬-⊤
-atp-canonicalize {Γ} {¬ ⊥}        = ¬-⊥₁
+atp-canonicalize {Γ} {¬ ⊤}        = ¬⊤-to-⊥
+atp-canonicalize {Γ} {¬ ⊥}        = ¬⊥-to-⊤
 atp-canonicalize {Γ} {φ ⇔ φ₁}     = id
 atp-canonicalize {Γ} {¬ Var x}    = id
 atp-canonicalize {Γ} {¬ (φ ∧ φ₁)} = id
