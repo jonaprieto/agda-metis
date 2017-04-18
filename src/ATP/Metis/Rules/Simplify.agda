@@ -74,10 +74,11 @@ simplify (φ ∧ ψ) ω with ⌊ eq φ (¬ ω) ⌋ or ⌊ eq ω (¬ φ) ⌋
 -- atp-simplify₀.
 ------------------------------------------------------------------------------
 
-atp-simplify₀ : ∀ {Γ} {φ ψ}
-             → Γ ⊢ φ
-             → Γ ⊢ ψ
-             → Γ ⊢ simplify φ ψ
+atp-simplify₀
+  : ∀ {Γ} {φ ψ}
+  → Γ ⊢ φ
+  → Γ ⊢ ψ
+  → Γ ⊢ simplify φ ψ
 
 atp-simplify₀ {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ with eq ⊥ ψ
 ... | no  ⊥≢ψ = Γ⊢Varx
@@ -200,10 +201,11 @@ hard-simplify φ ψ
 -- atp-simplify.
 ------------------------------------------------------------------------------
 
-atp-simplify : ∀ {Γ} {φ ψ}
-             → Γ ⊢ φ
-             → Γ ⊢ ψ
-             → Γ ⊢ hard-simplify φ ψ
+atp-simplify
+  : ∀ {Γ} {φ ψ}
+  → Γ ⊢ φ
+  → Γ ⊢ ψ
+  → Γ ⊢ hard-simplify φ ψ
 
 atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ
     with simplify φ ψ | simplify ψ φ
