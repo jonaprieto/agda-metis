@@ -3,7 +3,7 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
-{-# OPTIONS --exact-split #-}
+-- {-# OPTIONS --exact-split #-}
 
 open import Data.Nat using ( ℕ )
 
@@ -129,73 +129,28 @@ atp-simplify₀ {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | 
 ...    | yes ψ≡¬ω   | yes ω≡¬ψ = ¬-elim (subst ψ≡¬ω (∧-proj₂ Γ⊢φ∧ψ)) Γ⊢ω
 
 atp-simplify₀ {Γ} {⊤} {_} Γ⊢⊤ _ = Γ⊢⊤
-atp-simplify₀ {Γ} {⊥} {_} Γ⊢⊥ _ = Γ⊢⊥
+atp-simplify₀ {Γ} {⊥} {_} Γ⊢⊥ _  = Γ⊢⊥
 
 ------------------------------------------------------------------------------
 -- Hard-simplify function: applies simplify onto two formulas, if the results
 -- is not bottom, it applies simplify flipping the formulas into the input.
 ------------------------------------------------------------------------------
 
+data S-View : Prop → Prop → Set where
+  normal : (φ ψ : Prop) → S-View φ ψ
+  swap   : (φ ψ : Prop) → S-View φ ψ
+
+s-view : (x y : Prop) → S-View x y
+s-view φ ψ with simplify φ ψ
+... | ⊥ = normal φ ψ
+... | z with simplify ψ φ
+...        | ⊥ = swap φ ψ
+...        | w = normal φ ψ
+
 hard-simplify : Prop → Prop → Prop
-hard-simplify φ ψ
-    with simplify φ ψ | simplify ψ φ
-... | Var x  | Var x₁ = simplify φ ψ
-... | Var x  | ¬ ρ    = simplify φ ψ
-... | Var x  | ρ ⇒ ρ₁ = simplify φ ψ
-... | Var x  | ρ ⇔ ρ₁ = simplify φ ψ
-... | Var x  | ρ ∧ ρ₁ = simplify φ ψ
-... | Var x  | ρ ∨ ρ₁ = simplify φ ψ
-... | Var x  | ⊤      = simplify φ ψ
-... | Var x  | ⊥      = simplify ψ φ
-... | ¬ ω    | Var x  = simplify φ ψ
-... | ¬ ω    | ¬ ρ    = simplify φ ψ
-... | ¬ ω    | ρ ⇒ ρ₁ = simplify φ ψ
-... | ¬ ω    | ρ ⇔ ρ₁ = simplify φ ψ
-... | ¬ ω    | ρ ∧ ρ₁ = simplify φ ψ
-... | ¬ ω    | ρ ∨ ρ₁ = simplify φ ψ
-... | ¬ ω    | ⊤      = simplify φ ψ
-... | ¬ ω    | ⊥      = simplify ψ φ
-... | ω ⇒ ω₁ | Var x  = simplify φ ψ
-... | ω ⇒ ω₁ | ¬ ρ    = simplify φ ψ
-... | ω ⇒ ω₁ | ρ ⇒ ρ₁ = simplify φ ψ
-... | ω ⇒ ω₁ | ρ ⇔ ρ₁ = simplify φ ψ
-... | ω ⇒ ω₁ | ρ ∧ ρ₁ = simplify φ ψ
-... | ω ⇒ ω₁ | ρ ∨ ρ₁ = simplify φ ψ
-... | ω ⇒ ω₁ | ⊤      = simplify φ ψ
-... | ω ⇒ ω₁ | ⊥      = simplify ψ φ
-... | ω ⇔ ω₁ | Var x  = simplify φ ψ
-... | ω ⇔ ω₁ | ¬ ρ    = simplify φ ψ
-... | ω ⇔ ω₁ | ρ ⇒ ρ₁ = simplify φ ψ
-... | ω ⇔ ω₁ | ρ ⇔ ρ₁ = simplify φ ψ
-... | ω ⇔ ω₁ | ρ ∧ ρ₁ = simplify φ ψ
-... | ω ⇔ ω₁ | ρ ∨ ρ₁ = simplify φ ψ
-... | ω ⇔ ω₁ | ⊤      = simplify φ ψ
-... | ω ⇔ ω₁ | ⊥      = simplify ψ φ
-... | ω ∧ ω₁ | Var x  = simplify φ ψ
-... | ω ∧ ω₁ | ¬ ρ    = simplify φ ψ
-... | ω ∧ ω₁ | ρ ⇒ ρ₁ = simplify φ ψ
-... | ω ∧ ω₁ | ρ ⇔ ρ₁ = simplify φ ψ
-... | ω ∧ ω₁ | ρ ∧ ρ₁ = simplify φ ψ
-... | ω ∧ ω₁ | ρ ∨ ρ₁ = simplify φ ψ
-... | ω ∧ ω₁ | ⊤      = simplify φ ψ
-... | ω ∧ ω₁ | ⊥      = simplify ψ φ
-... | ω ∨ ω₁ | Var x  = simplify φ ψ
-... | ω ∨ ω₁ | ¬ ρ    = simplify φ ψ
-... | ω ∨ ω₁ | ρ ⇒ ρ₁ = simplify φ ψ
-... | ω ∨ ω₁ | ρ ⇔ ρ₁ = simplify φ ψ
-... | ω ∨ ω₁ | ρ ∧ ρ₁ = simplify φ ψ
-... | ω ∨ ω₁ | ρ ∨ ρ₁ = simplify φ ψ
-... | ω ∨ ω₁ | ⊤      = simplify φ ψ
-... | ω ∨ ω₁ | ⊥      = simplify ψ φ
-... | ⊤      | Var x  = simplify φ ψ
-... | ⊤      | ¬ ρ    = simplify φ ψ
-... | ⊤      | ρ ⇒ ρ₁ = simplify φ ψ
-... | ⊤      | ρ ⇔ ρ₁ = simplify φ ψ
-... | ⊤      | ρ ∧ ρ₁ = simplify φ ψ
-... | ⊤      | ρ ∨ ρ₁ = simplify φ ψ
-... | ⊤      | ⊤      = simplify φ ψ
-... | ⊤      | ⊥      = simplify ψ φ
-... | ⊥      | _      = simplify φ ψ
+hard-simplify x y with s-view x y
+hard-simplify x y | normal .x .y = simplify x y
+hard-simplify x y | swap .x .y   = simplify y x
 
 ------------------------------------------------------------------------------
 -- atp-simplify.
@@ -207,62 +162,6 @@ atp-simplify
   → Γ ⊢ ψ
   → Γ ⊢ hard-simplify φ ψ
 
-atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ
-    with simplify φ ψ | simplify ψ φ
-... | Var x  | Var x₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | Var x  | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ¬ ω    | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ¬ ω    | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ω ⇒ ω₁ | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇒ ω₁ | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ω ⇔ ω₁ | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ⇔ ω₁ | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ω ∧ ω₁ | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∧ ω₁ | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ω ∨ ω₁ | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ω ∨ ω₁ | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ⊤      | Var x  = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ¬ ρ    = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ρ ⇒ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ρ ⇔ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ρ ∧ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ρ ∨ ρ₁ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ⊤      = atp-simplify₀ Γ⊢φ Γ⊢ψ
-... | ⊤      | ⊥      = atp-simplify₀ Γ⊢ψ Γ⊢φ
-... | ⊥      | _      = atp-simplify₀ Γ⊢φ Γ⊢ψ
+atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ with s-view φ ψ
+atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | normal φ ψ = atp-simplify₀ Γ⊢φ Γ⊢ψ
+atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | swap φ ψ   = atp-simplify₀ Γ⊢ψ Γ⊢φ
