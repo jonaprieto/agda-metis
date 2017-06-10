@@ -1,6 +1,7 @@
-name : agda-metis
+name: agda-metis
 depend:
   standard-library
   agda-prop
 include:
   src/
+  test/
