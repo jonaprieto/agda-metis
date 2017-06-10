@@ -58,24 +58,23 @@ atp-conjunct {Γ} {.φ} ω Γ⊢φ       | other φ .ω = Γ⊢φ
 -- the order of its inner formulas given a target based on an expected order.
 ------------------------------------------------------------------------------
 
+r-view : (x y : Prop) → C-View y x
+r-view x (y ∧ z) = conj y z x
+r-view x y       = other _ _
+
 rearrange-∧ : Prop → Prop → Prop
-rearrange-∧ φ (ω₁ ∧ ω₂) = conjunct φ ω₁ ∧ rearrange-∧ φ ω₂
-rearrange-∧ φ  ψ        = φ
+rearrange-∧ x y with r-view x y
+rearrange-∧ x .(φ ∧ ψ) | conj φ ψ .x = conjunct x φ ∧ rearrange-∧ x ψ
+rearrange-∧ x y        | other .y .x = x
+
 
 atp-rearrange-∧
   : ∀ {Γ} {φ}
-  → (φ̂ : Prop)
+  → (φ′ : Prop)
   → Γ ⊢ φ
-  → Γ ⊢ rearrange-∧ φ φ̂
+  → Γ ⊢ rearrange-∧ φ φ′
 
-atp-rearrange-∧ (ω₁ ∧ ω₂) Γ⊢φ =
-  ∧-intro
-    (atp-conjunct ω₁ Γ⊢φ)
-    (atp-rearrange-∧ ω₂ Γ⊢φ)
-atp-rearrange-∧ (Var x)  = id
-atp-rearrange-∧ ⊤        = id
-atp-rearrange-∧ ⊥        = id
-atp-rearrange-∧ (ψ ∨ ψ₁) = id
-atp-rearrange-∧ (ψ ⇒ ψ₁) = id
-atp-rearrange-∧ (ψ ⇔ ψ₁) = id
-atp-rearrange-∧ (¬ ψ)    = id
+atp-rearrange-∧ {Γ} {φ} φ′ Γ⊢φ with r-view φ φ′
+atp-rearrange-∧ {Γ} {.ω} .(φ ∧ ψ) Γ⊢φ | conj φ ψ ω  =
+  ∧-intro (atp-conjunct φ Γ⊢φ) (atp-rearrange-∧ ψ Γ⊢φ)
+atp-rearrange-∧ {Γ} {.ψ} φ′ Γ⊢φ       | other .φ′ ψ = Γ⊢φ
