@@ -49,9 +49,8 @@ atp-conjunct {Γ} {.(φ ∧ ψ)} ω Γ⊢φ | conj φ ψ .ω
   with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | _     = ∧-proj₁ Γ⊢φ
 ... | false | true  = ∧-proj₂ Γ⊢φ
-... | false | false = atp-conjunct {Γ = Γ} {φ = φ} ω (∧-proj₁ Γ⊢φ)
+... | false | false = atp-conjunct {Γ} ω (∧-proj₁ Γ⊢φ)
 atp-conjunct {Γ} {.φ} ω Γ⊢φ       | other φ .ω = Γ⊢φ
-
 
 ------------------------------------------------------------------------------
 -- rearrange-∧ is a function that only works with conjunctions, it rearranges
@@ -66,7 +65,6 @@ rearrange-∧ : Prop → Prop → Prop
 rearrange-∧ x y with r-view x y
 rearrange-∧ x .(φ ∧ ψ) | conj φ ψ .x = conjunct x φ ∧ rearrange-∧ x ψ
 rearrange-∧ x y        | other .y .x = x
-
 
 atp-rearrange-∧
   : ∀ {Γ} {φ}
