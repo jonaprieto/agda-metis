@@ -49,7 +49,7 @@ atp-conjunct {Γ} {.(φ ∧ ψ)} ω Γ⊢φ | conj φ ψ .ω
   with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
 ... | true  | _     = ∧-proj₁ Γ⊢φ
 ... | false | true  = ∧-proj₂ Γ⊢φ
-... | false | false = atp-conjunct {Γ} {φ} ω (∧-proj₁ Γ⊢φ)
+... | false | false = atp-conjunct {Γ} ω (∧-proj₁ Γ⊢φ)
 atp-conjunct {Γ} {.φ} ω Γ⊢φ       | other φ .ω = Γ⊢φ
 
 ------------------------------------------------------------------------------
