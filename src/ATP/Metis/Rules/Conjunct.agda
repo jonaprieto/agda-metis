@@ -9,7 +9,7 @@ module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Bool.Base         using ( false; true )
+open import Data.Bool.Base         using ( Bool; false; true )
 
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n        using ( yes; no; ⌊_⌋ )
@@ -20,23 +20,50 @@ open import Function               using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
-data C-View : Prop → Prop → Set where
-  instance
-    conj  : (φ ψ ω : Prop) → C-View (φ ∧ ψ) ω
-    other : (φ ψ : Prop)   → C-View φ ψ
+data ConjView : Prop → Set where
+  conj  : (φ₁ φ₂ : Prop) → ConjView (φ₁ ∧ φ₂)
+  other : (φ : Prop)     → ConjView φ
 
-c-view : (x y : Prop) → C-View x y
-c-view (φ ∧ ψ) ω  = conj φ ψ ω
-c-view φ       ω  = other φ ω
+conj-view : (φ : Prop) → ConjView φ
+conj-view (φ ∧ ψ) = conj _ _
+conj-view φ       = other _
+
+data C-View : Prop  → Set where
+  do-nothing : (φ : Prop) → C-View φ
+  pick       : (φ : Prop) → C-View φ
+  call       : (φ : Prop) → C-View φ
+  proj₁      : (φ : Prop) → C-View φ
+  proj₂      : (φ : Prop) → C-View φ
+
+conjunct₀ : ∀ {φ} → C-View φ → (ω : Prop) → C-View φ
+conjunct₀ (call φ) ω with ⌊ eq φ ω ⌋
+conjunct₀ (call φ) ω | true  = pick φ
+conjunct₀ (call φ) ω | false with conj-view φ
+conjunct₀ (call .(φ₁ ∧ φ₂)) ω | false | conj φ₁ φ₂
+  with conjunct₀ (call φ₁) ω
+...  | (pick .φ₁) = proj₁ (φ₁ ∧ φ₂)
+...  | _ with conjunct₀ (call φ₂) ω
+...         | (pick .φ₂) = proj₂ (φ₁ ∧ φ₂)
+...         | _          = do-nothing (φ₁ ∧ φ₂)
+conjunct₀ (call φ)         ω  | false | other .φ = do-nothing φ
+
+conjunct₀ (pick       φ)   _ = do-nothing φ
+conjunct₀ (do-nothing φ)   _ = do-nothing φ
+conjunct₀ (proj₁ φ)        _ = do-nothing φ
+conjunct₀ (proj₂ φ)        _ = do-nothing φ
+
 
 conjunct : Prop → Prop → Prop
-conjunct x ω with c-view x ω
-conjunct .(φ ∧ ψ) ω | conj φ ψ .ω
-  with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
-...  | true  | _     = φ
-...  | false | true  = ψ
-...  | false | false = conjunct φ ω
-conjunct x ω | other .x .ω = x
+conjunct  φ  ω with conjunct₀ (call φ) ω
+conjunct φ ω | do-nothing .φ = φ
+conjunct φ ω | pick .φ       = φ
+conjunct φ ω | call .φ       = φ
+conjunct φ ω | proj₁ .φ with conj-view φ
+... | conj φ₁ φ₂ = conjunct φ₁ ω
+... | other .φ   = φ
+conjunct φ ω | proj₂ .φ with conj-view φ
+... | conj φ₁ φ₂ = conjunct φ₂ ω
+... | other .φ   = φ
 
 atp-conjunct
   : ∀ {Γ} {φ}
@@ -44,35 +71,41 @@ atp-conjunct
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ω
 
-atp-conjunct {Γ} {φ} ω Γ⊢φ with c-view φ ω
-atp-conjunct {Γ} {.(φ ∧ ψ)} ω Γ⊢φ | conj φ ψ .ω
-  with ⌊ eq φ ω ⌋ | ⌊ eq ψ ω ⌋
-... | true  | _     = ∧-proj₁ Γ⊢φ
-... | false | true  = ∧-proj₂ Γ⊢φ
-... | false | false = atp-conjunct {Γ} ω (∧-proj₁ Γ⊢φ)
-atp-conjunct {Γ} {.φ} ω Γ⊢φ       | other φ .ω = Γ⊢φ
+atp-conjunct {Γ} {φ} ω Γ⊢φ with conjunct₀ (call φ) ω
+... | do-nothing .φ = Γ⊢φ
+... | pick .φ = Γ⊢φ
+... | call .φ = Γ⊢φ
+... | proj₁ .φ with conj-view φ
+...               | conj φ₁ φ₂ = atp-conjunct ω (∧-proj₁ Γ⊢φ)
+...               | other _ = Γ⊢φ
+
+atp-conjunct {Γ} {.φ} ω Γ⊢φ | proj₂ φ with conj-view φ
+... | conj φ₁ φ₂ = atp-conjunct ω (∧-proj₂ Γ⊢φ)
+... | other .φ   = Γ⊢φ
+
 
 ------------------------------------------------------------------------------
 -- rearrange-∧ is a function that only works with conjunctions, it rearranges
 -- the order of its inner formulas given a target based on an expected order.
+-- Notice that the target is a conjunction (φ ∧ ψ).
 ------------------------------------------------------------------------------
 
-r-view : (x y : Prop) → C-View y x
-r-view x (y ∧ z) = conj y z x
-r-view x y       = other _ _
+data R-View : Prop → Prop → Set where
+  conj  : (φ ψ ω : Prop) → R-View φ (ψ ∧ ω)
+  other : (φ ψ : Prop)   → R-View φ ψ
 
 rearrange-∧ : Prop → Prop → Prop
-rearrange-∧ x y with r-view x y
-rearrange-∧ x .(φ ∧ ψ) | conj φ ψ .x = conjunct x φ ∧ rearrange-∧ x ψ
-rearrange-∧ x y        | other .y .x = x
+rearrange-∧ φ ω with conj-view ω
+rearrange-∧ φ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = conjunct φ φ₁ ∧ rearrange-∧ φ φ₂
+rearrange-∧ φ ω          | other .ω   = φ
+
 
 atp-rearrange-∧
   : ∀ {Γ} {φ}
-  → (φ′ : Prop)
+  → (ω : Prop)
   → Γ ⊢ φ
-  → Γ ⊢ rearrange-∧ φ φ′
+  → Γ ⊢ rearrange-∧ φ ω
 
-atp-rearrange-∧ {Γ} {φ} φ′ Γ⊢φ with r-view φ φ′
-atp-rearrange-∧ {Γ} {.ω} .(φ ∧ ψ) Γ⊢φ | conj φ ψ ω  =
-  ∧-intro (atp-conjunct φ Γ⊢φ) (atp-rearrange-∧ ψ Γ⊢φ)
-atp-rearrange-∧ {Γ} {.ψ} φ′ Γ⊢φ       | other .φ′ ψ = Γ⊢φ
+atp-rearrange-∧ {Γ} {φ} ω Γ⊢φ with conj-view ω
+... | conj  φ₁ φ₂ = ∧-intro (atp-conjunct φ₁ Γ⊢φ) (atp-rearrange-∧ φ₂ Γ⊢φ)
+... | other .ω   = Γ⊢φ
