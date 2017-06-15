@@ -10,6 +10,7 @@ clean:
 .PHONY : test
 test:
 	$(AGDA) src/ATP/Metis.agda
+	$(AGDA) test/impl-4.agda
 
 .PHONY : doc
 doc :
