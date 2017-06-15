@@ -31,6 +31,7 @@ conj-view (φ ∧ ψ) = conj _ _
 conj-view φ       = other _
 
 data Step  : Set where
+  pick  : Step
   proj₁ : Step
   proj₂ : Step
 
@@ -39,7 +40,7 @@ Path = List (Step)
 
 conjunct-path : (φ : Prop) → (ω : Prop) → Path → Path
 conjunct-path φ ω path with ⌊ eq φ ω ⌋
-... | true  = path
+... | true  = path ∷ʳ pick
 ... | false
     with conj-view φ
 ...    | other _   = []
@@ -54,9 +55,10 @@ conjunct-path φ ω path with ⌊ eq φ ω ⌋
 conjunct : (φ : Prop) → (ω : Prop) → Prop
 conjunct φ ω with conj-view φ | conjunct-path φ ω []
 ... | _          | []           = φ
+... | conj φ₁ φ₂ | pick  ∷ path = φ
 ... | conj φ₁ φ₂ | proj₁ ∷ path = conjunct φ₁ ω
 ... | conj φ₁ φ₂ | proj₂ ∷ path = conjunct φ₂ ω
-... | other .φ   | (_ ∷ _)      = φ
+... | other .φ   | _            = φ
 
 atp-conjunct
   : ∀ {Γ} {φ}
@@ -66,6 +68,7 @@ atp-conjunct
 
 atp-conjunct {Γ} {φ} ω Γ⊢φ with conj-view φ | conjunct-path φ ω []
 ... | _          | []           = Γ⊢φ
+... | conj φ₁ φ₂ | pick  ∷ path = Γ⊢φ
 ... | conj φ₁ φ₂ | proj₁ ∷ path = atp-conjunct ω (∧-proj₁ Γ⊢φ)
 ... | conj φ₁ φ₂ | proj₂ ∷ path = atp-conjunct ω (∧-proj₂ Γ⊢φ)
 ... | other .φ   | (_ ∷ _)      = Γ⊢φ
@@ -94,4 +97,4 @@ atp-rearrange-∧
 
 atp-rearrange-∧ {Γ} {φ} ω Γ⊢φ with conj-view ω
 ... | conj  φ₁ φ₂ = ∧-intro (atp-conjunct φ₁ Γ⊢φ) (atp-rearrange-∧ φ₂ Γ⊢φ)
-... | other .ω    = Γ⊢φ
+... | other .ω   = Γ⊢φ
