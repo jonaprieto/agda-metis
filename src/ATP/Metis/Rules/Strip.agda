@@ -22,6 +22,7 @@ open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
 
 open import Function                      using ( _$_; id; _∘_ )
+open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 
 ------------------------------------------------------------------------------
 
@@ -29,9 +30,68 @@ open import Function                      using ( _$_; id; _∘_ )
 -- Spliting the goal.
 ------------------------------------------------------------------------------
 
+
 listMkConj : List Prop → Prop
 listMkConj []         = ⊤
 listMkConj (fm ∷ fms) = foldl (_∧_) fm fms
+
+
+data _∙_⊢₂_ (Γ : Ctxt) : Ctxt → Prop → Set where
+  none   : ∀ {φ}     → Γ ⊢ φ                   → Γ ∙ [] ⊢₂ φ
+  weaken : ∀ {Δ} {φ} → (ψ : Prop) → Γ ∙ Δ ⊢₂ φ → Γ ∙ (ψ ∷ Δ) ⊢₂ φ
+
+to⊢₂
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (Δ : Ctxt)
+  → Γ ∙ Δ ⊢₂ φ
+
+to⊢₂ {Γ}{φ} Γ⊢φ []      = none Γ⊢φ
+to⊢₂ {Γ}{φ} Γ⊢φ (x ∷ Δ) = weaken x (to⊢₂ Γ⊢φ Δ)
+
+postulate
+  helper
+    : ∀ {Γ} {φ₁ φ₂ ψ}
+    → Γ ⊢ φ₁ ⇒ ψ
+    → Γ ⊢ φ₂ ⇒ ψ
+    → Γ ⊢ (φ₁ ∧ φ₂) ⇒ ψ
+
+data View : Prop → Set where
+  conj : (φ ψ : Prop) → View (φ ∧ ψ)
+  other : (φ : Prop) → View φ
+
+view : (φ : Prop) → View φ
+view (φ ∧ ψ) = conj _ _
+view φ       = other _
+
+q : ∀ {Γ} → Γ ⨆ [] ≡ Γ
+q {[]}    = refl
+q {x ∷ Γ} rewrite q {Γ = Γ} = refl
+
+p : ∀ {Γ Δ} {ψ} →  Γ ⨆ (ψ ∷ Δ) ≡ (Γ ⨆ Δ) , ψ
+p {Γ} {[]} {ψ} rewrite q {Γ = Γ} = refl
+p {Γ} {x ∷ Δ} {ψ} rewrite p {Γ = Γ} {Δ = Δ} {ψ = x} = {!!}
+  where
+  o : ((Γ ++ Δ) ++ x ∷ []) ++ ψ ∷ [] ≡ (Γ ++ x ∷ Δ) ++ ψ ∷ []
+  o = {!!}
+
+
+from⊢₂
+  : ∀ {Γ Δ} {φ}
+  → Γ ∙ Δ ⊢₂ φ
+  → Γ ⨆ Δ ⊢ φ
+
+from⊢₂ {Γ} {.[]} {φ} (none x)                  = weaken-Δ₁ [] x
+from⊢₂ {Γ} {ψ ∷ []} {φ} (weaken .ψ (none Γ⊢φ)) = weaken ψ Γ⊢φ
+from⊢₂ {Γ} {ψ ∷ Δ} {φ} (weaken .ψ teo)    rewrite p {Γ = Γ} {Δ = Δ} {ψ = ψ} =  weaken ψ help
+  where
+  help : Γ ⨆ Δ ⊢ φ
+  help = from⊢₂ teo
+
+
+-- from⊢₂ {Γ} {.[]}       {φ} (none x)             = ⇒-intro (weaken ⊤ x)
+-- from⊢₂ {Γ} {.(ψ ∷ [])} {φ} (weaken ψ (none x)) = ⇒-intro (weaken ψ x)
+-- from⊢₂ {Γ} {ψ ∷ Δ}         {φ} Γ∙Δ,ψ⊢₂φ = {!helper!}
 
 stripConj : Prop → List Prop
 stripConj ⊤  = []
