@@ -7,7 +7,7 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 
-open import Data.Nat using ( ℕ ; zero ; suc )
+open import Data.Nat using ( ℕ ; zero ; suc; _+_ )
 
 module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
@@ -22,7 +22,8 @@ open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
 
 open import Function                      using ( _$_; id; _∘_ )
-open import Relation.Binary.PropositionalEquality using (refl; _≡_)
+open import Relation.Nullary renaming (¬_ to ¬₂)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 
 ------------------------------------------------------------------------------
 
@@ -49,103 +50,33 @@ to⊢₂
 to⊢₂ {Γ}{φ} Γ⊢φ []      = none Γ⊢φ
 to⊢₂ {Γ}{φ} Γ⊢φ (x ∷ Δ) = weaken x (to⊢₂ Γ⊢φ Δ)
 
-postulate
-  helper
-    : ∀ {Γ} {φ₁ φ₂ ψ}
-    → Γ ⊢ φ₁ ⇒ ψ
-    → Γ ⊢ φ₂ ⇒ ψ
-    → Γ ⊢ (φ₁ ∧ φ₂) ⇒ ψ
+data TView : Prop → Set where
+  top   : TView ⊤
+  other : (φ : Prop) → TView φ
 
-data View : Prop → Set where
-  conj : (φ ψ : Prop) → View (φ ∧ ψ)
-  other : (φ : Prop) → View φ
+t-view : (φ : Prop) → TView φ
+t-view ⊤ = top
+t-view φ = other _
 
-view : (φ : Prop) → View φ
-view (φ ∧ ψ) = conj _ _
-view φ       = other _
+flat-∧ : Ctxt → Prop
+flat-∧ []      = ⊤
+flat-∧ (φ ∷ Δ) = φ ∧ flat-∧ Δ
 
-q : ∀ {Γ} → Γ ⨆ [] ≡ Γ
-q {[]}    = refl
-q {x ∷ Γ} rewrite q {Γ = Γ} = refl
-
-p : ∀ {Γ Δ} {ψ} →  Γ ⨆ (ψ ∷ Δ) ≡ (Γ ⨆ Δ) , ψ
-p {Γ} {[]} {ψ} rewrite q {Γ = Γ} = refl
-p {Γ} {x ∷ Δ} {ψ} rewrite p {Γ = Γ} {Δ = Δ} {ψ = x} = {!!}
-  where
-  o : ((Γ ++ Δ) ++ x ∷ []) ++ ψ ∷ [] ≡ (Γ ++ x ∷ Δ) ++ ψ ∷ []
-  o = {!!}
-
-
-from⊢₂
+from-⊢₂
   : ∀ {Γ Δ} {φ}
   → Γ ∙ Δ ⊢₂ φ
-  → Γ ⨆ Δ ⊢ φ
+  → Γ ⊢ flat-∧ Δ ⇒ φ
 
-from⊢₂ {Γ} {.[]} {φ} (none x)                  = weaken-Δ₁ [] x
-from⊢₂ {Γ} {ψ ∷ []} {φ} (weaken .ψ (none Γ⊢φ)) = weaken ψ Γ⊢φ
-from⊢₂ {Γ} {ψ ∷ Δ} {φ} (weaken .ψ teo)    rewrite p {Γ = Γ} {Δ = Δ} {ψ = ψ} =  weaken ψ help
-  where
-  help : Γ ⨆ Δ ⊢ φ
-  help = from⊢₂ teo
+from-⊢₂ {Γ} {.[]}    {φ} (none x)             = ⇒-intro (weaken ⊤ x)
+from-⊢₂ {Γ} {ψ ∷ []} {φ} (weaken .ψ (none x)) = ⇒-intro (weaken (ψ ∧ ⊤) x)
+from-⊢₂ {Γ} {ψ ∷ Δ}  {φ} (weaken .ψ Γ∙Δ⊢₂φ)   =
+  ⇒-intro
+    (⇒-elim
+      (weaken (flat-∧ (ψ ∷ Δ))
+        (from-⊢₂ Γ∙Δ⊢₂φ))
+      (∧-proj₂
+        (assume {Γ = Γ} (flat-∧ (ψ ∷ Δ)))))
 
-
--- from⊢₂ {Γ} {.[]}       {φ} (none x)             = ⇒-intro (weaken ⊤ x)
--- from⊢₂ {Γ} {.(ψ ∷ [])} {φ} (weaken ψ (none x)) = ⇒-intro (weaken ψ x)
--- from⊢₂ {Γ} {ψ ∷ Δ}         {φ} Γ∙Δ,ψ⊢₂φ = {!helper!}
-
-stripConj : Prop → List Prop
-stripConj ⊤  = []
-stripConj fm = strip' [] fm
-  where
-    strip' : List Prop → Prop → List Prop
-    strip' cs (p ∧ q) = strip' (cs ++ [ p ]) q
-    strip' cs fm      = cs ++ [ fm ]
-
-strip-∧ : Prop → Prop
-strip-∧ fm = listMkConj $ stripConj fm
-
--- strip of disjunctions.
-
-listMkDisj : List Prop → Prop
-listMkDisj []         = ⊥
-listMkDisj (fm ∷ fms) = foldl (_∨_) fm fms
-
-stripDisj : Prop → List Prop
-stripDisj ⊥  = []
-stripDisj fm = strip' [] fm
-  where
-    strip' : List Prop → Prop → List Prop
-    strip' cs (p ∨ q) = strip' (cs ++ [ p ]) q
-    strip' cs fm      = cs ++ [ fm ]
-
-strip-∨ : Prop → Prop
-strip-∨ fm = listMkDisj $ stripDisj fm
-
--- strip of equivalences.
-
-listMkEquiv : List Prop → Prop
-listMkEquiv []         = ⊤
-listMkEquiv (fm ∷ fms) = foldl (_⇔_) fm fms
-
-stripEquiv : Prop → List Prop
-stripEquiv ⊤  = []
-stripEquiv fm = strip' [] fm
-  where
-    strip' : List Prop → Prop → List Prop
-    strip' cs (p ⇔ q) = strip' ( cs ++ [ p ]) q
-    strip' cs fm      = cs ++ [ fm ]
-
-flatEquiv : Prop → List Prop
-flatEquiv fm = flat [] [ fm ]
-  where
-    flat : List Prop → List Prop → List Prop
-    flat acc []              = acc
-    flat acc (p ⇔ q ∷ fms) = flat (p ∷ acc) (q ∷ fms)
-    flat acc (⊤ ∷ fms)       = flat acc fms
-    flat acc (fm ∷ fms)      = flat (fm ∷ acc) fms
-
-strip-⇔ : Prop → Prop
-strip-⇔ fm = listMkEquiv $ stripEquiv fm
 
 splitGoal₀ : Prop → List Prop
 splitGoal₀ fm = split [] true fm
@@ -336,3 +267,64 @@ atp-strip {Γ} {¬ (φ ∨ φ₁)}  = id
 atp-strip {Γ} {¬ (φ ⇒ φ₁)}  = id
 atp-strip {Γ} {¬ (φ ⇔ φ₁)}  = id
 atp-strip {Γ} {¬ (¬ φ)} Γ⊢¬¬φ = atp-strip (¬¬-equiv₁ Γ⊢¬¬φ)
+
+
+------------------------------------------------------------------------------
+-- The following theorem about contraction intends to
+-- simplify the expression providing a conjunction of the
+-- assumptions whenever it's possible in just the following case:
+--
+--   Γ ⊢ φ₁ ⇒ (φ₂ ⇒ φ₃)
+--   ────────────────────────────── (thm-contraction)
+--   Γ ⊢ contraction (φ₁ ∧ φ₂ ⇒ φ₃)
+
+data ContractionView : Prop → Set where
+  impl  : (φ₁ φ₂ φ₃ : Prop) → ContractionView (φ₁ ⇒ (φ₂ ⇒ φ₃))
+  other : (φ : Prop)        → ContractionView φ
+
+contra-view : (φ : Prop) → ContractionView φ
+contra-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = impl _ _ _
+contra-view φ                = other _
+
+contraction₀ : ℕ → Prop → Prop
+contraction₀ (suc n) φ with contra-view φ
+... | impl φ₁ φ₂ φ₃ = contraction₀ n ((φ₁ ∧ φ₂) ⇒ φ₃)
+... | other _       = φ
+contraction₀ zero φ = φ
+
+steps-contraction : Prop → ℕ
+steps-contraction φ with contra-view φ
+... | impl _ _ φ₃ = 1 + steps-contraction φ₃
+... | other _     = zero
+
+thm-contraction′
+  : ∀ {Γ} {φ}
+  → (n : ℕ)
+  → Γ ⊢ φ
+  → Γ ⊢ contraction₀ n φ
+
+thm-contraction′ {Γ} {φ} (suc n) Γ⊢φ
+  with contra-view φ
+...  | impl φ₁ φ₂ φ₃ =
+  thm-contraction′ n
+    (⇒-intro
+      (⇒-elim
+        (⇒-elim
+          (weaken (φ₁ ∧ φ₂)
+            Γ⊢φ)
+          (∧-proj₁
+            (assume {Γ = Γ} (φ₁ ∧ φ₂))))
+      (∧-proj₂
+        (assume {Γ = Γ} (φ₁ ∧ φ₂)))))
+...  | other _       = Γ⊢φ
+thm-contraction′ zero Γ⊢φ  = Γ⊢φ
+
+contraction : Prop → Prop
+contraction φ = contraction₀ (steps-contraction φ) φ
+
+thm-contraction
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ contraction φ
+
+thm-contraction {Γ} {φ} Γ⊢φ = thm-contraction′ (steps-contraction φ) Γ⊢φ
