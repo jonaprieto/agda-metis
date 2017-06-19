@@ -20,6 +20,7 @@ open import Data.Bool
 open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
 open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
+open import Data.Prop.Views n
 
 open import Function                      using ( _$_; id; _∘_ )
 open import Relation.Nullary renaming (¬_ to ¬₂)
@@ -292,10 +293,11 @@ contraction₀ (suc n) φ with contra-view φ
 ... | other _       = φ
 contraction₀ zero φ = φ
 
-steps-contraction : Prop → ℕ
-steps-contraction φ with contra-view φ
-... | impl _ _ φ₃ = 1 + steps-contraction φ₃
-... | other _     = zero
+
+♯contractions : Prop → ℕ
+♯contractions φ with contra-view φ
+♯contractions .(φ₁ ⇒ (φ₂ ⇒ φ₃)) | impl φ₁ φ₂ φ₃ = 2 + ♯contractions φ₃
+♯contractions φ                 | other .φ      = 1
 
 thm-contraction′
   : ∀ {Γ} {φ}
@@ -320,11 +322,11 @@ thm-contraction′ {Γ} {φ} (suc n) Γ⊢φ
 thm-contraction′ zero Γ⊢φ  = Γ⊢φ
 
 contraction : Prop → Prop
-contraction φ = contraction₀ (steps-contraction φ) φ
+contraction φ = contraction₀ (♯contractions φ) φ
 
 thm-contraction
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ contraction φ
 
-thm-contraction {Γ} {φ} Γ⊢φ = thm-contraction′ (steps-contraction φ) Γ⊢φ
+thm-contraction {Γ} {φ} Γ⊢φ = thm-contraction′ (♯contractions φ) Γ⊢φ
