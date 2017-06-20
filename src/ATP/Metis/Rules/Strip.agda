@@ -305,21 +305,11 @@ thm-contraction′
   → Γ ⊢ φ
   → Γ ⊢ contraction₀ n φ
 
+thm-contraction′ {_} {_} zero    Γ⊢φ  = Γ⊢φ
 thm-contraction′ {Γ} {φ} (suc n) Γ⊢φ
   with contra-view φ
-...  | impl φ₁ φ₂ φ₃ =
-  thm-contraction′ n
-    (⇒-intro
-      (⇒-elim
-        (⇒-elim
-          (weaken (φ₁ ∧ φ₂)
-            Γ⊢φ)
-          (∧-proj₁
-            (assume {Γ = Γ} (φ₁ ∧ φ₂))))
-      (∧-proj₂
-        (assume {Γ = Γ} (φ₁ ∧ φ₂)))))
-...  | other _       = Γ⊢φ
-thm-contraction′ zero Γ⊢φ  = Γ⊢φ
+...  | impl _ _ _ = thm-contraction′ n (⇒⇒-to-∧⇒ Γ⊢φ)
+...  | other _    = Γ⊢φ
 
 contraction : Prop → Prop
 contraction φ = contraction₀ (♯contractions φ) φ
@@ -330,3 +320,66 @@ thm-contraction
   → Γ ⊢ contraction φ
 
 thm-contraction {Γ} {φ} Γ⊢φ = thm-contraction′ (♯contractions φ) Γ⊢φ
+
+strip₀ : ℕ → Prop → Prop
+strip₀ zero φ        = φ
+strip₀ (suc n) φ
+  with n-view φ
+...  | conj φ₁ φ₂   = strip₀ n φ₁ ∧ strip₀ n (φ₁ ⇒ φ₂)
+...  | disj φ₁ φ₂   = strip₀ n (¬ φ₁ ⇒ φ₂)
+...  | impl φ₁ φ₂   = strip₀ n ((¬ φ₁) ∨ φ₂)
+...  | biimpl φ₁ φ₂ = φ
+...  | nconj φ₁ φ₂  = strip₀ n (φ₁ ⇒ (¬ φ₂))
+...  | ndisj φ₁ φ₂  = strip₀ n (¬ φ₁) ∧ strip₀ n ((¬ φ₁) ⇒ (¬ φ₂))
+...  | nneg φ₁      = strip₀ n φ₁
+...  | ntop         = ⊥
+...  | nbot         = ⊤
+...  | nimpl φ₁ φ₂  = strip₀ n φ₁ ∧ strip₀ n (φ₁ ⇒ (¬ φ₂))
+...  | nbiim φ₁ φ₂  = φ
+...  | other .φ     = φ
+
+
+thm-strip₀
+  : ∀ {Γ} {φ}
+  → (n : ℕ)
+  → Γ ⊢ φ
+  → Γ ⊢ strip₀ n φ
+
+thm-strip₀ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
+thm-strip₀ {Γ} {φ} (suc n₁) Γ⊢φ
+  with n-view φ
+...  | conj φ₁ φ₂   =
+  ∧-intro
+    (thm-strip₀ n₁ (∧-proj₁ Γ⊢φ))
+    (thm-strip₀ n₁ (⇒-intro (weaken φ₁ (∧-proj₂ Γ⊢φ))))
+...  | disj φ₁ φ₂   = thm-strip₀ n₁ (∨-to-¬⇒ Γ⊢φ)
+...  | impl φ₁ φ₂   = thm-strip₀ n₁ (⇒-to-¬∨ Γ⊢φ)
+...  | biimpl φ₁ φ₂ = Γ⊢φ
+...  | nconj φ₁ φ₂  =
+  thm-strip₀ n₁
+    (⇒-intro
+      (⇒-elim
+        (⇒-intro
+          (∨-elim {Γ = Γ , φ₁}
+            (⊥-elim (¬ φ₂)
+              (¬-elim
+                (assume {Γ = Γ , φ₁} (¬ φ₁))
+                (weaken (¬ φ₁) (assume {Γ = Γ} φ₁))))
+            (assume {Γ = Γ , φ₁} (¬ φ₂))))
+        (weaken φ₁ (¬∧-to-¬∨¬ Γ⊢φ))))
+...  | ndisj φ₁ φ₂  =
+  ∧-intro
+    (thm-strip₀ n₁ (∧-proj₁ (¬∨-to-¬∧¬ Γ⊢φ)))
+    (thm-strip₀ n₁
+      ((⇒-intro
+        (weaken (¬ φ₁)
+          ((∧-proj₂ (¬∨-to-¬∧¬ Γ⊢φ)))))))
+...  | nneg φ₁      = thm-strip₀ n₁ (¬¬-equiv₁ Γ⊢φ)
+...  | ntop         = ¬-elim Γ⊢φ ⊤-intro
+...  | nbot         = ⊤-intro
+...  | nimpl φ₁ φ₂  =
+  ∧-intro
+    (thm-strip₀ n₁ (∧-proj₁ (¬⇒-to-∧¬ Γ⊢φ)))
+    (thm-strip₀ n₁ (⇒-intro (weaken φ₁ (∧-proj₂ (¬⇒-to-∧¬ Γ⊢φ)))))
+...  | nbiim φ₁ φ₂  = Γ⊢φ
+...  | other .φ     = Γ⊢φ
