@@ -269,117 +269,144 @@ atp-strip {Γ} {¬ (φ ⇒ φ₁)}  = id
 atp-strip {Γ} {¬ (φ ⇔ φ₁)}  = id
 atp-strip {Γ} {¬ (¬ φ)} Γ⊢¬¬φ = atp-strip (¬¬-equiv₁ Γ⊢¬¬φ)
 
-
 ------------------------------------------------------------------------------
--- The following theorem about contraction intends to
--- simplify the expression providing a conjunction of the
--- assumptions whenever it's possible in just the following case:
---
---   Γ ⊢ φ₁ ⇒ (φ₂ ⇒ φ₃)
---   ────────────────────────────── (thm-contraction)
---   Γ ⊢ contraction (φ₁ ∧ φ₂ ⇒ φ₃)
 
-data ContractionView : Prop → Set where
-  impl  : (φ₁ φ₂ φ₃ : Prop) → ContractionView (φ₁ ⇒ (φ₂ ⇒ φ₃))
-  other : (φ : Prop)        → ContractionView φ
 
-contra-view : (φ : Prop) → ContractionView φ
-contra-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = impl _ _ _
-contra-view φ                = other _
+data StripAuxView : Prop → Set where
+  case₁ : (φ₁ φ₂ φ₃ : Prop) → StripAuxView (φ₁ ⇒ (φ₂ ⇒ φ₃))
+  case₂ : (φ₁ φ₂ φ₃ : Prop) → StripAuxView (φ₁ ⇒ (φ₂ ∧ φ₃))
+  other : (φ : Prop)        → StripAuxView φ
 
-contraction₀ : ℕ → Prop → Prop
-contraction₀ (suc n) φ with contra-view φ
-... | impl φ₁ φ₂ φ₃ = contraction₀ n ((φ₁ ∧ φ₂) ⇒ φ₃)
+
+strip-aux-view : (φ : Prop) → StripAuxView φ
+strip-aux-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
+strip-aux-view (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
+strip-aux-view φ                = other _
+
+strip-aux : ℕ → Prop → Prop
+strip-aux zero φ  = φ
+strip-aux (suc n) φ with strip-aux-view φ
+... | case₁ φ₁ φ₂ φ₃ = strip-aux n ((φ₁ ∧ φ₂) ⇒ φ₃)
+... | case₂ φ₁ φ₂ φ₃ = (strip-aux n (φ₁ ⇒ φ₂)) ∧ (strip-aux n (φ₁ ⇒ φ₃))
 ... | other _       = φ
-contraction₀ zero φ = φ
 
+♯calls-strip-aux : Prop → ℕ
+♯calls-strip-aux φ with strip-aux-view φ
+... | case₁ _ _ φ₃  = 2 + ♯calls-strip-aux φ₃
+... | case₂ _ φ₂ φ₃ = 1 + ♯calls-strip-aux φ₂ + ♯calls-strip-aux φ₃
+... | other .φ      = 1
 
-♯contractions : Prop → ℕ
-♯contractions φ with contra-view φ
-♯contractions .(φ₁ ⇒ (φ₂ ⇒ φ₃)) | impl φ₁ φ₂ φ₃ = 2 + ♯contractions φ₃
-♯contractions φ                 | other .φ      = 1
+postulate
+  thm-strip-aux
+    : ∀ {Γ} {φ}
+    → (n : ℕ)
+    → Γ ⊢ φ
+    → Γ ⊢ strip-aux n φ
 
-thm-contraction′
-  : ∀ {Γ} {φ}
-  → (n : ℕ)
-  → Γ ⊢ φ
-  → Γ ⊢ contraction₀ n φ
+unshunt : Prop → Prop
+unshunt φ = strip-aux (♯calls-strip-aux φ) φ
 
-thm-contraction′ {_} {_} zero    Γ⊢φ  = Γ⊢φ
-thm-contraction′ {Γ} {φ} (suc n) Γ⊢φ
-  with contra-view φ
-...  | impl _ _ _ = thm-contraction′ n (⇒⇒-to-∧⇒ Γ⊢φ)
-...  | other _    = Γ⊢φ
-
-contraction : Prop → Prop
-contraction φ = contraction₀ (♯contractions φ) φ
-
-thm-contraction
-  : ∀ {Γ} {φ}
-  → Γ ⊢ φ
-  → Γ ⊢ contraction φ
-
-thm-contraction {Γ} {φ} Γ⊢φ = thm-contraction′ (♯contractions φ) Γ⊢φ
+postulate
+  thm-unshunt
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ unshunt φ
 
 strip₀ : ℕ → Prop → Prop
 strip₀ zero φ        = φ
 strip₀ (suc n) φ
   with n-view φ
-...  | conj φ₁ φ₂   = strip₀ n φ₁ ∧ strip₀ n (φ₁ ⇒ φ₂)
-...  | disj φ₁ φ₂   = strip₀ n (¬ φ₁ ⇒ φ₂)
-...  | impl φ₁ φ₂   = strip₀ n ((¬ φ₁) ∨ φ₂)
-...  | biimpl φ₁ φ₂ = φ
-...  | nconj φ₁ φ₂  = strip₀ n (φ₁ ⇒ (¬ φ₂))
-...  | ndisj φ₁ φ₂  = strip₀ n (¬ φ₁) ∧ strip₀ n ((¬ φ₁) ⇒ (¬ φ₂))
+...  | conj φ₁ φ₂   = strip₀ n φ₁ ∧ unshunt (φ₁ ⇒ strip₀ n φ₂)
+...  | disj φ₁ φ₂   = unshunt (¬ φ₁ ⇒ (strip₀ n φ₂))
+...  | impl φ₁ φ₂   = unshunt (φ₁ ⇒ (strip₀ n φ₂))
+...  | biimpl _ _   = φ
+...  | nconj φ₁ φ₂  = unshunt (¬ φ₁ ⇒ (strip₀ n (¬ φ₂)))
+...  | ndisj φ₁ φ₂  = strip₀ n (¬ φ₁) ∧ unshunt (¬ φ₁ ⇒ strip₀ n (¬ φ₂))
 ...  | nneg φ₁      = strip₀ n φ₁
 ...  | ntop         = ⊥
 ...  | nbot         = ⊤
-...  | nimpl φ₁ φ₂  = strip₀ n φ₁ ∧ strip₀ n (φ₁ ⇒ (¬ φ₂))
-...  | nbiim φ₁ φ₂  = φ
+...  | nimpl φ₁ φ₂  = strip₀ n φ₁ ∧ unshunt (φ₁ ⇒ strip₀ n (¬ φ₂))
+...  | nbiim _ _    = φ
 ...  | other .φ     = φ
 
 
-thm-strip₀
-  : ∀ {Γ} {φ}
-  → (n : ℕ)
-  → Γ ⊢ φ
-  → Γ ⊢ strip₀ n φ
+postulate
+  thm-strip₀
+    : ∀ {Γ} {φ}
+    → (n : ℕ)
+    → Γ ⊢ φ
+    → Γ ⊢ strip₀ n φ
 
-thm-strip₀ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
-thm-strip₀ {Γ} {φ} (suc n₁) Γ⊢φ
-  with n-view φ
-...  | conj φ₁ φ₂   =
-  ∧-intro
-    (thm-strip₀ n₁ (∧-proj₁ Γ⊢φ))
-    (thm-strip₀ n₁ (⇒-intro (weaken φ₁ (∧-proj₂ Γ⊢φ))))
-...  | disj φ₁ φ₂   = thm-strip₀ n₁ (∨-to-¬⇒ Γ⊢φ)
-...  | impl φ₁ φ₂   = thm-strip₀ n₁ (⇒-to-¬∨ Γ⊢φ)
-...  | biimpl φ₁ φ₂ = Γ⊢φ
-...  | nconj φ₁ φ₂  =
-  thm-strip₀ n₁
-    (⇒-intro
-      (⇒-elim
-        (⇒-intro
-          (∨-elim {Γ = Γ , φ₁}
-            (⊥-elim (¬ φ₂)
-              (¬-elim
-                (assume {Γ = Γ , φ₁} (¬ φ₁))
-                (weaken (¬ φ₁) (assume {Γ = Γ} φ₁))))
-            (assume {Γ = Γ , φ₁} (¬ φ₂))))
-        (weaken φ₁ (¬∧-to-¬∨¬ Γ⊢φ))))
-...  | ndisj φ₁ φ₂  =
-  ∧-intro
-    (thm-strip₀ n₁ (∧-proj₁ (¬∨-to-¬∧¬ Γ⊢φ)))
-    (thm-strip₀ n₁
-      ((⇒-intro
-        (weaken (¬ φ₁)
-          ((∧-proj₂ (¬∨-to-¬∧¬ Γ⊢φ)))))))
-...  | nneg φ₁      = thm-strip₀ n₁ (¬¬-equiv₁ Γ⊢φ)
-...  | ntop         = ¬-elim Γ⊢φ ⊤-intro
-...  | nbot         = ⊤-intro
-...  | nimpl φ₁ φ₂  =
-  ∧-intro
-    (thm-strip₀ n₁ (∧-proj₁ (¬⇒-to-∧¬ Γ⊢φ)))
-    (thm-strip₀ n₁ (⇒-intro (weaken φ₁ (∧-proj₂ (¬⇒-to-∧¬ Γ⊢φ)))))
-...  | nbiim φ₁ φ₂  = Γ⊢φ
-...  | other .φ     = Γ⊢φ
+
+-- thm-strip₀
+--   : ∀ {Γ} {φ}
+--   → (n : ℕ)
+--   → Γ ⊢ φ
+--   → Γ ⊢ strip₀ n φ
+
+-- thm-strip₀ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
+-- thm-strip₀ {Γ} {φ} (suc n) Γ⊢φ
+--   with n-view φ
+-- ...  | conj φ₁ φ₂   =
+--   ∧-intro
+--     (thm-strip₀ n (∧-proj₁ Γ⊢φ))
+--     (thm-strip₀ n (⇒-intro (weaken φ₁ (∧-proj₂ Γ⊢φ))))
+-- ...  | disj φ₁ φ₂   = thm-strip₀ n (∨-to-¬⇒ Γ⊢φ)
+-- ...  | impl φ₁ φ₂   = thm-strip₀ n (⇒-to-¬∨ Γ⊢φ)
+-- ...  | biimpl φ₁ φ₂ = Γ⊢φ
+-- ...  | nconj φ₁ φ₂  =
+--   thm-strip₀ n
+--     (⇒-intro
+--       (⇒-elim
+--         (⇒-intro
+--           (∨-elim {Γ = Γ , φ₁}
+--             (⊥-elim (¬ φ₂)
+--               (¬-elim
+--                 (assume {Γ = Γ , φ₁} (¬ φ₁))
+--                 (weaken (¬ φ₁) (assume {Γ = Γ} φ₁))))
+--             (assume {Γ = Γ , φ₁} (¬ φ₂))))
+--         (weaken φ₁ (¬∧-to-¬∨¬ Γ⊢φ))))
+-- ...  | ndisj φ₁ φ₂  =
+--   ∧-intro
+--     (thm-strip₀ n (∧-proj₁ (¬∨-to-¬∧¬ Γ⊢φ)))
+--     (thm-strip₀ n
+--       ((⇒-intro
+--         (weaken (¬ φ₁)
+--           ((∧-proj₂ (¬∨-to-¬∧¬ Γ⊢φ)))))))
+-- ...  | nneg φ₁      = thm-strip₀ n (¬¬-equiv₁ Γ⊢φ)
+-- ...  | ntop         = ¬-elim Γ⊢φ ⊤-intro
+-- ...  | nbot         = ⊤-intro
+-- ...  | nimpl φ₁ φ₂  =
+--   ∧-intro
+--     (thm-strip₀ n (∧-proj₁ (¬⇒-to-∧¬ Γ⊢φ)))
+--     (thm-strip₀ n (⇒-intro (weaken φ₁ (∧-proj₂ (¬⇒-to-∧¬ Γ⊢φ)))))
+-- ...  | nbiim φ₁ φ₂  = Γ⊢φ
+-- ...  | other .φ     = Γ⊢φ
+
+
+♯strip₀ : Prop → ℕ
+♯strip₀ φ with n-view φ
+...  | conj φ₁ φ₂   = 1 + ♯strip₀ φ₁ + ♯strip₀ φ₂
+...  | disj φ₁ φ₂   = 1 + ♯strip₀ φ₂
+...  | impl φ₁ φ₂   = 1 + ♯strip₀ φ₂
+...  | biimpl _ _   = 0
+...  | nconj φ₁ φ₂  = 1 + ♯strip₀ (¬ φ₂)
+...  | ndisj φ₁ φ₂  = 1 + ♯strip₀ (¬ φ₁) + ♯strip₀ (¬ φ₂)
+...  | nneg φ₁      = 1 + ♯strip₀ φ₁
+...  | ntop         = 0
+...  | nbot         = 0
+...  | nimpl φ₁ φ₂  = 1 + ♯strip₀ φ₁ + ♯strip₀ (¬ φ₂)
+...  | nbiim _ _    = 0
+...  | other .φ     = 0
+
+
+strip′ : Prop → Prop
+strip′ φ = unshunt (strip₀ (♯strip₀ φ) φ)
+
+postulate
+  atp-strip′
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ strip′ φ
+
+-- atp-strip′ {_} {φ} Γ⊢φ = thm-unshunt (thm-strip₀ (♯strip₀ φ) Γ⊢φ)
