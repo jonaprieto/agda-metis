@@ -34,202 +34,6 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 -- Spliting the goal.
 ------------------------------------------------------------------------------
 
-listMkConj : List Prop → Prop
-listMkConj []         = ⊤
-listMkConj (fm ∷ fms) = foldl (_∧_) fm fms
-
-splitGoal₀ : Prop → List Prop
-splitGoal₀ fm = split [] true fm
-  where
-    split : List Prop → Bool → Prop → List Prop
-    split asms pol fm = case-split pol fm
-      where
-        case-split : Bool → Prop → List Prop
-        -- positive splittables
-        case-split true ⊤     = []
-        case-split true (¬ f) = split asms false f
-        case-split true (f₁ ∧ f₂) =
-          (split asms true f₁) ++ (split (asms ++ [ f₁ ]) true f₂)
-        case-split true (f₁ ∨ f₂) = split (asms ++ [ (¬ f₁) ]) true f₂
-        case-split true (f₁ ⇒ f₂) = split (asms ++ [ f₁ ]) true f₂
-
-        -- negative splittables
-        case-split false ⊥ = []
-        case-split false (¬ f) = split asms true f
-        case-split false (f₁ ∧ f₂) = split (asms ++ [ f₁ ]) false f₂
-        case-split false (f₁ ∨ f₂) =
-          (split asms false f₁) ++ (split (asms ++ [ (¬ f₁) ]) false f₂)
-        case-split false (f₁ ⇒ f₂) =
-          (split asms true f₁) ++ (split (asms ++ [ (¬ f₁) ]) false f₂)
-        case-split pol fm = [ addAsms asms (if pol then fm else (¬ fm)) ]
-          where
-            addAsms : List Prop → Prop → Prop
-            addAsms [] goal   = goal
-            addAsms asms goal = (listMkConj asms) ⇒ goal
-
-splitGoal : Prop → Prop
-splitGoal fm = flat $ splitGoal₀ fm
-  where
-    flat : List Prop → Prop
-    flat []         = ⊤
-    flat (φ ∷ [])   = φ
-    flat (fm ∷ fms) = foldl (_∧_) fm fms
-
-postulate atp-splitGoal : ∀ {Γ} {φ}
-                        → Γ ⊢ splitGoal φ ⇒ φ
-
-------------------------------------------------------------------------------
--- Strip rule.
-------------------------------------------------------------------------------
-
-strip : Prop → Prop
-
-strip fm@(Var x)  = fm
-strip ⊤           = ⊤
-strip ⊥           = ⊥
-strip fm@(φ ∧ φ₁) = fm
-
-strip fm@(φ ∨ Var x)     = fm
-strip fm@(φ ∨ ⊤)         = ⊤
-strip fm@(φ ∨ ⊥)         = ¬ φ ⇒ ⊥
-strip fm@(φ ∨ (φ₁ ∧ φ₂)) = fm
-strip fm@(φ ∨ (φ₁ ∨ φ₂)) = (¬ φ ∧ ¬ φ₁) ⇒ φ₂
-strip fm@(φ ∨ (φ₁ ⇒ φ₂)) = (¬ φ ∧ φ₁) ⇒ φ₂
-strip fm@(φ ∨ (φ₁ ⇔ φ₂)) = fm
-strip fm@(φ ∨ ¬ φ₁)      = ¬ φ ⇒ ¬ φ₁
-
--- split over the second term
--- strip fm@(φ ∨ ψ)         = ¬ φ ⇒ ψ
-
-
-strip fm@(φ ⇒ Var x) = fm
-strip fm@(φ ⇒ ⊤) = ⊤
-strip fm@(φ ⇒ ⊥) = fm
-strip fm@(φ ⇒ φ₁ ∧ φ₂) = fm -- generate two subgoals φ⇒φ₁ and φ⇒φ₂
-strip fm@(φ ⇒ φ₁ ∨ φ₂) = (φ ∧ ¬ φ₁) ⇒ φ₂
-strip fm@(φ ⇒ φ₁ ⇒ φ₂) = (φ ∧ φ₁) ⇒ φ₂
-strip fm@(φ ⇒ φ₁ ⇔ φ₂) = fm -- none
-strip fm@(φ ⇒ ¬ φ₁) = fm
-
--- this strip doesn't apply
-strip fm@(φ ⇔ Var x)   = fm
-strip fm@(φ ⇔ ⊤)       = fm
-strip fm@(φ ⇔ ⊥)       = fm
-strip fm@(φ ⇔ φ₁ ∧ φ₂) = fm
-strip fm@(φ ⇔ φ₁ ∨ φ₂) = fm
-strip fm@(φ ⇔ φ₁ ⇒ φ₂) = fm
-strip fm@(φ ⇔ φ₁ ⇔ φ₂) = fm
-strip fm@(φ ⇔ ¬ φ₁)    = fm
-
-strip fm@(¬ Var x)     = fm
-strip fm@(¬ ⊤)         = ⊥
-strip fm@(¬ ⊥)         = ⊤
-strip fm@(¬ (φ ∧ φ₁))  = φ ⇒ ¬ φ₁
-strip fm@(¬ (φ ∨ φ₁))  = fm
-strip fm@(¬ (φ ⇒ φ₁))  = fm
-strip fm@(¬ (φ ⇔ φ₁))  = fm
-strip (¬ (¬ φ))         = strip φ
-
-------------------------------------------------------------------------------
--- atp-strip.
-------------------------------------------------------------------------------
-
-atp-strip : ∀ {Γ} {φ}
-          → Γ ⊢ φ
-          → Γ ⊢ strip φ
-
-atp-strip {Γ} {Var x}  = id
-atp-strip {Γ} {⊤}      = id
-atp-strip {Γ} {⊥}      = id
-atp-strip {Γ} {φ ∧ φ₁} = id
-
-atp-strip {Γ} {φ ∨ Var x}     = id
-atp-strip {Γ} {φ ∨ ⊤}         = λ _ → ⊤-intro
-atp-strip {Γ} {φ ∨ ⊥}         = ∨-to-¬⇒
-atp-strip {Γ} {φ ∨ (φ₁ ∧ φ₂)} = id
-atp-strip {Γ} {φ ∨ (φ₁ ∨ φ₂)} Γ⊢φ∨⟪φ₁∨φ₂⟫ =
-  subst⊢⇒₁
-    (⇒-intro
-      (¬∧¬-to-¬∨ (assume {Γ = Γ} (¬ φ ∧ ¬ φ₁))))
-    (∨-to-¬⇒
-      (∨-assoc₁ Γ⊢φ∨⟪φ₁∨φ₂⟫))
-
-atp-strip {Γ} {φ ∨ (φ₁ ⇒ φ₂)} Γ⊢φ∨⟪φ₁⇒φ₂⟫ =
-  subst⊢⇒₁
-    (⇒-trans thm1 thm2)
-    (∨-to-¬⇒
-      (∨-assoc₁
-        (subst⊢∨₂
-          (⇒-intro (⇒-to-¬∨ (assume {Γ = Γ} (φ₁ ⇒ φ₂))))
-          Γ⊢φ∨⟪φ₁⇒φ₂⟫)))
-  where
-    ⇒-to-¬¬ : ∀ {Γ} → Γ ⊢ φ₁ ⇒ ¬ (¬ φ₁)
-    ⇒-to-¬¬ {Γ} =
-      ⇒-intro $
-        ¬¬-equiv₂ (assume {Γ = Γ} φ₁)
-
-    thm1 : Γ ⊢ (¬ φ ∧ φ₁) ⇒ (¬ φ ∧ ¬ (¬ φ₁))
-    thm1 =
-      ⇒-intro
-      (subst⊢∧₂
-        (⇒-to-¬¬ {Γ = Γ , ¬ φ ∧ φ₁})
-        (assume {Γ = Γ} (¬ φ ∧ φ₁)))
-
-    thm2 : Γ ⊢ (¬ φ ∧ ¬ (¬ φ₁)) ⇒ ¬ (φ ∨ ¬ φ₁)
-    thm2 =
-      ⇒-intro
-        (∨-dmorgan₂
-          (assume {Γ = Γ} (¬ φ ∧ ¬ (¬ φ₁))))
-
-atp-strip {Γ} {φ ∨ (φ₁ ⇔ φ₂)} = id
-atp-strip {Γ} {φ ∨ ¬ φ₁}      = ∨-to-¬⇒
-
-atp-strip {Γ} {φ ⇒ Var x} = id
-atp-strip {Γ} {φ ⇒ ⊤} = λ _ → ⊤-intro
-atp-strip {Γ} {φ ⇒ ⊥} = id
-atp-strip {Γ} {φ ⇒ φ₁ ∧ φ₂} = id
-
-atp-strip {Γ} {φ ⇒ (φ₁ ∨ φ₂)} Γ⊢φ⇒⟪φ₁∨φ₂⟫ =
-  ⇒-intro
-    (⇒-elim
-      (⇒-intro
-        (∨-elim {Γ = Γ , φ ∧ ¬ φ₁}
-          (⊥-elim φ₂
-            (¬-elim
-              (weaken φ₁
-                (∧-proj₂
-                  (assume {Γ = Γ} (φ ∧ ¬ φ₁))))
-              (assume {Γ = Γ , φ ∧ ¬ φ₁} φ₁)))
-          (assume {Γ = Γ , φ ∧ ¬ φ₁ } φ₂)))
-      (⇒-elim
-        (weaken (φ ∧ ¬ φ₁) Γ⊢φ⇒⟪φ₁∨φ₂⟫)
-        (∧-proj₁
-          (assume {Γ = Γ} (φ ∧ ¬ φ₁)))))
-
-atp-strip {Γ} {φ ⇒ φ₁ ⇒ φ₂} = ⇒⇒-to-∧⇒
-atp-strip {Γ} {φ ⇒ φ₁ ⇔ φ₂} = id
-atp-strip {Γ} {φ ⇒ ¬ φ₁}    = id
-
-atp-strip {Γ} {φ ⇔ Var x}   = id
-atp-strip {Γ} {φ ⇔ ⊤}       = id
-atp-strip {Γ} {φ ⇔ ⊥}       = id
-atp-strip {Γ} {φ ⇔ φ₁ ∧ φ₂} = id
-atp-strip {Γ} {φ ⇔ φ₁ ∨ φ₂} = id
-atp-strip {Γ} {φ ⇔ φ₁ ⇒ φ₂} = id
-atp-strip {Γ} {φ ⇔ φ₁ ⇔ φ₂} = id
-atp-strip {Γ} {φ ⇔ ¬ φ₁}    = id
-
-atp-strip {Γ} {¬ Var x}     = id
-atp-strip {Γ} {¬ ⊤}         = ¬⊤-to-⊥
-atp-strip {Γ} {¬ ⊥}         = ¬⊥-to-⊤
-atp-strip {Γ} {¬ (φ ∧ φ₁)}  Γ⊢¬⟪φ∧φ₁⟫ = ¬∨-to-⇒ (∧-dmorgan₁ Γ⊢¬⟪φ∧φ₁⟫)
-atp-strip {Γ} {¬ (φ ∨ φ₁)}  = id
-atp-strip {Γ} {¬ (φ ⇒ φ₁)}  = id
-atp-strip {Γ} {¬ (φ ⇔ φ₁)}  = id
-atp-strip {Γ} {¬ (¬ φ)} Γ⊢¬¬φ = atp-strip (¬¬-equiv₁ Γ⊢¬¬φ)
-
-------------------------------------------------------------------------------
-
 data ShuntView : Prop → Set where
   case₁ : (φ₁ φ₂ φ₃ : Prop) → ShuntView (φ₁ ⇒ (φ₂ ⇒ φ₃))
   case₂ : (φ₁ φ₂ φ₃ : Prop) → ShuntView (φ₁ ⇒ (φ₂ ∧ φ₃))
@@ -261,7 +65,7 @@ postulate
     → Γ ⊢ unshunt′ n φ
 
 unshunt : Prop → Prop
-unshunt φ = unshunt′ (♯calls-unshunt φ + 15) φ
+unshunt φ = unshunt′ (♯calls-unshunt φ + 1) φ
 
 postulate
   thm-unshunt
@@ -294,47 +98,47 @@ strip-view (¬ (¬ φ₁))    = nneg _
 strip-view φ₁            = other _
 
 
-strip₀ : Prop → Prop
-strip₀ φ
+split-goal₀ : Prop → Prop
+split-goal₀ φ
   with strip-view φ
-...  | conj φ₁ φ₂   = unshunt (strip₀ φ₁) ∧ unshunt (φ₁ ⇒ strip₀ φ₂)
-...  | disj φ₁ φ₂   = unshunt (¬ φ₁ ⇒ (strip₀ φ₂))
-...  | impl φ₁ φ₂   = unshunt (φ₁ ⇒ (strip₀ φ₂))
-...  | nconj φ₁ φ₂  = unshunt (φ₁ ⇒ (strip₀ (¬ φ₂)))
-...  | ndisj φ₁ φ₂  = unshunt (strip₀ (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ strip₀ (¬ φ₂))
-...  | nimpl φ₁ φ₂  = unshunt (strip₀ φ₁) ∧ unshunt ( ¬ φ₁ ⇒ strip₀ (¬ φ₂))
-...  | nneg φ₁      = unshunt (strip₀ φ₁)
+...  | conj φ₁ φ₂   = unshunt (split-goal₀ φ₁) ∧ unshunt (φ₁ ⇒ split-goal₀ φ₂)
+...  | disj φ₁ φ₂   = unshunt (¬ φ₁ ⇒ (split-goal₀ φ₂))
+...  | impl φ₁ φ₂   = unshunt (φ₁ ⇒ (split-goal₀ φ₂))
+...  | nconj φ₁ φ₂  = unshunt (φ₁ ⇒ (split-goal₀ (¬ φ₂)))
+...  | ndisj φ₁ φ₂  = unshunt (split-goal₀ (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
+...  | nimpl φ₁ φ₂  = unshunt (split-goal₀ φ₁) ∧ unshunt ( ¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
+...  | nneg φ₁      = unshunt (split-goal₀ φ₁)
 ...  | nbot         = ⊤
 ...  | ntop         = ⊥
 ...  | other .φ     = φ
 
 
 postulate
-  thm-strip₀
+  thm-split-goal₀
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
-    → Γ ⊢ strip₀ φ
+    → Γ ⊢ split-goal₀ φ
 
--- thm-strip₀
+-- thm-split-goal₀
 --   : ∀ {Γ} {φ}
 --   → (n : ℕ)
 --   → Γ ⊢ φ
---   → Γ ⊢ strip₀ φ
+--   → Γ ⊢ split-goal₀ φ
 
--- thm-strip₀ {Γ} {φ} n Γ⊢φ = ?
+-- thm-split-goal₀ {Γ} {φ} n Γ⊢φ = ?
 
-strip′ : Prop → Prop
-strip′ = unshunt ∘ strip₀
+split-goal : Prop → Prop
+split-goal = unshunt ∘ split-goal₀
 
-thm-strip′
+thm-split-goal
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ strip′ φ
+  → Γ ⊢ split-goal φ
 
-thm-strip′ = thm-unshunt ∘ thm-strip₀
+thm-split-goal = thm-unshunt ∘ thm-split-goal₀
 
 strip_to_ : Prop → Prop → Prop
-strip φ to ψ = conjunct (strip′ φ) ψ
+strip φ to ψ = conjunct (split-goal φ) ψ
 
 postulate
   atp-strip-to
@@ -342,3 +146,8 @@ postulate
     → (ψ : Prop)
     → Γ ⊢ φ
     → Γ ⊢ strip φ to ψ
+
+postulate
+  atp-splitGoal
+    : ∀ {Γ} {φ}
+    → Γ ⊢ split-goal φ ⇒ φ
