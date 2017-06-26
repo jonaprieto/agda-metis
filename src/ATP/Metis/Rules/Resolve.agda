@@ -116,3 +116,14 @@ atp-resolve₉ : ∀ {Γ} {φ}
              → Γ ⊢ ⊥
 
 atp-resolve₉ = ¬-elim
+
+
+resolve : Prop → Prop → Prop
+resolve φ φ′ = φ′
+
+postulate
+  atp-resolve
+    : ∀ {Γ} {φ}
+    → (φ′ : Prop)
+    → Γ ⊢ φ
+    → Γ ⊢ resolve φ φ′

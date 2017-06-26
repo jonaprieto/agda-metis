@@ -115,10 +115,26 @@ canon (suc n) φ with canon-view φ
 ... | nbot         = ⊤
 ... | other .φ     = φ
 
-canonicalize : Prop → Prop
-canonicalize φ = dist (canon (ubsizetree φnnf) φnnf)
- where
-   φnnf = nnf φ
+snnf : Prop → Prop
+snnf φ = (canon (ubsizetree (nnf φ)) (nnf φ))
+
+canonicalize_to_ : Prop → Prop →  Prop
+canonicalize φ to φ₁
+  with ⌊ eq φ₁ (snnf φ) ⌋
+...  | true  = snnf φ
+...  | false with ⌊ eq φ₁ (dist′ (snnf φ)) ⌋
+...          | true = dist′ (snnf φ)
+...          | false  with ⌊ eq φ₁ (dist (snnf φ)) ⌋
+...                      | true = dnf (dist φ)
+...                      | false = φ₁
+
+
+-- ... | z = ?
+--      where
+--        φnnf   = canon (ubsizetree φnnf) φnnf
+--        φdnf   = dist φnnf
+--        φcnf   = dist′ φnnf
+
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.
@@ -127,5 +143,6 @@ canonicalize φ = dist (canon (ubsizetree φnnf) φnnf)
 postulate
   atp-canonicalize
     : ∀ {Γ} {φ}
+    → (φ′ : Prop)
     → Γ ⊢ φ
-    → Γ ⊢ canonicalize φ
+    → Γ ⊢ canonicalize φ to φ′

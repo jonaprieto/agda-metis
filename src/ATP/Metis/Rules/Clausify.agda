@@ -14,11 +14,12 @@ open import Function using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
-clausify : Prop → Prop
-clausify = id
+clausify : Prop → Prop → Prop
+clausify φ φ′ = φ′
 
-atp-clausify : ∀ {Γ} {φ}
-             → Γ ⊢ φ
-             → Γ ⊢ clausify φ
-
-atp-clausify = id
+postulate
+  atp-clausify
+    : ∀ {Γ} {φ}
+    → (φ′ : Prop)
+    → Γ ⊢ φ
+    → Γ ⊢ clausify φ φ′

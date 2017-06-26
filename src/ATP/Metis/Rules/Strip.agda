@@ -51,10 +51,10 @@ unshunt′ (suc n) φ with unshunt-view φ
 ... | case₂ φ₁ φ₂ φ₃ = (unshunt′ n (φ₁ ⇒ φ₂)) ∧ (unshunt′ n (φ₁ ⇒ φ₃))
 ... | other _        = φ
 
-♯calls-unshunt : Prop → ℕ
-♯calls-unshunt φ with unshunt-view φ
-... | case₁ _ _ φ₃  = 2 + ♯calls-unshunt φ₃
-... | case₂ _ φ₂ φ₃ = 1 + ♯calls-unshunt φ₂ + ♯calls-unshunt φ₃
+calls-unshunt : Prop → ℕ
+calls-unshunt φ with unshunt-view φ
+... | case₁ _ _ φ₃  = 2 + calls-unshunt φ₃
+... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
 ... | other .φ      = 1
 
 postulate
@@ -65,7 +65,7 @@ postulate
     → Γ ⊢ unshunt′ n φ
 
 unshunt : Prop → Prop
-unshunt φ = unshunt′ (♯calls-unshunt φ + 1) φ
+unshunt φ = unshunt′ (calls-unshunt φ + 1) φ
 
 postulate
   thm-unshunt
@@ -74,26 +74,30 @@ postulate
     → Γ ⊢ unshunt φ
 
 data StripView : Prop → Set where
-  conj  : (φ₁ φ₂ : Prop) → StripView (φ₁ ∧ φ₂)
-  disj  : (φ₁ φ₂ : Prop) → StripView (φ₁ ∨ φ₂)
-  impl  : (φ₁ φ₂ : Prop) → StripView (φ₁ ⇒ φ₂)
-  nconj : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∧ φ₂))
-  ndisj : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∨ φ₂))
-  nimpl : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ⇒ φ₂))
-  nneg  : (φ₁ : Prop)    → StripView (¬ ¬ φ₁)
-  nbot  : StripView (¬ ⊥)
-  ntop  : StripView (¬ ⊤)
-  other : (φ₁ : Prop)    → StripView φ₁
+  conj     : (φ₁ φ₂ : Prop) → StripView (φ₁ ∧ φ₂)
+  disj     : (φ₁ φ₂ : Prop) → StripView (φ₁ ∨ φ₂)
+  impl     : (φ₁ φ₂ : Prop) → StripView (φ₁ ⇒ φ₂)
+  biimpl   : (φ₁ φ₂ : Prop) → StripView (φ₁ ⇔ φ₂)
+  nconj    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∧ φ₂))
+  ndisj    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∨ φ₂))
+  nimpl    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ⇒ φ₂))
+  nbiimpl  : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ⇔ φ₂))
+  nneg     : (φ₁ : Prop)    → StripView (¬ ¬ φ₁)
+  nbot     : StripView (¬ ⊥)
+  ntop     : StripView (¬ ⊤)
+  other    : (φ₁ : Prop)    → StripView φ₁
 
 strip-view : (φ : Prop) → StripView φ
 strip-view (φ₁ ∧ φ₂)     = conj _ _
 strip-view (φ₁ ∨ φ₂)     = disj _ _
 strip-view (φ₁ ⇒ φ₂)     = impl _ _
+strip-view (φ₁ ⇔ φ₂)     = biimpl _ _
 strip-view (¬ ⊤)         = ntop
 strip-view (¬ ⊥)         = nbot
 strip-view (¬ (φ₁ ∧ φ₂)) = nconj _ _
 strip-view (¬ (φ₁ ∨ φ₂)) = ndisj _ _
 strip-view (¬ (φ₁ ⇒ φ₂)) = nimpl _ _
+strip-view (¬ (φ₁ ⇔ φ₂)) = nbiimpl _ _
 strip-view (¬ (¬ φ₁))    = nneg _
 strip-view φ₁            = other _
 
@@ -101,16 +105,20 @@ strip-view φ₁            = other _
 split-goal₀ : Prop → Prop
 split-goal₀ φ
   with strip-view φ
-...  | conj φ₁ φ₂   = unshunt (split-goal₀ φ₁) ∧ unshunt (φ₁ ⇒ split-goal₀ φ₂)
-...  | disj φ₁ φ₂   = unshunt (¬ φ₁ ⇒ (split-goal₀ φ₂))
-...  | impl φ₁ φ₂   = unshunt (φ₁ ⇒ (split-goal₀ φ₂))
-...  | nconj φ₁ φ₂  = unshunt (φ₁ ⇒ (split-goal₀ (¬ φ₂)))
-...  | ndisj φ₁ φ₂  = unshunt (split-goal₀ (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
-...  | nimpl φ₁ φ₂  = unshunt (split-goal₀ φ₁) ∧ unshunt ( ¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
-...  | nneg φ₁      = unshunt (split-goal₀ φ₁)
-...  | nbot         = ⊤
-...  | ntop         = ⊥
-...  | other .φ     = φ
+...  | conj φ₁ φ₂    = unshunt (split-goal₀ φ₁) ∧ unshunt (φ₁ ⇒ split-goal₀ φ₂)
+...  | disj φ₁ φ₂    = unshunt (¬ φ₁ ⇒ (split-goal₀ φ₂))
+...  | impl φ₁ φ₂    = unshunt (φ₁ ⇒ (split-goal₀ φ₂))
+...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (split-goal₀ φ₂)) ∧ unshunt (φ₂ ⇒ (split-goal₀ φ₁))
+...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (split-goal₀ (¬ φ₂)))
+...  | ndisj φ₁ φ₂   = unshunt (split-goal₀ (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
+...  | nimpl φ₁ φ₂   = unshunt (split-goal₀ φ₁) ∧ unshunt ( ¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
+...  | nbiimpl φ₁ φ₂ =
+  unshunt (split-goal₀ φ₁) ∧ unshunt ( ¬ φ₁ ⇒ split-goal₀ (¬ φ₂))
+  ∧ unshunt (split-goal₀ φ₂) ∧ unshunt ( ¬ φ₂ ⇒ split-goal₀ (¬ φ₁))
+...  | nneg φ₁       = unshunt (split-goal₀ φ₁)
+...  | nbot          = ⊤
+...  | ntop          = ⊥
+...  | other .φ      = φ
 
 
 postulate
