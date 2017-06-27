@@ -156,12 +156,14 @@ hard-simplify x y | swap .x .y   = simplify y x
 -- atp-simplify.
 ------------------------------------------------------------------------------
 
-atp-simplify
-  : ∀ {Γ} {φ ψ}
-  → Γ ⊢ φ
-  → Γ ⊢ ψ
-  → Γ ⊢ hard-simplify φ ψ
+postulate
+  atp-simplify
+    : ∀ {Γ} {φ ψ}
+    → (γ : Prop)
+    → Γ ⊢ φ
+    → Γ ⊢ ψ
+    → Γ ⊢ γ
 
-atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ with s-view φ ψ
-atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | normal φ ψ = atp-simplify₀ Γ⊢φ Γ⊢ψ
-atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | swap φ ψ   = atp-simplify₀ Γ⊢ψ Γ⊢φ
+-- atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ with s-view φ ψ
+-- atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | normal φ ψ = atp-simplify₀ Γ⊢φ Γ⊢ψ
+-- atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | swap φ ψ   = atp-simplify₀ Γ⊢ψ Γ⊢φ
