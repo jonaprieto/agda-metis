@@ -172,4 +172,4 @@ postulate
     : ∀ {Γ} {φ}
     → (φ′ : Prop)
     → Γ ⊢ φ
-    → Γ ⊢ canonicalize φ to φ′
+    → Γ ⊢ φ′

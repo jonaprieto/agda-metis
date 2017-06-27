@@ -128,4 +128,4 @@ postulate
     → (l : Prop)
     → Γ ⊢ φ₁
     → Γ ⊢ φ₂
-    → Γ ⊢ resolve φ′ l φ₁ φ₂
+    → Γ ⊢ φ′
