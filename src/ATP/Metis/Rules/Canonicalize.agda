@@ -57,7 +57,6 @@ data canonView : Prop  → Set where
 
 
 canon-view : (φ : Prop) → canonView φ
-
 canon-view (φ ∧ ⊤) = sconj₁ _
 canon-view (⊤ ∧ φ) = sconj₂ _
 canon-view (φ ∧ ⊥) = sconj₃ _
@@ -87,6 +86,34 @@ canon-view (¬ (φ ∨ φ₁)) = ndisj φ φ₁
 canon-view (¬ (¬ φ))    = nneg φ
 canon-view  φ           = other _
 
+apply-canon-once : Prop → Prop
+apply-canon-once φ with canon-view φ
+... | sconj₁ φ₁    = φ₁
+... | sconj₂ φ₁    = φ₁
+... | sconj₃ _     = ⊥
+... | sconj₄ _     = ⊥
+... | sconj₅ φ₁ _  = φ₁
+... | sconj₆ φ₁ φ₂ = ⊥
+... | sconj₇ φ₁ φ₂ = ⊥
+... | sconj₈ φ₁ φ₂ = φ₁ ∧ φ₂
+
+... | sdisj₁ φ₁    = φ₁
+... | sdisj₂ φ₁    = φ₁
+... | sdisj₃ φ₁    = φ₁
+... | sdisj₄ φ₁    = φ₁
+... | sdisj₅ φ₁ φ₂ = φ₁
+... | sdisj₆ φ₁ φ₂ = ⊤
+... | sdisj₇ φ₁ φ₂ = ⊤
+... | sdisj₈ φ₁ φ₂ = φ₁ ∨ φ₂
+
+... | nconj φ₁ φ₂  = φ₂
+... | ndisj φ₁ φ₂  = φ₂
+... | nneg φ₁      = φ₁
+... | ntop         = ⊤
+... | nbot         = ⊤
+... | other .φ     = φ
+
+
 canon : ℕ → Prop → Prop
 canon zero φ    = φ
 canon (suc n) φ with canon-view φ
@@ -97,7 +124,7 @@ canon (suc n) φ with canon-view φ
 ... | sconj₅ φ₁ _  = canon n φ₁
 ... | sconj₆ φ₁ φ₂ = ⊥
 ... | sconj₇ φ₁ φ₂ = ⊥
-... | sconj₈ φ₁ φ₂ = canon n (canon n φ₁ ∧ canon n φ₂)
+... | sconj₈ φ₁ φ₂ = apply-canon-once (canon n φ₁ ∧ canon n φ₂)
 
 ... | sdisj₁ φ₁    = canon n φ₁
 ... | sdisj₂ φ₁    = canon n φ₁
@@ -106,7 +133,7 @@ canon (suc n) φ with canon-view φ
 ... | sdisj₅ φ₁ φ₂ = canon n φ₁
 ... | sdisj₆ φ₁ φ₂ = ⊤
 ... | sdisj₇ φ₁ φ₂ = ⊤
-... | sdisj₈ φ₁ φ₂ = canon n (canon n φ₁ ∨ canon n φ₂)
+... | sdisj₈ φ₁ φ₂ = apply-canon-once (canon n φ₁ ∨ canon n φ₂)
 
 ... | nconj φ₁ φ₂  = φ₂
 ... | ndisj φ₁ φ₂  = φ₂
