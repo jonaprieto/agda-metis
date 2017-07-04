@@ -23,6 +23,7 @@ open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
 open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
 open import Data.Prop.Views n
+open import Data.Prop.SyntaxExperiment n
 
 open import Function                      using ( _$_; id; _∘_ )
 open import Relation.Nullary renaming (¬_ to ¬₂)
@@ -51,11 +52,33 @@ unshunt′ (suc n) φ with unshunt-view φ
 ... | case₂ φ₁ φ₂ φ₃ = (unshunt′ n (φ₁ ⇒ φ₂)) ∧ (unshunt′ n (φ₁ ⇒ φ₃))
 ... | other _        = φ
 
+thm-inv-unshunt′
+  : ∀ {Γ} {φ}
+  → (n : ℕ)
+  → Γ ⊢ unshunt′ n φ
+  → Γ ⊢ φ
+
+thm-inv-unshunt′ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
+thm-inv-unshunt′ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
+... | case₁ φ₁ φ₂ φ₃ =
+  ∧⇒-to-⇒⇒
+    (thm-inv-unshunt′ n
+      Γ⊢ushuntnφ)
+... | case₂ φ₁ φ₂ φ₃ =
+  ⇒∧⇒-to-⇒∧
+    (∧-intro
+      (thm-inv-unshunt′ n
+        (∧-proj₁ Γ⊢ushuntnφ))
+      (thm-inv-unshunt′ n
+        (∧-proj₂ Γ⊢ushuntnφ)))
+... | other _ = Γ⊢ushuntnφ
+
 calls-unshunt : Prop → ℕ
 calls-unshunt φ with unshunt-view φ
 ... | case₁ _ _ φ₃  = 2 + calls-unshunt φ₃
 ... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
 ... | other .φ      = 1
+
 
 postulate
   thm-unshunt′
@@ -72,6 +95,13 @@ postulate
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
     → Γ ⊢ unshunt φ
+
+thm-inv-unshunt
+  : ∀ {Γ} {φ}
+  → Γ ⊢ unshunt φ
+  → Γ ⊢ φ
+
+thm-inv-unshunt {_} {φ} = thm-inv-unshunt′ (calls-unshunt φ + 1)
 
 data StripView : Prop → Set where
   conj     : (φ₁ φ₂ : Prop) → StripView (φ₁ ∧ φ₂)
@@ -120,6 +150,78 @@ split-goal₀ φ
 ...  | ntop          = ⊥
 ...  | other .φ      = φ
 
+-- * SplitGoal theorem.
+thm
+  : ∀ {Γ} {φ}
+  → Γ ⊢ split-goal₀ φ
+  → Γ ⊢ φ
+
+thm {Γ} {φ} split with strip-view φ
+thm {Γ} {.(φ₁ ∧ φ₂)} split | conj φ₁ φ₂ =
+  ∧-intro p (thm (⇒-elim (thm-inv-unshunt (∧-proj₂ split)) p ))
+  where
+    p : Γ ⊢ φ₁
+    p = thm (thm-inv-unshunt (∧-proj₁ split))
+
+thm {Γ} {.(φ₁ ∨ φ₂)} split | disj φ₁ φ₂ =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+        (∨-intro₂ φ₁
+          (thm
+            (⇒-elim
+              (thm-inv-unshunt
+                (weaken (¬ φ₁) split))
+              (assume {Γ = Γ} (¬ φ₁)))))))
+    (PEM {Γ = Γ} {φ = φ₁})
+
+thm {Γ} {.(φ₁ ⇒ φ₂)} split | impl φ₁ φ₂ =
+ ⇒-intro
+   (thm
+     (⇒-elim
+       (weaken φ₁
+         (thm-inv-unshunt split))
+         (assume {Γ = Γ} φ₁)))
+
+thm {Γ} {.(φ₁ ⇔ φ₂)} split    | biimpl φ₁ φ₂ =
+  ⇔-equiv₂ (∧-intro p1 p2)
+  where
+    p1 : Γ ⊢ φ₁ ⇒ φ₂
+    p1 = ⇒-intro
+         (thm
+           (⇒-elim
+             (weaken φ₁
+               (thm-inv-unshunt (∧-proj₁ split)))
+             (assume {Γ = Γ} φ₁)))
+
+    p2 : Γ ⊢ φ₂ ⇒ φ₁
+    p2 = ⇒-intro
+          (thm
+            (⇒-elim
+              (weaken φ₂
+                (thm-inv-unshunt (∧-proj₂ split)))
+             (assume {Γ = Γ} φ₂)))
+
+thm {Γ} {.(¬ (φ₁ ∧ φ₂))} split | nconj φ₁ φ₂ =
+  {!!} --  ¬∨¬-to-¬∧ (⇒-to-¬∨ {!!})
+  where
+    p1 : Γ ⊢ φ₁ ⇒ ¬ φ₂
+    p1 =
+      (⇒-intro
+        (thm {!!}))
+          -- (⇒-elim
+          --   (weaken φ₁
+          --     (thm-inv-unshunt split))
+          -- (assume {Γ = Γ} φ₁))))
+
+thm {Γ} {.(¬ (φ₁ ∨ φ₂))} split | ndisj φ₁ φ₂ = {!!}
+thm {Γ} {.(¬ (φ₁ ⇒ φ₂))} split | nimpl φ₁ φ₂ = {!!}
+thm {Γ} {.(¬ (φ₁ ⇔ φ₂))} split | nbiimpl φ₁ φ₂ = {!!}
+thm {Γ} {.(¬ (¬ φ₁))} split | nneg φ₁ = ¬¬-equiv₂ (thm (thm-inv-unshunt split))
+thm {Γ} {.(¬ ⊥)} split | nbot = ¬-intro (assume {Γ = Γ} ⊥)
+thm {Γ} {.(¬ ⊤)} split | ntop = ⊥-elim (¬ ⊤) split
+thm {Γ} {.φ₁} split | other φ₁ = split
 
 postulate
   thm-split-goal₀
