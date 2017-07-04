@@ -3,10 +3,6 @@
 -- Strip inference rule.
 ------------------------------------------------------------------------------
 
--- {-# OPTIONS --exact-split #-}
-{-# OPTIONS --allow-unsolved-metas #-}
-
-
 open import Data.Nat using ( ℕ ; zero ; suc; _+_ )
 
 module ATP.Metis.Rules.Strip ( n : ℕ ) where
@@ -23,11 +19,10 @@ open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
 open import Data.Prop.Syntax n
 open import Data.Prop.Theorems n
 open import Data.Prop.Views n
-open import Data.Prop.SyntaxExperiment n
 
-open import Function                      using ( _$_; id; _∘_ )
-open import Relation.Nullary renaming (¬_ to ¬₂)
+open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
+open import Relation.Nullary                      renaming (¬_ to ¬₂)
 
 ------------------------------------------------------------------------------
 
@@ -78,7 +73,6 @@ calls-unshunt φ with unshunt-view φ
 ... | case₁ _ _ φ₃  = 2 + calls-unshunt φ₃
 ... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
 ... | other .φ      = 1
-
 
 postulate
   thm-unshunt′
@@ -132,37 +126,42 @@ split-view (¬ (¬ φ₁))    = nneg _
 split-view φ₁            = other _
 
 
-split : ℕ → Prop → Prop
-split zero φ = φ
-split (suc n) φ
+splitₙ : ℕ → Prop → Prop
+splitₙ zero φ = φ
+splitₙ (suc n) φ
   with split-view φ
-...  | conj φ₁ φ₂    = unshunt (split n φ₁) ∧ unshunt (φ₁ ⇒ split n φ₂)
-...  | disj φ₁ φ₂    = unshunt (¬ φ₁ ⇒ (split n φ₂))
-...  | impl φ₁ φ₂    = unshunt (φ₁ ⇒ (split n φ₂))
-...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (split n φ₂)) ∧ unshunt (φ₂ ⇒ (split n φ₁))
-...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (split n (¬ φ₂)))
-...  | ndisj φ₁ φ₂   = unshunt (split n (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ split n (¬ φ₂))
-...  | nimpl φ₁ φ₂   = unshunt (split n φ₁) ∧ unshunt (φ₁ ⇒ split n (¬ φ₂))
-...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ split n (¬ φ₂)) ∧ unshunt ( φ₂ ⇒ split n (¬ φ₁))
-...  | nneg φ₁       = unshunt (split n φ₁)
+...  | conj φ₁ φ₂    = unshunt (splitₙ n φ₁) ∧ unshunt (φ₁ ⇒ splitₙ n φ₂)
+...  | disj φ₁ φ₂    = unshunt (¬ φ₁ ⇒ (splitₙ n φ₂))
+...  | impl φ₁ φ₂    = unshunt (φ₁ ⇒ (splitₙ n φ₂))
+...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (splitₙ n φ₂)) ∧ unshunt (φ₂ ⇒ (splitₙ n φ₁))
+...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (splitₙ n (¬ φ₂)))
+...  | ndisj φ₁ φ₂   = unshunt (splitₙ n (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ splitₙ n (¬ φ₂))
+...  | nimpl φ₁ φ₂   = unshunt (splitₙ n φ₁) ∧ unshunt (φ₁ ⇒ splitₙ n (¬ φ₂))
+...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧ unshunt ( φ₂ ⇒ splitₙ n (¬ φ₁))
+...  | nneg φ₁       = unshunt (splitₙ n φ₁)
 ...  | nbot          = ⊤
 ...  | ntop          = ⊥
 ...  | other .φ      = φ
 
--- * SplitGoal theorem.
-thm
+-- * SplitₙGoal theorem.
+thm-splitₙ
   : ∀ {Γ} {φ}
   → (n : ℕ)
-  → Γ ⊢ split n φ
+  → Γ ⊢ splitₙ n φ
   → Γ ⊢ φ
 
-thm {_} {_} zero Γ⊢split = Γ⊢split
-thm {Γ} {φ} (suc n) Γ⊢split with split-view φ
+thm-splitₙ {_} {_} zero Γ⊢splitₙ = Γ⊢splitₙ
+thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | conj φ₁ φ₂ =
-  ∧-intro p (thm n (⇒-elim (thm-inv-unshunt (∧-proj₂ Γ⊢split)) p ))
+  ∧-intro
+    helper
+    (thm-splitₙ n
+      (⇒-elim
+        (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ))
+        helper ))
   where
-    p : Γ ⊢ φ₁
-    p = thm n (thm-inv-unshunt (∧-proj₁ Γ⊢split))
+    helper : Γ ⊢ φ₁
+    helper = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
 
 ... | disj φ₁ φ₂ =
   ⇒-elim
@@ -170,38 +169,38 @@ thm {Γ} {φ} (suc n) Γ⊢split with split-view φ
       (∨-elim {Γ = Γ}
         (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
         (∨-intro₂ φ₁
-          (thm n
+          (thm-splitₙ n
             (⇒-elim
               (thm-inv-unshunt
-                (weaken (¬ φ₁) Γ⊢split))
+                (weaken (¬ φ₁) Γ⊢splitₙ))
               (assume {Γ = Γ} (¬ φ₁)))))))
     (PEM {Γ = Γ} {φ = φ₁})
 
 ... | impl φ₁ φ₂ =
  ⇒-intro
-   (thm n
+   (thm-splitₙ n
      (⇒-elim
        (weaken φ₁
-         (thm-inv-unshunt Γ⊢split))
+         (thm-inv-unshunt Γ⊢splitₙ))
          (assume {Γ = Γ} φ₁)))
 
 ... | biimpl φ₁ φ₂ =
-  ⇔-equiv₂ (∧-intro p1 p2)
+  ⇔-equiv₂ (∧-intro helper₁ helper₂)
   where
-    p1 : Γ ⊢ φ₁ ⇒ φ₂
-    p1 = ⇒-intro
-         (thm n
+    helper₁ : Γ ⊢ φ₁ ⇒ φ₂
+    helper₁ = ⇒-intro
+         (thm-splitₙ n
            (⇒-elim
              (weaken φ₁
-               (thm-inv-unshunt (∧-proj₁ Γ⊢split)))
+               (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ)))
              (assume {Γ = Γ} φ₁)))
 
-    p2 : Γ ⊢ φ₂ ⇒ φ₁
-    p2 = ⇒-intro
-          (thm n
+    helper₂ : Γ ⊢ φ₂ ⇒ φ₁
+    helper₂ = ⇒-intro
+          (thm-splitₙ n
             (⇒-elim
               (weaken φ₂
-                (thm-inv-unshunt (∧-proj₂ Γ⊢split)))
+                (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ)))
              (assume {Γ = Γ} φ₂)))
 
 ... |  nconj φ₁ φ₂ =
@@ -210,25 +209,25 @@ thm {Γ} {φ} (suc n) Γ⊢split with split-view φ
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       (⇒-intro
-        (thm n
+        (thm-splitₙ n
           (⇒-elim
             (weaken φ₁
-              (thm-inv-unshunt Γ⊢split))
+              (thm-inv-unshunt Γ⊢splitₙ))
           (assume {Γ = Γ} φ₁))))
 
-... | ndisj φ₁ φ₂   =
+... | ndisj φ₁ φ₂ =
   ¬∧¬-to-¬∨
     (∧-intro
       helper
-      (thm n
+      (thm-splitₙ n
         (⇒-elim
-          (thm-inv-unshunt (∧-proj₂ Γ⊢split))
+          (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ))
           helper)))
   where
     helper : Γ ⊢ ¬ φ₁
-    helper = thm n (thm-inv-unshunt (∧-proj₁ Γ⊢split))
+    helper = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
 
-... | nimpl φ₁ φ₂   =
+... | nimpl φ₁ φ₂ =
   ¬-intro
     (¬-elim
       (weaken (φ₁ ⇒ φ₂)
@@ -240,14 +239,14 @@ thm {Γ} {φ} (suc n) Γ⊢split with split-view φ
         (weaken (φ₁ ⇒ φ₂) Γ⊢φ₁)))
   where
     Γ⊢φ₁ : Γ ⊢ φ₁
-    Γ⊢φ₁ = thm n (thm-inv-unshunt (∧-proj₁ Γ⊢split))
+    Γ⊢φ₁ = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
 
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       ⇒-intro
-        (thm n
+        (thm-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₁ (∧-proj₂ Γ⊢split)))
+            (thm-inv-unshunt (weaken φ₁ (∧-proj₂ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
 ... | nbiimpl φ₁ φ₂ = ⇒¬∧⇒¬-to-¬⇔ (∧-intro helper₁ helper₂)
@@ -255,59 +254,52 @@ thm {Γ} {φ} (suc n) Γ⊢split with split-view φ
     helper₁ : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper₁ =
       ⇒-intro
-        (thm n
+        (thm-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₁ (∧-proj₁ Γ⊢split)))
+            (thm-inv-unshunt (weaken φ₁ (∧-proj₁ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
     helper₂ : Γ ⊢ φ₂ ⇒ ¬ φ₁
     helper₂ =
       ⇒-intro
-        (thm n
+        (thm-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₂ (∧-proj₂ Γ⊢split)))
+            (thm-inv-unshunt (weaken φ₂ (∧-proj₂ Γ⊢splitₙ)))
           (assume {Γ = Γ} φ₂)))
-          
-... | nneg φ₁ = ¬¬-equiv₂ (thm n (thm-inv-unshunt Γ⊢split))
-... | nbot = ¬-intro (assume {Γ = Γ} ⊥)
-... | ntop = ⊥-elim (¬ ⊤) Γ⊢split
-... | other φ₁ = Γ⊢split
 
--- postulate
---   thm-split
---     : ∀ {Γ} {φ}
---     → Γ ⊢ φ
---     → Γ ⊢ split φ
+... | nneg φ₁  = ¬¬-equiv₂ (thm-splitₙ n (thm-inv-unshunt Γ⊢splitₙ))
+... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
+... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
+... | other φ₁ = Γ⊢splitₙ
 
--- thm-split
---   : ∀ {Γ} {φ}
---   → (n : ℕ)
---   → Γ ⊢ φ
---   → Γ ⊢ split φ
+split-calls : Prop → ℕ
+split-calls φ with split-view φ
+... | conj φ₁ φ₂    = split-calls φ₁ + split-calls φ₂
+... | disj φ₁ φ₂    = split-calls φ₂ + 1
+... | impl φ₁ φ₂    = split-calls φ₂
+... | biimpl φ₁ φ₂  = split-calls φ₁ + split-calls φ₂
+... | nconj φ₁ φ₂   = split-calls (¬ φ₂)
+... | ndisj φ₁ φ₂   = split-calls (¬ φ₁) + split-calls (¬ φ₂)
+... | nimpl φ₁ φ₂   = split-calls φ₁ + split-calls (¬ φ₂)
+... | nbiimpl φ₁ φ₂ = split-calls (¬ φ₁) + split-calls (¬ φ₂)
+... | nneg φ₁       = split-calls φ₁
+... | nbot          = 1
+... | ntop          = 1
+... | other .φ      = 1
 
--- thm-split {Γ} {φ} n Γ⊢φ = ?
+split : Prop → Prop
+split φ = splitₙ (split-calls φ) φ
 
--- split-goal : Prop → Prop
--- split-goal = unshunt ∘ split
+thm-split
+  : ∀ {Γ} {φ}
+  → Γ ⊢ split φ
+  → Γ ⊢ φ
+thm-split {_} {φ} = thm-splitₙ (split-calls φ)
 
--- thm-split-goal
---   : ∀ {Γ} {φ}
---   → Γ ⊢ φ
---   → Γ ⊢ split-goal φ
+atp-split
+  : ∀ {Γ} {φ}
+  → Γ ⊢ split φ ⇒ φ
+atp-split {Γ} {φ} = ⇒-intro (thm-split (assume {Γ = Γ} (split φ))) 
 
--- thm-split-goal = thm-unshunt ∘ thm-split
-
--- strip_to_ : Prop → Prop → Prop
--- strip φ to ψ = conjunct (split-goal φ) ψ
-
--- postulate
---   atp-strip-to
---     : ∀ {Γ} {φ}
---     → (ψ : Prop)
---     → Γ ⊢ φ
---     → Γ ⊢ strip φ to ψ
-
--- postulate
---   atp-splitGoal
---     : ∀ {Γ} {φ}
---     → Γ ⊢ split-goal φ ⇒ φ
+strip_to_ : Prop → Prop → Prop
+strip φ to ψ = conjunct (split φ) ψ
