@@ -274,15 +274,15 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 
 split-calls : Prop → ℕ
 split-calls φ with split-view φ
-... | conj φ₁ φ₂    = split-calls φ₁ + split-calls φ₂
+... | conj φ₁ φ₂    = split-calls φ₁ + split-calls φ₂ + 1
 ... | disj φ₁ φ₂    = split-calls φ₂ + 1
-... | impl φ₁ φ₂    = split-calls φ₂
-... | biimpl φ₁ φ₂  = split-calls φ₁ + split-calls φ₂
-... | nconj φ₁ φ₂   = split-calls (¬ φ₂)
-... | ndisj φ₁ φ₂   = split-calls (¬ φ₁) + split-calls (¬ φ₂)
-... | nimpl φ₁ φ₂   = split-calls φ₁ + split-calls (¬ φ₂)
-... | nbiimpl φ₁ φ₂ = split-calls (¬ φ₁) + split-calls (¬ φ₂)
-... | nneg φ₁       = split-calls φ₁
+... | impl φ₁ φ₂    = split-calls φ₂ + 1
+... | biimpl φ₁ φ₂  = split-calls φ₁ + split-calls φ₂ + 1
+... | nconj φ₁ φ₂   = split-calls (¬ φ₂) + 1
+... | ndisj φ₁ φ₂   = split-calls (¬ φ₁) + split-calls (¬ φ₂) + 1
+... | nimpl φ₁ φ₂   = split-calls φ₁ + split-calls (¬ φ₂) + 1
+... | nbiimpl φ₁ φ₂ = split-calls (¬ φ₁) + split-calls (¬ φ₂) + 1
+... | nneg φ₁       = split-calls φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
 ... | other .φ      = 1
@@ -299,7 +299,7 @@ thm-split {_} {φ} = thm-splitₙ (split-calls φ)
 atp-split
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ ⇒ φ
-atp-split {Γ} {φ} = ⇒-intro (thm-split (assume {Γ = Γ} (split φ))) 
+atp-split {Γ} {φ} = ⇒-intro (thm-split (assume {Γ = Γ} (split φ)))
 
 strip_to_ : Prop → Prop → Prop
 strip φ to ψ = conjunct (split φ) ψ
