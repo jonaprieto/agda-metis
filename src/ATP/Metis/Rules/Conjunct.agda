@@ -76,9 +76,8 @@ atp-conjunct {Γ} {φ} ψ Γ⊢φ
 ...  | other .φ    | (_ ∷ _)   = Γ⊢φ
 
 ------------------------------------------------------------------------------
--- rearrange-∧ is a function that only works with conjunctions, it rearranges
--- the order of its inner formulas given a target based on an expected order.
--- Notice that the target is a conjunction (φ ∧ ψ).
+-- rearrange-∧ is a function that only works with conjunctions, it fixes
+-- the order of a conjunction with a given a target for the expected order.
 ------------------------------------------------------------------------------
 
 data R-View : Prop → Prop → Set where
@@ -86,9 +85,14 @@ data R-View : Prop → Prop → Set where
   other : (φ ψ : Prop)     → R-View φ ψ
 
 rearrange-∧ : Prop → Prop → Prop
-rearrange-∧ φ ψ with conj-view ψ
-... | conj ψ₁ ψ₂ = conjunct φ ψ₁ ∧ rearrange-∧ φ ψ₂
-... | other _    = φ
+rearrange-∧ φ ψ
+  with conj-view ψ
+...  | other _       = conjunct φ ψ
+...  | conj ψ₁ ψ₂
+     with conj-view φ
+...     | conj φ₁ φ₂ = (rearrange-∧ φ ψ₁) ∧ (rearrange-∧ φ ψ₂)
+...     | other .φ   = φ
+
 
 atp-rearrange-∧
   : ∀ {Γ} {φ}
@@ -96,6 +100,13 @@ atp-rearrange-∧
   → Γ ⊢ φ
   → Γ ⊢ rearrange-∧ φ ψ
 
-atp-rearrange-∧ {Γ} {φ} ψ Γ⊢φ with conj-view ψ
-... | conj  ψ₁ ψ₂ = ∧-intro (atp-conjunct ψ₁ Γ⊢φ) (atp-rearrange-∧ ψ₂ Γ⊢φ)
-... | other _     = Γ⊢φ
+atp-rearrange-∧ {Γ} {φ} ψ Γ⊢φ
+  with conj-view ψ
+...  | other _       = atp-conjunct ψ Γ⊢φ
+...  | conj ψ₁ ψ₂
+  with conj-view φ
+...     | conj φ₁ φ₂ =
+               ∧-intro
+                 (atp-rearrange-∧ ψ₁ Γ⊢φ)
+                 (atp-rearrange-∧ ψ₂ Γ⊢φ)
+...     | other .φ   = Γ⊢φ
