@@ -12,6 +12,8 @@ module ATP.Metis.Rules.Resolve ( n : ℕ ) where
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
 open import Data.Prop.Properties n           using ( eq )
+open import Data.Prop.Views n
+  using ( DisjView; disj-view; disj; other)
 
 open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
 open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2 )
@@ -129,3 +131,56 @@ postulate
     → Γ ⊢ φ₁
     → Γ ⊢ φ₂
     → Γ ⊢ φ′
+
+------------------------------------------------------------------------------
+-- Reordering of a disjunction.
+------------------------------------------------------------------------------
+
+reorder-∨ : Prop → Prop → Prop
+reorder-∨ φ ψ
+  with disj-view φ
+...  | other _  = φ
+...  | disj φ₁ φ₂
+     with disj-view ψ
+...     | other _    = φ
+...     | disj ψ₁ ψ₂
+        with ⌊ eq φ₁ ψ₁ ⌋ | ⌊ eq φ₁ ψ₂ ⌋ | ⌊ eq φ₂ ψ₁ ⌋ | ⌊ eq φ₂ ψ₂ ⌋
+...        | true | _    | _    | _    = φ₁ ∨ (reorder-∨ φ₂ ψ₂)
+...        | _    | true | _    | _    = φ₁ ∨ (reorder-∨ φ₂ ψ₁)
+...        | _    | _    | true | _    = φ₂ ∨ (reorder-∨ φ₁ ψ₂)
+...        | _    | _    | _    | true = φ₂ ∨ (reorder-∨ φ₁ ψ₁)
+...        | _    | _    | _    | _    = (reorder-∨ φ ψ₁) ∨ (reorder-∨ φ ψ₂)
+
+thm-s₁ : ∀ {Γ} {φ₁ φ₂} → Γ ⊢ φ₁ ∨ φ₂ → (ψ : Prop) → Γ , φ₁ ⊢ reorder-∨ (φ₁ ∨ φ₂) ψ
+thm-s₁ {Γ} {φ₁}{φ₂} Γ⊢φ ψ
+  with disj-view ψ
+...     | other _    = weaken φ₁ Γ⊢φ
+...     | disj ψ₁ ψ₂
+  with ⌊ eq φ₁ ψ₁ ⌋ | ⌊ eq φ₁ ψ₂ ⌋ | ⌊ eq φ₂ ψ₁ ⌋ | ⌊ eq φ₂ ψ₂ ⌋
+...        | true | _    | _    | _    = {!!} -- ∨-intro₁ (reorder-∨ φ₂ ψ₂) (assume {Γ = Γ} φ₁)
+...        | _    | true | _    | _    = {!!}
+...        | _    | _    | true | _    = {!!}
+...        | _    | _    | _    | true = {!!}
+...        | _    | _    | _    | _    = {!!}
+
+thm-s₂ : ∀ {Γ} {p q} → Γ ⊢ p ∨ q → (ψ : Prop) → Γ , q ⊢ reorder-∨ (p ∨ q) ψ
+thm-s₂ = {!!}
+
+
+thm-reorder-∨
+  : ∀ {Γ} {p q}
+  → (ψ : Prop)
+  → Γ ⊢ p ∨ q
+  → Γ ⊢ reorder-∨ (p ∨ q) ψ
+
+thm-reorder-∨ {Γ} {φ} ψ Γ⊢φ  =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (thm-s₁ Γ⊢φ ψ)
+        (thm-s₂ Γ⊢φ ψ)))
+    Γ⊢φ
+
+
+
+
