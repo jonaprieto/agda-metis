@@ -25,7 +25,7 @@ subgoal₀ : Prop
 subgoal₀ = ((p ∧ (p ⇒ q)) ⇒ q)
 
 t : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
-t = thm-cnf (atp-strip (assume {Γ = Γ} (atp-negate subgoal₀)))
+t = thm-cnf (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
 
 c1 : Γ , ¬ subgoal₀ ⊢ ¬ q
 c1 = atp-conjunct (¬ q) t
