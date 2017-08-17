@@ -137,7 +137,7 @@ splitₙ (suc n) φ
 ...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (splitₙ n (¬ φ₂)))
 ...  | ndisj φ₁ φ₂   = unshunt (splitₙ n (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ splitₙ n (¬ φ₂))
 ...  | nimpl φ₁ φ₂   = unshunt (splitₙ n φ₁) ∧ unshunt (φ₁ ⇒ splitₙ n (¬ φ₂))
-...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧ unshunt ( φ₂ ⇒ splitₙ n (¬ φ₁))
+...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧ unshunt ((¬ φ₂) ⇒ splitₙ n φ₁)
 ...  | nneg φ₁       = unshunt (splitₙ n φ₁)
 ...  | nbot          = ⊤
 ...  | ntop          = ⊥
@@ -249,7 +249,7 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
             (thm-inv-unshunt (weaken φ₁ (∧-proj₂ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
-... | nbiimpl φ₁ φ₂ = ⇒¬∧⇒¬-to-¬⇔ (∧-intro helper₁ helper₂)
+... | nbiimpl φ₁ φ₂ = ⇒¬∧¬⇒-to-¬⇔ (∧-intro helper₁ helper₂)
   where
     helper₁ : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper₁ =
@@ -259,13 +259,13 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
             (thm-inv-unshunt (weaken φ₁ (∧-proj₁ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
-    helper₂ : Γ ⊢ φ₂ ⇒ ¬ φ₁
+    helper₂ : Γ ⊢ ¬ φ₂ ⇒ φ₁
     helper₂ =
       ⇒-intro
         (thm-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₂ (∧-proj₂ Γ⊢splitₙ)))
-          (assume {Γ = Γ} φ₂)))
+            (thm-inv-unshunt (weaken (¬ φ₂) (∧-proj₂ Γ⊢splitₙ)))
+            (assume {Γ = Γ} (¬ φ₂))))
 
 ... | nneg φ₁  = ¬¬-equiv₂ (thm-splitₙ n (thm-inv-unshunt Γ⊢splitₙ))
 ... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
