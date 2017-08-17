@@ -1,5 +1,6 @@
-open import ATP.Metis 2 public
-open import Data.Prop 2 public
+open import ATP.Metis 5 public
+open import Data.Prop 5 public
+
 
 -- Variables.
 
@@ -8,6 +9,15 @@ p = Var (# 0)
 
 q : Prop
 q = Var (# 1)
+
+a : Prop
+a = Var (# 2)
+
+b : Prop
+b = Var (# 3)
+
+c : Prop
+c = Var (# 4)
 
 -- Premise.
 
@@ -32,3 +42,15 @@ c1 = atp-conjunct (¬ q) t
 
 c2 : Γ , ¬ subgoal₀ ⊢ (¬ p) ∨ q
 c2 = atp-conjunct (¬ p ∨ q) t
+
+
+-- testing reorder-∨
+original : Prop
+original = a ∨ (b ∨ c)
+
+norder : Prop
+norder = (c ∨ b) ∨ a
+
+
+postulate
+  thm-orginal : ∅ ⊢ original

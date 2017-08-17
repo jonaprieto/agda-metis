@@ -142,19 +142,19 @@ reorder-∨ φ ψ
 ...  | other _  = φ
 ...  | disj φ₁ φ₂
      with disj-view ψ
-...   | other _    = φ
+...   | other _  = φ
 ...   | disj ψ₁ ψ₂
       with ⌊ eq φ₁ ψ₁ ⌋
 ...    | true  = φ₁ ∨ (reorder-∨ φ₂ ψ₂)
 ...    | false
         with ⌊ eq φ₁ ψ₂ ⌋
-...      | true = φ₁ ∨ (reorder-∨ φ₂ ψ₁)
+...      | true = (reorder-∨ φ₂ ψ₁) ∨ φ₁
 ...      | false
          with ⌊ eq φ₂ ψ₁ ⌋
 ...       | true = φ₂ ∨ (reorder-∨ φ₁ ψ₂)
 ...       | false
           with  ⌊ eq φ₂ ψ₂ ⌋
-...        | true  = φ₂ ∨ (reorder-∨ φ₁ ψ₁)
+...        | true  = (reorder-∨ φ₁ ψ₁) ∨ φ₂
 ...        | false = (reorder-∨ φ ψ₁) ∨ (reorder-∨ φ ψ₂)
 
 thm-s₁
@@ -187,13 +187,13 @@ thm-s₁ {Γ} {φ₁}{φ₂} Γ⊢φ ψ
 ...  | true  = ∨-intro₁ (reorder-∨ φ₂ ψ₂) (assume {Γ = Γ} φ₁)
 ...  | false
      with ⌊ eq φ₁ ψ₂ ⌋
-...   | true  = ∨-intro₁ (reorder-∨ φ₂ ψ₁) (assume {Γ = Γ} φ₁)
+...   | true  = ∨-intro₂ (reorder-∨ φ₂ ψ₁) (assume {Γ = Γ} φ₁)
 ...   | false
       with ⌊ eq φ₂ ψ₁ ⌋
 ...    | true = ∨-intro₂ φ₂ (thm-reorder-∨ ψ₂ (assume {Γ = Γ} φ₁))
 ...    | false
        with  ⌊ eq φ₂ ψ₂ ⌋
-...     | true  = ∨-intro₂ φ₂ (thm-reorder-∨ ψ₁ (assume {Γ = Γ}φ₁))
+...     | true  = ∨-intro₁ φ₂ (thm-reorder-∨ ψ₁ (assume {Γ = Γ} φ₁))
 ...     | false =
            ∨-intro₁
              (reorder-∨ (φ₁ ∨ φ₂) ψ₂)
@@ -207,13 +207,13 @@ thm-s₂ {Γ}{φ₁}{φ₂} Γ⊢φ ψ
 ...  | true  = ∨-intro₂ φ₁ (thm-reorder-∨ ψ₂ (assume {Γ = Γ} φ₂))
 ...  | false
      with ⌊ eq φ₁ ψ₂ ⌋
-...   | true  = ∨-intro₂ φ₁ (thm-reorder-∨ ψ₁ (assume {Γ = Γ} φ₂))
+...   | true  = ∨-intro₁ φ₁ (thm-reorder-∨ ψ₁ (assume {Γ = Γ} φ₂))
 ...   | false
       with ⌊ eq φ₂ ψ₁ ⌋
 ...    | true = ∨-intro₁ (reorder-∨ φ₁ ψ₂) (assume {Γ = Γ} φ₂)
 ...    | false
        with  ⌊ eq φ₂ ψ₂ ⌋
-...     | true  = ∨-intro₁ (reorder-∨ φ₁ ψ₁) (assume {Γ = Γ} φ₂)
+...     | true  = ∨-intro₂ (reorder-∨ φ₁ ψ₁) (assume {Γ = Γ} φ₂)
 ...     | false =
           ∨-intro₁
             (reorder-∨ (φ₁ ∨ φ₂) ψ₂)
