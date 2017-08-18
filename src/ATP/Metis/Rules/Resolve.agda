@@ -16,7 +16,8 @@ open import Data.Prop.Views n
   using ( DisjView; disj-view; disj; other)
 
 open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
-open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2; ∨-assoc₂ )
+open import Data.Prop.Theorems.Disjunction n
+  using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₂; resolve₇)
 
 open import Data.Bool                        using ( true; false )
 open import Function                         using ( _$_; id; _∘_ )
@@ -120,18 +121,6 @@ atp-resolve₉ : ∀ {Γ} {φ}
 
 atp-resolve₉ = ¬-elim
 
-
-resolve : Prop → Prop → Prop → Prop → Prop
-resolve φ′ l φ₁ φ₂ = φ′
-
-postulate
-  atp-resolve
-    : ∀ {Γ} {φ₁ φ₂}
-    → (φ′ : Prop)
-    → (l : Prop)
-    → Γ ⊢ φ₁
-    → Γ ⊢ φ₂
-    → Γ ⊢ φ′
 
 ------------------------------------------------------------------------------
 -- Reordering of a disjunction.
@@ -290,3 +279,53 @@ thm-reorder-∨
   → (ψ : Prop)
   → Γ ⊢ reorder-∨ φ ψ
 thm-reorder-∨ {Γ} {φ} Γ⊢φ ψ = thm-helper-build (thm-right-assoc-∨ Γ⊢φ) ψ
+
+
+------------------------------------------------------------------------------
+-- Resolve using reorder-∨.
+------------------------------------------------------------------------------
+
+
+helper-resolve : Prop → Prop
+helper-resolve φ
+  with tdisj-view φ
+helper-resolve .((φ₁ ∨ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃
+  with ⌊ eq φ₂ (¬ φ₁) ⌋
+... | true  = φ₃
+... | false = (φ₁ ∨ φ₂) ∨ φ₃
+helper-resolve .(φ₁ ∨ φ₂)      | case₂ φ₁ φ₂      = φ₁ ∨ φ₂
+helper-resolve φ               | other .φ         = φ
+
+postulate
+  thm-helper-resolve
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ helper-resolve φ
+
+
+resolve : Prop → Prop → Prop → Prop → Prop
+resolve goal l φ₁ φ₂ = helper-resolve (reorder-∨ (φ₁ ∨ φ₂) ((l ∨ (¬ l)) ∨ goal))
+
+-- thm-helper-resolve {_} {φ} Γ⊢φ
+--   with tdisj-view φ
+-- thm-helper-resolve {Γ} {.(φ₁ ∨ φ₂ ∨ φ₃)} Γ⊢φ | case₁ φ₁ φ₂ φ₃
+--   with eq φ₂ (¬ φ₁)
+-- ... | yes φ₂≡¬φ₁  = ?
+--     where
+--       helper : Γ ⊢ (φ₁ ∨ φ₂) ∨ (¬ φ₁) → Γ ⊢ φ₂
+--       helper = {!atp-resolve₇!}
+-- ... | no _        = Γ⊢φ
+-- thm-helper-resolve {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | case₂ φ₁ φ₂ = {!!}
+-- thm-helper-resolve {Γ} {.φ} Γ⊢φ | other φ = {!!}
+
+
+atp-resolve
+  : ∀ {Γ} {φ₁ φ₂}
+  → (ψ : Prop)  -- goal
+  → (l : Prop)   -- literal
+  → Γ ⊢ φ₁       -- left side
+  → Γ ⊢ φ₂       -- right side
+  → Γ ⊢ resolve ψ l φ₁ φ₂       -- goal theorem
+
+atp-resolve {_} {_}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
+  thm-helper-resolve (thm-reorder-∨ (∨-intro₁ φ₂ Γ⊢φ₁) (l ∨ ¬ l ∨ ψ))

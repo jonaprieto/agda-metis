@@ -60,7 +60,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 test1 : ⌊ eq (reorder-∨ (a ∨ b) (b ∨ a)) (b ∨ a) ⌋ ≡ true
 test1 = refl
 
-test2 : ⌊ eq (reorder-∨ (a ∨ b) (b ∨ a ∨ a)) (a ∨ b) ⌋ ≡ false
+test2 : ⌊ eq (reorder-∨ (a ∨ b ∨ a) (b ∨ a)) (b ∨ a) ⌋ ≡ true
 test2 = refl
 
 
@@ -74,3 +74,10 @@ test3 = refl
 
 -- test4 : ⌊ eq (reorder-∨ (a ∨ (b ∨ (c ∨ d))) (((a ∨ b) ∨ c) ∨ d) ) (((a ∨ b) ∨ c) ∨ d) ⌋ ≡ true
 -- test4 = refl
+
+------------------------------------------------------------------------------
+-- resolve.
+------------------------------------------------------------------------------
+
+test-resolve1 : ⌊ eq (resolve a b (b ∨ a) (¬ b)) (a) ⌋ ≡ true
+test-resolve1 = refl
