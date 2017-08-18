@@ -3,7 +3,7 @@
 -- Resolve inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using ( ℕ )
+open import Data.Nat using ( ℕ; suc; zero; _+_ )
 
 module ATP.Metis.Rules.Resolve ( n : ℕ ) where
 
@@ -11,15 +11,16 @@ module ATP.Metis.Rules.Resolve ( n : ℕ ) where
 
 open import Data.Prop.Syntax n
 open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
-open import Data.Prop.Properties n           using ( eq )
+open import Data.Prop.Properties n           using ( eq; subst )
 open import Data.Prop.Views n
   using ( DisjView; disj-view; disj; other)
 
 open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
-open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2 )
+open import Data.Prop.Theorems.Disjunction n using ( ∨-comm; lem1; lem2; ∨-assoc₂ )
 
 open import Data.Bool                        using ( true; false )
-open import Function                         using ( _$_; id; _∘_  )
+open import Function                         using ( _$_; id; _∘_ )
+open import Relation.Binary.PropositionalEquality using ( sym )
 
 ------------------------------------------------------------------------------
 
@@ -136,96 +137,156 @@ postulate
 -- Reordering of a disjunction.
 ------------------------------------------------------------------------------
 
-reorder-∨ : Prop → Prop → Prop
-reorder-∨ φ ψ
-  with disj-view φ
-...  | other _  = φ
-...  | disj φ₁ φ₂
-     with disj-view ψ
-...   | other _  = φ
-...   | disj ψ₁ ψ₂
-      with ⌊ eq φ₁ ψ₁ ⌋
-...    | true  = φ₁ ∨ (reorder-∨ φ₂ ψ₂)
-...    | false
-        with ⌊ eq φ₁ ψ₂ ⌋
-...      | true = (reorder-∨ φ₂ ψ₁) ∨ φ₁
-...      | false
-         with ⌊ eq φ₂ ψ₁ ⌋
-...       | true = φ₂ ∨ (reorder-∨ φ₁ ψ₂)
+-- If ψ is a disjunction and φ is in ψ as a disjunct, we build from φ
+-- the disjunction ψ.
+build-∨ : Prop → Prop → Prop
+build-∨ φ ψ
+  with ⌊ eq φ ψ ⌋
+... | true  = φ
+... | false
+    with disj-view ψ
+...    | other _    = φ
+...    | disj ψ₁ ψ₂
+       with ⌊ eq (build-∨ φ ψ₁) ψ₁ ⌋
+...       | true =(build-∨ φ ψ₁) ∨ ψ₂
 ...       | false
-          with  ⌊ eq φ₂ ψ₂ ⌋
-...        | true  = (reorder-∨ φ₁ ψ₁) ∨ φ₂
-...        | false = (reorder-∨ φ ψ₁) ∨ (reorder-∨ φ ψ₂)
+          with ⌊ eq (build-∨ φ ψ₂) ψ₂ ⌋
+...          | true  = ψ₁ ∨ (build-∨ φ ψ₂)
+...          | false = φ
 
-thm-s₁
-  : ∀ {Γ} {φ₁ φ₂}
-  → Γ ⊢ φ₁ ∨ φ₂
+thm-build-∨
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
   → (ψ : Prop)
-  → Γ , φ₁ ⊢ reorder-∨ (φ₁ ∨ φ₂) ψ
+  → Γ ⊢ build-∨ φ ψ
 
-thm-s₂
-  : ∀ {Γ} {φ₁ φ₂}
-  → Γ ⊢ φ₁ ∨ φ₂
+thm-build-∨ {Γ} {φ} Γ⊢φ ψ
+  with ⌊ eq φ ψ ⌋
+... | true  = Γ⊢φ
+... | false
+    with disj-view ψ
+...    | other _    = Γ⊢φ
+...    | disj ψ₁ ψ₂
+       with ⌊ eq (build-∨ φ ψ₁) ψ₁ ⌋
+...       | true = ∨-intro₁ ψ₂ (thm-build-∨ Γ⊢φ ψ₁)
+...       | false
+          with ⌊ eq (build-∨ φ ψ₂) ψ₂ ⌋
+...          | true  = ∨-intro₂ ψ₁ (thm-build-∨ Γ⊢φ ψ₂)
+...          | false = Γ⊢φ
+
+
+factor : Prop → Prop
+factor φ
+  with disj-view φ
+... | other _ = φ
+... | disj φ₁ φ₂
+    with eq φ₁ (factor φ₂)
+...    | yes _ = φ₁
+...    | no _  = φ
+
+thm-factor
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ factor φ
+thm-factor {Γ}{φ} Γ⊢φ
+  with disj-view φ
+... | other _ = Γ⊢φ
+... | disj φ₁ φ₂
+  with eq φ₁ (factor φ₂)
+...    | yes φ₁≡factorφ₂ =
+         ⇒-elim
+           (⇒-intro
+             (∨-elim {Γ = Γ}
+               (assume {Γ = Γ} φ₁)
+               (subst
+                 (sym φ₁≡factorφ₂)
+                 (thm-factor $ assume {Γ = Γ} φ₂))))
+           Γ⊢φ
+...    | no _            = Γ⊢φ
+
+helper-build : Prop → Prop → Prop
+helper-build φ ψ
+  with disj-view φ
+... | other _    = build-∨ φ ψ
+... | disj φ₁ φ₂ = factor (build-∨ φ₁ ψ ∨ helper-build φ₂ ψ)
+
+thm-helper-build
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
   → (ψ : Prop)
-  → Γ , φ₂ ⊢ reorder-∨ (φ₁ ∨ φ₂) ψ
+  → Γ ⊢ helper-build φ ψ
+
+thm-helper-build {Γ} {φ} Γ⊢φ ψ
+  with disj-view φ
+... | other _    = thm-build-∨ Γ⊢φ ψ
+... | disj φ₁ φ₂ =
+        thm-factor
+         (⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (∨-intro₁ (helper-build φ₂ ψ) (thm-build-∨ (assume {Γ = Γ} φ₁) ψ))
+                (∨-intro₂ (build-∨ φ₁ ψ) (thm-helper-build (assume {Γ = Γ} φ₂) ψ))))
+            Γ⊢φ)
+
+data TDisjView : Prop → Set where
+  case₁ : (φ₁ φ₂ φ₃ : Prop) → TDisjView ((φ₁ ∨ φ₂) ∨ φ₃)
+  case₂ : (φ₁ φ₂ : Prop) → TDisjView (φ₁ ∨ φ₂)
+  other : (φ : Prop) → TDisjView φ
+
+tdisj-view : (φ : Prop) → TDisjView φ
+tdisj-view ((φ₁ ∨ φ₂) ∨ φ₃) = case₁ _ _ _
+tdisj-view (φ ∨ ψ)          = case₂ _ _
+tdisj-view φ                = other _
+
+right-assoc-∨ₙ : ℕ → Prop → Prop
+right-assoc-∨ₙ zero φ  = φ
+right-assoc-∨ₙ (suc n) φ
+  with tdisj-view φ
+right-assoc-∨ₙ (suc n₁) .(φ₁ ∨ φ₂ ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = right-assoc-∨ₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
+right-assoc-∨ₙ (suc n₁) .(φ ∨ ψ)        | case₂ φ ψ      = φ ∨ right-assoc-∨ₙ n₁ ψ
+right-assoc-∨ₙ (suc n₁) φ               | other .φ       = φ
+
+thm-right-assoc-∨ₙ
+  : ∀ {Γ} {φ}
+  → (n : ℕ)
+  → Γ ⊢ φ
+  → Γ ⊢ right-assoc-∨ₙ n φ
+
+thm-right-assoc-∨ₙ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
+thm-right-assoc-∨ₙ {Γ} {φ} (suc n) Γ⊢φ
+  with tdisj-view φ
+thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₁ φ₁ φ₂ φ₃ = thm-right-assoc-∨ₙ n₁ (∨-assoc₂ Γ⊢φ)
+thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₂ φ ψ =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (∨-intro₁ (right-assoc-∨ₙ n₁ ψ) (assume {Γ = Γ} φ))
+        (∨-intro₂ φ (thm-right-assoc-∨ₙ n₁ (assume {Γ = Γ} ψ)))))
+    Γ⊢φ
+thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | other φ = Γ⊢φ
+
+iter-right-assoc-∨ : Prop → ℕ
+iter-right-assoc-∨ φ
+  with tdisj-view φ
+... | case₁ φ₁ φ₂ φ₃ = 1 + iter-right-assoc-∨ φ₂ + iter-right-assoc-∨ φ₃
+... | case₂ φ₁ φ₂ = 1 + iter-right-assoc-∨ φ₂
+... | other .φ = 1
+
+right-assoc-∨ : Prop → Prop
+right-assoc-∨ φ = right-assoc-∨ₙ (iter-right-assoc-∨ φ) φ
+
+thm-right-assoc-∨
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ right-assoc-∨ φ
+thm-right-assoc-∨ {Γ}{φ} Γ⊢φ = thm-right-assoc-∨ₙ (iter-right-assoc-∨ φ) Γ⊢φ
+
+reorder-∨ : Prop → Prop → Prop
+reorder-∨ φ ψ = helper-build (right-assoc-∨ φ) ψ
 
 thm-reorder-∨
   : ∀ {Γ} {φ}
-  → (ψ : Prop)
   → Γ ⊢ φ
+  → (ψ : Prop)
   → Γ ⊢ reorder-∨ φ ψ
-
-------------------------------------------------------------------------------
--- Proofs.
-------------------------------------------------------------------------------
-
-thm-s₁ {Γ} {φ₁}{φ₂} Γ⊢φ ψ
-  with disj-view ψ
-... | other _    = weaken φ₁ Γ⊢φ
-... | disj ψ₁ ψ₂
-    with ⌊ eq φ₁ ψ₁ ⌋
-...  | true  = ∨-intro₁ (reorder-∨ φ₂ ψ₂) (assume {Γ = Γ} φ₁)
-...  | false
-     with ⌊ eq φ₁ ψ₂ ⌋
-...   | true  = ∨-intro₂ (reorder-∨ φ₂ ψ₁) (assume {Γ = Γ} φ₁)
-...   | false
-      with ⌊ eq φ₂ ψ₁ ⌋
-...    | true = ∨-intro₂ φ₂ (thm-reorder-∨ ψ₂ (assume {Γ = Γ} φ₁))
-...    | false
-       with  ⌊ eq φ₂ ψ₂ ⌋
-...     | true  = ∨-intro₁ φ₂ (thm-reorder-∨ ψ₁ (assume {Γ = Γ} φ₁))
-...     | false =
-           ∨-intro₁
-             (reorder-∨ (φ₁ ∨ φ₂) ψ₂)
-             (weaken φ₁ (thm-reorder-∨ ψ₁ Γ⊢φ))
-
-thm-s₂ {Γ}{φ₁}{φ₂} Γ⊢φ ψ
-  with disj-view ψ
-... | other _    = weaken φ₂ Γ⊢φ
-... | disj ψ₁ ψ₂
-    with ⌊ eq φ₁ ψ₁ ⌋
-...  | true  = ∨-intro₂ φ₁ (thm-reorder-∨ ψ₂ (assume {Γ = Γ} φ₂))
-...  | false
-     with ⌊ eq φ₁ ψ₂ ⌋
-...   | true  = ∨-intro₁ φ₁ (thm-reorder-∨ ψ₁ (assume {Γ = Γ} φ₂))
-...   | false
-      with ⌊ eq φ₂ ψ₁ ⌋
-...    | true = ∨-intro₁ (reorder-∨ φ₁ ψ₂) (assume {Γ = Γ} φ₂)
-...    | false
-       with  ⌊ eq φ₂ ψ₂ ⌋
-...     | true  = ∨-intro₂ (reorder-∨ φ₁ ψ₁) (assume {Γ = Γ} φ₂)
-...     | false =
-          ∨-intro₁
-            (reorder-∨ (φ₁ ∨ φ₂) ψ₂)
-              (weaken φ₂ (thm-reorder-∨ ψ₁ Γ⊢φ))
-
-thm-reorder-∨ {Γ} {φ} ψ Γ⊢φ
-  with disj-view φ
-... | disj φ₁ φ₂ =
-       ⇒-elim
-         (⇒-intro
-             (∨-elim {Γ = Γ}
-               (thm-s₁ Γ⊢φ ψ)
-               (thm-s₂ Γ⊢φ ψ)))
-         Γ⊢φ
-... | other _   = Γ⊢φ
+thm-reorder-∨ {Γ} {φ} Γ⊢φ ψ = thm-helper-build (thm-right-assoc-∨ Γ⊢φ) ψ

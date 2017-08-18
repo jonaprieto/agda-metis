@@ -10,7 +10,7 @@ clean:
 .PHONY : test
 test:
 	$(AGDA) src/ATP/Metis.agda
-	$(AGDA) test/test-atp-conjunct.agda
+	$(AGDA) test/lazy-test.agda
 
 .PHONY : doc
 doc :
