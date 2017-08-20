@@ -39,7 +39,8 @@ Path : Set
 Path = List Step
 
 conjunct-path : Prop → Prop → Path → Path
-conjunct-path φ ψ path with ⌊ eq φ ψ ⌋
+conjunct-path φ ψ path
+    with ⌊ eq φ ψ ⌋
 ... | true  = path ∷ʳ pick
 ... | false
     with conj-view φ
@@ -76,36 +77,47 @@ atp-conjunct {Γ} {φ} ψ Γ⊢φ
 ...  | other .φ    | (_ ∷ _)   = Γ⊢φ
 
 ------------------------------------------------------------------------------
--- reorder-∧ is a function that only works with conjunctions, it fixes
--- the order of a conjunction with a given a target for the expected order.
+-- reorder function builds a formula ψ from a conjunction
+-- Its usages may include:
+-- * fix a conjunction with another order.
+-- * Expand a formula with subformula from the conjunction.
+-- * Reduce a formula to another equivalent.
 ------------------------------------------------------------------------------
-
-data R-View : Prop → Prop → Set where
-  conj  : (φ ψ₁ ψ₂ : Prop) → R-View φ (ψ₁ ∧ ψ₂)
-  other : (φ ψ : Prop)     → R-View φ ψ
 
 reorder-∧ : Prop → Prop → Prop
 reorder-∧ φ ψ
-  with conj-view ψ
-...  | other _       = conjunct φ ψ
-...  | conj ψ₁ ψ₂
-     with conj-view φ
-...     | conj φ₁ φ₂ = (reorder-∧ φ ψ₁) ∧ (reorder-∧ φ ψ₂)
-...     | other .φ   = φ
+  with ⌊ eq φ ψ ⌋
+... | true = φ
+... | false
+    with conj-view ψ
+...    | other _       = conjunct φ ψ
+...    | conj ψ₁ ψ₂
+       with ⌊ eq (reorder-∧ φ ψ₁) ψ₁ ⌋
+...       | false = φ
+...       | true
+          with ⌊ eq (reorder-∧ φ ψ₂) ψ₂ ⌋
+...          | true  = ψ₁ ∧ ψ₂
+...          | false = φ
 
 thm-reorder-∧
   : ∀ {Γ} {φ}
-  → (ψ : Prop)
   → Γ ⊢ φ
+  → (ψ : Prop)
   → Γ ⊢ reorder-∧ φ ψ
 
-thm-reorder-∧ {Γ} {φ} ψ Γ⊢φ
-  with conj-view ψ
-...  | other _       = atp-conjunct ψ Γ⊢φ
-...  | conj ψ₁ ψ₂
-  with conj-view φ
-...     | conj φ₁ φ₂ =
-               ∧-intro
-                 (thm-reorder-∧ ψ₁ Γ⊢φ)
-                 (thm-reorder-∧ ψ₂ Γ⊢φ)
-...     | other .φ   = Γ⊢φ
+thm-reorder-∧ {Γ} {φ} Γ⊢φ ψ
+  with ⌊ eq φ ψ ⌋
+... | true = Γ⊢φ
+... | false
+    with conj-view ψ
+...    | other _  = atp-conjunct ψ Γ⊢φ
+...    | conj ψ₁ ψ₂
+       with eq (reorder-∧ φ ψ₁) ψ₁
+...       | no  _  = Γ⊢φ
+...       | yes p₁
+          with eq (reorder-∧ φ ψ₂) ψ₂
+...          | yes p₂ =
+                 ∧-intro
+                   (subst p₁ (thm-reorder-∧ Γ⊢φ ψ₁))
+                   (subst p₂ (thm-reorder-∧ Γ⊢φ ψ₂))
+...          | no  _  = Γ⊢φ

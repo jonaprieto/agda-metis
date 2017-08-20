@@ -137,10 +137,10 @@ build-∨ φ ψ
 ...    | other _    = φ
 ...    | disj ψ₁ ψ₂
        with ⌊ eq (build-∨ φ ψ₁) ψ₁ ⌋
-...       | true =(build-∨ φ ψ₁) ∨ ψ₂
+...       | true = (build-∨ φ ψ₁) ∨ ψ₂ -- TODO : return ψ₁ and use subst theorem.
 ...       | false
           with ⌊ eq (build-∨ φ ψ₂) ψ₂ ⌋
-...          | true  = ψ₁ ∨ (build-∨ φ ψ₂)
+...          | true  = ψ₁ ∨ (build-∨ φ ψ₂)  -- TODO: return ψ₂ and use subst theorem.
 ...          | false = φ
 
 thm-build-∨
