@@ -67,6 +67,7 @@ atp-conjunct
   → (ψ : Prop)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
+thm-conjunct = atp-conjunct
 
 atp-conjunct {Γ} {φ} ψ Γ⊢φ
   with conj-view φ | conjunct-path φ ψ []
@@ -75,49 +76,3 @@ atp-conjunct {Γ} {φ} ψ Γ⊢φ
 ...  | conj _ φ₂   | proj₁ ∷ _ = atp-conjunct ψ (∧-proj₁ Γ⊢φ)
 ...  | conj _ _    | proj₂ ∷ _ = atp-conjunct ψ (∧-proj₂ Γ⊢φ)
 ...  | other .φ    | (_ ∷ _)   = Γ⊢φ
-
-------------------------------------------------------------------------------
--- reorder function builds a formula ψ from a conjunction
--- Its usages may include:
--- * fix a conjunction with another order.
--- * Expand a formula with subformula from the conjunction.
--- * Reduce a formula to another equivalent.
-------------------------------------------------------------------------------
-
-reorder-∧ : Prop → Prop → Prop
-reorder-∧ φ ψ
-  with ⌊ eq φ ψ ⌋
-... | true = φ
-... | false
-    with conj-view ψ
-...    | other _       = conjunct φ ψ
-...    | conj ψ₁ ψ₂
-       with ⌊ eq (reorder-∧ φ ψ₁) ψ₁ ⌋
-...       | false = φ
-...       | true
-          with ⌊ eq (reorder-∧ φ ψ₂) ψ₂ ⌋
-...          | true  = ψ₁ ∧ ψ₂
-...          | false = φ
-
-thm-reorder-∧
-  : ∀ {Γ} {φ}
-  → Γ ⊢ φ
-  → (ψ : Prop)
-  → Γ ⊢ reorder-∧ φ ψ
-
-thm-reorder-∧ {Γ} {φ} Γ⊢φ ψ
-  with ⌊ eq φ ψ ⌋
-... | true = Γ⊢φ
-... | false
-    with conj-view ψ
-...    | other _  = atp-conjunct ψ Γ⊢φ
-...    | conj ψ₁ ψ₂
-       with eq (reorder-∧ φ ψ₁) ψ₁
-...       | no  _  = Γ⊢φ
-...       | yes p₁
-          with eq (reorder-∧ φ ψ₂) ψ₂
-...          | yes p₂ =
-                 ∧-intro
-                   (subst p₁ (thm-reorder-∧ Γ⊢φ ψ₁))
-                   (subst p₂ (thm-reorder-∧ Γ⊢φ ψ₂))
-...          | no  _  = Γ⊢φ

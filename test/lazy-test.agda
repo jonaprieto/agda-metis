@@ -1,6 +1,7 @@
-open import ATP.Metis 6 public
-open import Data.Prop 6 public
+open import ATP.Metis 9 public
+open import Data.Prop 9 public
 
+open import ATP.Metis.Rules.Reordering 9
 
 -- Variables.
 
@@ -10,17 +11,26 @@ p = Var (# 0)
 q : Prop
 q = Var (# 1)
 
+r : Prop
+r = Var (# 2)
+
+s : Prop
+s = Var (# 3)
+
+t : Prop
+t = Var (# 4)
+
 a : Prop
-a = Var (# 2)
+a = Var (# 5)
 
 b : Prop
-b = Var (# 3)
+b = Var (# 6)
 
 c : Prop
-c = Var (# 4)
+c = Var (# 7)
 
 d : Prop
-d = Var (# 5)
+d = Var (# 8)
 
 -- Premise.
 
@@ -37,14 +47,14 @@ goal = (p ⇒ ((p ⇒ q) ⇒ q))
 subgoal₀ : Prop
 subgoal₀ = ((p ∧ (p ⇒ q)) ⇒ q)
 
-t : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
-t = thm-cnf (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
+tt : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
+tt = thm-cnf (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
 
 c1 : Γ , ¬ subgoal₀ ⊢ ¬ q
-c1 = atp-conjunct (¬ q) t
+c1 = atp-conjunct (¬ q) tt
 
 c2 : Γ , ¬ subgoal₀ ⊢ (¬ p) ∨ q
-c2 = atp-conjunct (¬ p ∨ q) t
+c2 = atp-conjunct (¬ p ∨ q) tt
 
 -- testing reorder-∨
 original : Prop
@@ -64,6 +74,7 @@ test2 : ⌊ eq (reorder-∨ (a ∨ b ∨ a) (b ∨ a)) (b ∨ a) ⌋ ≡ true
 test2 = refl
 
 
+
 fa = (a ∨ b) ∨ (c ∨ d)
 fgoal = ((a ∨ d) ∨ (b ∨ c))
 -- eq (build-∨ a fgoal) fgoal
@@ -75,9 +86,40 @@ test3 = refl
 -- test4 : ⌊ eq (reorder-∨ (a ∨ (b ∨ (c ∨ d))) (((a ∨ b) ∨ c) ∨ d) ) (((a ∨ b) ∨ c) ∨ d) ⌋ ≡ true
 -- test4 = refl
 
+-- phi : Prop
+-- phi = p ∨ ((q ∧ r) ∨ s)
+
+-- psi : Prop
+-- psi = (s ∨ p) ∨ (r ∧ q)
+
+-- test-41 : ⌊ eq (reorder-∨ phi psi) psi ⌋ ≡ true
+-- test-41 = refl
+
 ------------------------------------------------------------------------------
 -- resolve.
 ------------------------------------------------------------------------------
 
 test-resolve1 : ⌊ eq (resolve a b (b ∨ a) (¬ b)) (a) ⌋ ≡ true
 test-resolve1 = refl
+
+------------------------------------------------------------------------------
+-- clausify
+------------------------------------------------------------------------------
+
+fmc1 = (((¬ p) ∨ q) ∧ ((¬ q) ∨ p))
+fmc2 = ((¬ p) ⇔ (¬ q))
+
+cnffmc2 = (p ∨ ¬ q) ∧ (q ∨ ¬ p)
+
+ctest0 : ⌊ eq (cnf fmc2) cnffmc2 ⌋ ≡ true
+ctest0 = refl
+
+
+from1 = p ∧ (q ∨ r)
+to1   = (r ∨ q) ∧ p
+
+ctest1 : ⌊ eq (reorder-∧∨ from1 to1) to1 ⌋ ≡ true
+ctest1 = refl
+
+ctest2 : ⌊ eq (reorder-∧∨ (cnf fmc2) fmc1) fmc1 ⌋ ≡ true
+ctest2 = refl
