@@ -115,11 +115,17 @@ ctest0 : ⌊ eq (cnf fmc2) cnffmc2 ⌋ ≡ true
 ctest0 = refl
 
 
-from1 = p ∧ (q ∨ r)
-to1   = (r ∨ q) ∧ p
+from1 = p ∨ (q ∨ r)
+to1   = (r ∨ q) ∨ p
 
 ctest1 : ⌊ eq (reorder-∧∨ from1 to1) to1 ⌋ ≡ true
 ctest1 = refl
 
 ctest2 : ⌊ eq (reorder-∧∨ (cnf fmc2) fmc1) fmc1 ⌋ ≡ true
 ctest2 = refl
+
+to5   = (¬ p) ∨ ((¬ q) ∨ r)
+from5 = (¬ p) ∨ (r ∨ ((¬ q) ∧ p))
+
+ctest3 : ⌊ eq (reorder-∧∨ (cnf from5) to5) to5 ⌋ ≡ true
+ctest3 = refl
