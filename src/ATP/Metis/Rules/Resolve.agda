@@ -46,6 +46,17 @@ postulate
     → Γ ⊢ φ
     → Γ ⊢ helper-resolve φ
 
+-- thm-helper-resolve {Γ} {φ} Γ⊢φ
+--   with tdisj-view φ
+-- thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∨ φ₃)} Γ⊢φ | case₁ φ₁ φ₂ φ₃
+--   with eq φ₂ (¬ φ₁)
+-- ...    | yes φ₂≡¬φ₁ = {!!}
+-- ...    | no _       = Γ⊢φ
+-- thm-helper-resolve {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ        | case₂ φ₁ φ₂ = Γ⊢φ
+-- thm-helper-resolve {Γ} {_} Γ⊢φ                 | other _     = Γ⊢φ
+
+
+
 resolve : Prop → Prop → Prop → Prop → Prop
 resolve goal l φ₁ φ₂ = helper-resolve (reorder-∨ (φ₁ ∨ φ₂) ((l ∨ (¬ l)) ∨ goal))
 
