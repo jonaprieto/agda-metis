@@ -133,7 +133,6 @@ ctest3 = refl
 to6   = (((¬ p) ∨ q) ∧ (((¬ q) ∨ p) ∧ (p ∨ q)))
 from6 = ((¬ p) ⇔ ((¬ q) ⇔ ((¬ p) ∧ (¬ q))))
 
-open import Data.Prop.SyntaxExperiment 9 using ( right-assoc-∧ )
 
 -- ctest6 : ⌊ eq (right-assoc-∧ (cnf from6)) (right-assoc-∧ cnf6) ⌋ ≡ true
 -- ctest6 = refl

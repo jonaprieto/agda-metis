@@ -123,7 +123,7 @@ right-assoc-∨ₙ : ℕ → Prop → Prop
 right-assoc-∨ₙ zero φ  = φ
 right-assoc-∨ₙ (suc n) φ
   with tdisj-view φ
-right-assoc-∨ₙ (suc n₁) .(φ₁ ∨ φ₂ ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = right-assoc-∨ₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
+right-assoc-∨ₙ (suc n₁) .((φ₁ ∨ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = right-assoc-∨ₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
 right-assoc-∨ₙ (suc n₁) .(φ ∨ ψ)        | case₂ φ ψ      = φ ∨ right-assoc-∨ₙ n₁ ψ
 right-assoc-∨ₙ (suc n₁) φ               | other .φ       = φ
 
@@ -149,8 +149,8 @@ thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | other φ = Γ⊢φ
 iter-right-assoc-∨ : Prop → ℕ
 iter-right-assoc-∨ φ
   with tdisj-view φ
-... | case₁ φ₁ φ₂ φ₃ = 1 + iter-right-assoc-∨ φ₂ + iter-right-assoc-∨ φ₃
-... | case₂ φ₁ φ₂ = 1 + iter-right-assoc-∨ φ₂
+... | case₁ φ₁ φ₂ φ₃ = 2 + iter-right-assoc-∨ φ₂ + iter-right-assoc-∨ φ₃
+... | case₂ φ₁ φ₂ = 2 + iter-right-assoc-∨ φ₂
 ... | other .φ = 1
 
 right-assoc-∨ : Prop → Prop
