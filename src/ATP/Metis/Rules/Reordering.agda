@@ -105,8 +105,10 @@ thm-helper-build {Γ} {φ} Γ⊢φ ψ
          (⇒-elim
             (⇒-intro
               (∨-elim {Γ = Γ}
-                (∨-intro₁ (helper-build φ₂ ψ) (thm-build-∨ (assume {Γ = Γ} φ₁) ψ))
-                (∨-intro₂ (build-∨ φ₁ ψ) (thm-helper-build (assume {Γ = Γ} φ₂) ψ))))
+                (∨-intro₁ (helper-build φ₂ ψ)
+                  (thm-build-∨ (assume {Γ = Γ} φ₁) ψ))
+                (∨-intro₂ (build-∨ φ₁ ψ)
+                  (thm-helper-build (assume {Γ = Γ} φ₂) ψ))))
             Γ⊢φ)
 
 data TDisjView : Prop → Set where
@@ -123,8 +125,10 @@ right-assoc-∨ₙ : ℕ → Prop → Prop
 right-assoc-∨ₙ zero φ  = φ
 right-assoc-∨ₙ (suc n) φ
   with tdisj-view φ
-right-assoc-∨ₙ (suc n₁) .((φ₁ ∨ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = right-assoc-∨ₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
-right-assoc-∨ₙ (suc n₁) .(φ ∨ ψ)        | case₂ φ ψ      = φ ∨ right-assoc-∨ₙ n₁ ψ
+right-assoc-∨ₙ (suc n₁) .((φ₁ ∨ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ =
+  right-assoc-∨ₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
+right-assoc-∨ₙ (suc n₁) .(φ ∨ ψ)        | case₂ φ ψ      =
+  φ ∨ right-assoc-∨ₙ n₁ ψ
 right-assoc-∨ₙ (suc n₁) φ               | other .φ       = φ
 
 thm-right-assoc-∨ₙ
@@ -136,7 +140,8 @@ thm-right-assoc-∨ₙ
 thm-right-assoc-∨ₙ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
 thm-right-assoc-∨ₙ {Γ} {φ} (suc n) Γ⊢φ
   with tdisj-view φ
-thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₁ φ₁ φ₂ φ₃ = thm-right-assoc-∨ₙ n₁ (∨-assoc₂ Γ⊢φ)
+thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₁ φ₁ φ₂ φ₃ =
+  thm-right-assoc-∨ₙ n₁ (∨-assoc₂ Γ⊢φ)
 thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₂ φ ψ =
   ⇒-elim
     (⇒-intro

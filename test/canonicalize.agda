@@ -45,7 +45,6 @@ ar7  = right-assoc-∨ from7
 rtest7 : ⌊ eq (right-assoc-∨ from7) rafrom7 ⌋ ≡ true
 rtest7 = refl
 
-
 to7 = (r ∨ (q ∨ p))
 
 test7 : ⌊ eq (removeDuplicates-∨ (right-assoc-∨ from7)) to7 ⌋ ≡ true
