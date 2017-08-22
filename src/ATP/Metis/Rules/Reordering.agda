@@ -242,12 +242,40 @@ conjuct-∨ .(φ₁ ∧ φ₂) ψ | false | other .ψ | (conj φ₁ φ₂)
 ... | true = ψ
 ... | false = φ₁ ∧ φ₂
 
-postulate
-  atp-conjuct-∨
-    : ∀ {Γ} {φ}
-    → (ψ : Prop)
-    → Γ ⊢ φ
-    → Γ ⊢ conjuct-∨ φ ψ
+
+thm-conjunct-∨
+  : ∀ {Γ} {φ}
+  → (ψ : Prop)
+  → Γ ⊢ φ
+  → Γ ⊢ conjuct-∨ φ ψ
+
+thm-conjunct-∨ {Γ}{φ} ψ Γ⊢φ
+  with eq (reorder-∨ φ ψ) ψ
+... | yes p₁ = subst p₁ (thm-reorder-∨ Γ⊢φ ψ)
+... | no _
+    with conj-view ψ
+thm-conjunct-∨ {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | conj ψ₁ ψ₂
+  with  eq (conjuct-∨ φ ψ₁) ψ₁
+... | no _ = Γ⊢φ
+... | yes p₂
+  with  eq (reorder-∨ φ ψ₂) ψ₂
+... | no _   = Γ⊢φ
+... | yes p₃ =
+          ∧-intro
+            (subst p₂ (thm-conjunct-∨ ψ₁ Γ⊢φ))
+            (subst p₃ (thm-reorder-∨ Γ⊢φ ψ₂))
+thm-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ
+  with conj-view φ
+thm-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ | (other .φ)
+  = Γ⊢φ
+thm-conjunct-∨ {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | other .ψ | (conj φ₁ φ₂)
+  with eq (conjuct-∨ φ₁ ψ) ψ
+... | yes p₄ = subst p₄ (thm-conjunct-∨ ψ (∧-proj₁ Γ⊢φ))
+... | no _
+  with  eq (conjuct-∨ φ₂ ψ) ψ
+... | yes p₅ = subst p₅ (thm-conjunct-∨ ψ (∧-proj₂ Γ⊢φ))
+... | no  _ = Γ⊢φ
+
 
 reorder-∧∨ : Prop → Prop → Prop
 reorder-∧∨ φ ψ
@@ -264,26 +292,26 @@ reorder-∧∨ φ ψ
 ...           | true  = ψ₁ ∧ ψ₂
 ...           | false = φ
 
-postulate
-  thm-reorder-∧∨
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → (ψ : Prop)
-    → Γ ⊢ reorder-∧∨ φ ψ
 
--- thm-reorder-∧∨ {Γ} {φ} Γ⊢φ ψ
---   with eq (reorder-∨ φ ψ) ψ
--- ...  | yes p₀ = subst p₀ (thm-reorder-∨ Γ⊢φ ψ)
--- ...  | no  _
---      with conj-view ψ
--- ...     | other _  = atp-conjuct-∨ ψ Γ⊢φ
--- ...     | conj ψ₁ ψ₂
---         with eq (reorder-∧∨ φ ψ₁) ψ₁
--- ...        | no  _  = Γ⊢φ
--- ...        | yes p₁
---            with eq (reorder-∧∨ φ ψ₂) ψ₂
--- ...           | yes p₂ =
---                     ∧-intro
---                       (subst p₁ (thm-reorder-∧∨ Γ⊢φ ψ₁))
---                       (subst p₂ (thm-reorder-∧∨ Γ⊢φ ψ₂))
--- ...          | no  _  = Γ⊢φ
+thm-reorder-∧∨
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : Prop)
+  → Γ ⊢ reorder-∧∨ φ ψ
+
+thm-reorder-∧∨ {Γ} {φ} Γ⊢φ ψ
+  with eq (reorder-∨ φ ψ) ψ
+...  | yes p₀ = subst p₀ (thm-reorder-∨ Γ⊢φ ψ)
+...  | no  _
+     with conj-view ψ
+...     | other _  = thm-conjunct-∨ ψ Γ⊢φ
+...     | conj ψ₁ ψ₂
+        with eq (reorder-∧∨ φ ψ₁) ψ₁
+...        | no  _  = Γ⊢φ
+...        | yes p₁
+           with eq (reorder-∧∨ φ ψ₂) ψ₂
+...           | yes p₂ =
+                    ∧-intro
+                      (subst p₁ (thm-reorder-∧∨ Γ⊢φ ψ₁))
+                      (subst p₂ (thm-reorder-∧∨ Γ⊢φ ψ₂))
+...          | no  _  = Γ⊢φ
