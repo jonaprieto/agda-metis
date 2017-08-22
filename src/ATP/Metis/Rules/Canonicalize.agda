@@ -39,8 +39,8 @@ data canonView : Prop  → Set where
   sconj₈ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)
 
 -- Disjunction simplification cases.
-  sdisj₁ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> φ.
-  sdisj₂ : (φ₁ : Prop)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> φ.
+  sdisj₁ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> ⊤.
+  sdisj₂ : (φ₁ : Prop)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> ⊤.
   sdisj₃ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
   sdisj₄ : (φ₁ : Prop)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
   sdisj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)    -- φ ∨ φ ==> φ.
@@ -97,8 +97,8 @@ apply-canon-once φ with canon-view φ
 ... | sconj₇ φ₁ φ₂ = ⊥
 ... | sconj₈ φ₁ φ₂ = φ₁ ∧ φ₂
 
-... | sdisj₁ φ₁    = φ₁
-... | sdisj₂ φ₁    = φ₁
+... | sdisj₁ φ₁    = ⊤
+... | sdisj₂ φ₁    = ⊤
 ... | sdisj₃ φ₁    = φ₁
 ... | sdisj₄ φ₁    = φ₁
 ... | sdisj₅ φ₁ φ₂ = φ₁
