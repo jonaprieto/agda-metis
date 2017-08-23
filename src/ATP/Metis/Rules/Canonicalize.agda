@@ -10,7 +10,7 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 ------------------------------------------------------------------------------
 
 open import ATP.Metis.Rules.Reordering n
-  using ( right-assoc-∨; reorder-∧∨; thm-reorder-∧∨ )
+  using ( right-assoc-∨; reorder-∧∨; thm-reorder-∧∨; reorder-∨ )
 
 open import Data.Bool.Base
   using    ( true; false )
@@ -178,7 +178,7 @@ removeDuplicates-∨ φ
 
 _∈-∧_ : Prop → Prop → Bool
 φ ∈-∧ ψ
-  with ⌊ eq φ ψ ⌋
+  with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
 ...  | true = true
 ...  | false
      with conj-view ψ
