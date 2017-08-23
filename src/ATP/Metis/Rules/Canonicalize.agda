@@ -190,7 +190,7 @@ removeDuplicates-∧∨ : Prop → Prop
 removeDuplicates-∧∨ φ
   with conj-view φ
 ...  | other _    = removeDuplicates-∨ (right-assoc-∨ φ)
-...  | conj φ₁ φ₂ = removeDuplicates-∧∨ φ₂ ∧ removeDuplicates-∧∨ φ₂
+...  | conj φ₁ φ₂ = removeDuplicates-∧∨ φ₁ ∧ removeDuplicates-∧∨ φ₂
 
 removeDuplicates-∧ : Prop → Prop
 removeDuplicates-∧ φ
