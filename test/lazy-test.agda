@@ -130,9 +130,6 @@ from5 = (¬ p) ∨ (r ∨ ((¬ q) ∧ p))
 ctest3 : ⌊ eq (reorder-∧∨ (cnf from5) to5) to5 ⌋ ≡ true
 ctest3 = refl
 
-to6   = (((¬ p) ∨ q) ∧ (((¬ q) ∨ p) ∧ (p ∨ q)))
-from6 = ((¬ p) ⇔ ((¬ q) ⇔ ((¬ p) ∧ (¬ q))))
-
 
 -- ctest6 : ⌊ eq (right-assoc-∧ (cnf from6)) (right-assoc-∧ cnf6) ⌋ ≡ true
 -- ctest6 = refl

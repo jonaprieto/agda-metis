@@ -13,9 +13,10 @@ open import Data.Prop.Dec n
 open import Data.Prop.Properties n
 open import Data.Prop.Syntax n
 open import Data.Prop.NormalForms n using ( cnf; thm-cnf )
-open import Data.Bool                        using ( true; false )
+open import Data.Bool               using ( true; false )
 
-open import ATP.Metis.Rules.Reordering n using ( reorder-∧∨; thm-reorder-∧∨ )
+open import ATP.Metis.Rules.Reordering n
+  using ( reorder-∧∨; thm-reorder-∧∨ )
 open import Function using ( _$_; id )
 
 ------------------------------------------------------------------------------
