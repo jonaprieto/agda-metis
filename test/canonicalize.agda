@@ -32,7 +32,7 @@ d = Var (# 8)
 
 open import Data.Prop.SyntaxExperiment 9 using ( right-assoc-∧ )
 open import ATP.Metis.Rules.Canonicalize 9
-  using (removeDuplicates-∧; removeDuplicates-∧∨; removeDuplicates-∨; removeDuplicatesCNF )
+  using (rmDuplicates-∧; rmDuplicates-∧∨; rmDuplicates-∨; rmDuplicatesCNF; rmPairs-∨ )
 open import ATP.Metis.Rules.Reordering 9
   using (right-assoc-∨)
 open import Relation.Binary.PropositionalEquality
@@ -47,8 +47,17 @@ rtest7 = refl
 
 to7 = (r ∨ (q ∨ p))
 
-test7 : ⌊ eq (removeDuplicates-∨ (right-assoc-∨ from7)) to7 ⌋ ≡ true
+test7 : ⌊ eq (rmDuplicates-∨ (right-assoc-∨ from7)) to7 ⌋ ≡ true
 test7 = refl
 
-test71 : ⌊ eq (removeDuplicatesCNF from7) to7 ⌋ ≡ true
+test71 : ⌊ eq (rmDuplicatesCNF from7) to7 ⌋ ≡ true
 test71 = refl
+
+lazy : ∀ {Γ}{φ} → Γ , φ ⊢ ⊤
+lazy = ⊤-intro
+
+from8 = (q ∨ (q ∨ (r ∨ (p ∨ (q ∨ ¬ q)))))
+to8 = ⊤
+
+rtest8 : ⌊ eq (rmPairs-∨ from8) to8 ⌋ ≡ true
+rtest8 = refl -- refl

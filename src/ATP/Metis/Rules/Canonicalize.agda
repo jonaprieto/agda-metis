@@ -166,14 +166,14 @@ _∈-∨_ : Prop → Prop → Bool
 ...     | disj ψ₁ ψ₂ = φ ∈-∨ ψ₁ or φ ∈-∨ ψ₂
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-removeDuplicates-∨ : Prop → Prop
-removeDuplicates-∨ φ
+rmDuplicates-∨ : Prop → Prop
+rmDuplicates-∨ φ
   with disj-view φ
 ... | other _  = φ
 ... | disj φ₁ φ₂
     with φ₁ ∈-∨ φ₂
-...    | true  = removeDuplicates-∨ φ₂
-...    | false = φ₁ ∨ removeDuplicates-∨ φ₂
+...    | true  = rmDuplicates-∨ φ₂
+...    | false = φ₁ ∨ rmDuplicates-∨ φ₂
 
 _∈-∧_ : Prop → Prop → Bool
 φ ∈-∧ ψ
@@ -186,31 +186,83 @@ _∈-∧_ : Prop → Prop → Bool
 
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-removeDuplicates-∧∨ : Prop → Prop
-removeDuplicates-∧∨ φ
+rmDuplicates-∧∨ : Prop → Prop
+rmDuplicates-∧∨ φ
   with conj-view φ
-...  | other _    = removeDuplicates-∨ (right-assoc-∨ φ)
-...  | conj φ₁ φ₂ = removeDuplicates-∧∨ φ₁ ∧ removeDuplicates-∧∨ φ₂
+...  | other _    = rmDuplicates-∨ (right-assoc-∨ φ)
+...  | conj φ₁ φ₂ = rmDuplicates-∧∨ φ₁ ∧ rmDuplicates-∧∨ φ₂
 
-removeDuplicates-∧ : Prop → Prop
-removeDuplicates-∧ φ
+rmDuplicates-∧ : Prop → Prop
+rmDuplicates-∧ φ
   with conj-view φ
 ...  | other _  = φ
 ...  | conj φ₁ φ₂
      with φ₁ ∈-∧ φ₂
-...     | true  = removeDuplicates-∧ φ₂
-...     | false = φ₁ ∧ removeDuplicates-∧ φ₂
+...     | true  = rmDuplicates-∧ φ₂
+...     | false = φ₁ ∧ rmDuplicates-∧ φ₂
 
-removeDuplicatesCNF : Prop → Prop
-removeDuplicatesCNF φ =
-  removeDuplicates-∧ (removeDuplicates-∧∨ (right-assoc-∧ (cnf φ)))
+rmDuplicatesCNF : Prop → Prop
+rmDuplicatesCNF φ =
+  rmDuplicates-∧ (rmDuplicates-∧∨ (right-assoc-∧ (cnf φ)))
 
-thm-removeDuplicatesCNF
+thm-rmDuplicatesCNF
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ reorder-∧∨ φ (removeDuplicatesCNF φ)
-thm-removeDuplicatesCNF {Γ}{φ} Γ⊢φ =
-  thm-reorder-∧∨ Γ⊢φ (removeDuplicatesCNF φ)
+  → Γ ⊢ reorder-∧∨ φ (rmDuplicatesCNF φ)
+thm-rmDuplicatesCNF {Γ}{φ} Γ⊢φ =
+  thm-reorder-∧∨ Γ⊢φ (rmDuplicatesCNF φ)
+
+-- Remove φ ∨ ¬ φ pairs.
+
+
+-- φ ∨ ¬ φ deletions in a right-associated formula.
+
+rmPairs-∨ : Prop → Prop
+rmPairs-∨ φ
+  with disj-view φ
+... | other .φ   = φ
+... | disj φ₁ φ₂
+    with neg-view φ₁
+rmPairs-∨ .(¬ φ ∨ φ₂) | disj .(¬ φ) φ₂ | neg φ
+    with φ ∈-∨ φ₂
+rmPairs-∨ .(¬ φ ∨ φ₂) | disj .(¬ φ) φ₂ | neg φ | true  = ⊤
+rmPairs-∨ .(¬ φ ∨ φ₂) | disj .(¬ φ) φ₂ | neg φ | false
+   with ⌊ eq (rmPairs-∨ φ₂) ⊤ ⌋
+rmPairs-∨ .(¬ φ ∨ φ₂) | disj .(¬ φ) φ₂ | neg φ | false | false = ¬ φ ∨ rmPairs-∨ φ₂
+rmPairs-∨ .(¬ φ ∨ φ₂) | disj .(¬ φ) φ₂ | neg φ | false | true  = ⊤
+rmPairs-∨ .(φ₁ ∨ φ₂)  | disj φ₁ φ₂     | pos .φ₁
+    with (¬ φ₁) ∈-∨ φ₂
+rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | true  = ⊤
+rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false
+  with ⌊ eq (rmPairs-∨ φ₂) ⊤ ⌋
+rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | false = φ₁ ∨ rmPairs-∨ φ₂
+rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | true  = ⊤
+
+
+-- We assumed here that the formula is a disjunction and its right-associated.
+clean-∧∨ : Prop → Prop
+clean-∧∨ φ
+  with conj-view φ
+...  | other _    = rmPairs-∨ φ
+...  | conj φ₁ φ₂
+     with ⌊ eq (clean-∧∨ φ₁) ⊤ ⌋
+...  | true  = clean-∧∨ φ₂
+...  | false
+     with  ⌊ eq (clean-∧∨ φ₁) ⊥ ⌋
+...     |  true = ⊥
+...     |  false
+        with ⌊ eq (clean-∧∨ φ₂) ⊤ ⌋
+...        | true  = clean-∧∨ φ₁
+...        | false
+           with  ⌊ eq (clean-∧∨ φ₂) ⊥ ⌋
+...           |  true = ⊥
+...           |  false = (clean-∧∨ φ₁) ∧ (clean-∧∨ φ₂)
+
+
+--∧ clean-∧∨ φ₂
+
+clean : Prop → Prop
+clean φ = clean-∧∨ (rmDuplicatesCNF φ)
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.
