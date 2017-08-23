@@ -165,7 +165,6 @@ _∈-∨_ : Prop → Prop → Bool
 ...     | other .ψ   = false
 ...     | disj ψ₁ ψ₂ = φ ∈-∨ ψ₁ or φ ∈-∨ ψ₂
 
-
 -- We assumed here that the formula is a disjunction and its right-associated.
 removeDuplicates-∨ : Prop → Prop
 removeDuplicates-∨ φ
@@ -190,7 +189,7 @@ _∈-∧_ : Prop → Prop → Bool
 removeDuplicates-∧∨ : Prop → Prop
 removeDuplicates-∧∨ φ
   with conj-view φ
-...  | other _   = removeDuplicates-∨ (right-assoc-∨ φ)
+...  | other _    = removeDuplicates-∨ (right-assoc-∨ φ)
 ...  | conj φ₁ φ₂ = removeDuplicates-∧∨ φ₂ ∧ removeDuplicates-∧∨ φ₂
 
 removeDuplicates-∧ : Prop → Prop

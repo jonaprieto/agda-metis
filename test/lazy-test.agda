@@ -131,5 +131,25 @@ ctest3 : ⌊ eq (reorder-∧∨ (cnf from5) to5) to5 ⌋ ≡ true
 ctest3 = refl
 
 
+cl1  = (¬ p ⇔ ¬ q ⇔ ¬ p ∧ ¬ q)
+acl1 = (¬ p ∨ q ∧ (¬ q ∨ p ∧ (p ∨ q)))
+cla1 = (clausify cl1 acl1)
+
+-- clausify :
+-- p ∨ (q ∨ ¬ p) ∧
+-- (p ∨ (q ∨ ¬ q))
+-- ∧ (p ∨ (p ∨ q ∨ ¬ q))
+-- ∧
+-- (p ∨ q ∨ q ∨ ¬ p ∧
+-- (p ∨ q ∨ ¬ p ∨ ¬ p ∧
+-- (p ∨ q ∨ ¬ q ∨ ¬ p))
+-- ∧
+-- (¬ q ∨ q ∨ ¬ p ∧
+-- (¬ q ∨ ¬ p ∨ ¬ p ∧
+-- (¬ q ∨ ¬ q ∨ ¬ p))))
+
+tcl1 : ⌊ eq (clausify cl1 acl1) acl1 ⌋ ≡ true
+tcl1 = {!!} -- refl
+
 -- ctest6 : ⌊ eq (right-assoc-∧ (cnf from6)) (right-assoc-∧ cnf6) ⌋ ≡ true
 -- ctest6 = refl
