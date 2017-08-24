@@ -36,126 +36,6 @@ open import Relation.Binary.PropositionalEquality
 
 -- All formulas are in NNF.
 
-data canonView : Prop  → Set where
-
--- Conjunction simplification cases.
-  sconj₁ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊤)     -- φ ∧ ⊤ ==> φ.
-  sconj₂ : (φ₁ : Prop)    → canonView (⊤ ∧ φ₁)     -- ⊤ ∧ φ ==> φ.
-  sconj₃ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊥)     -- φ ∧ ⊥ ==> ⊥.
-  sconj₄ : (φ₁ : Prop)    → canonView (⊥ ∧ φ₁)     -- ⊥ ∧ φ ==> ⊥.
-  sconj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)    -- φ ∧ φ ==> φ.
-  sconj₆ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)    -- φ ∧ ¬ φ ==> ⊥.
-  sconj₇ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)    -- ¬ φ ∧ φ ==> ⊥.
-  sconj₈ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)
-
--- Disjunction simplification cases.
-  sdisj₁ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> ⊤.
-  sdisj₂ : (φ₁ : Prop)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> ⊤.
-  sdisj₃ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
-  sdisj₄ : (φ₁ : Prop)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
-  sdisj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)    -- φ ∨ φ ==> φ.
-  sdisj₆ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)    -- φ ∨ ¬ φ ==> ⊤.
-  sdisj₇ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)    -- ¬ φ ∨ φ ==> ⊤.
-  sdisj₈ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)
-
-  ntop   : canonView (¬ ⊤)                         -- ¬ ⊤ ==> ⊥
-  nbot   : canonView (¬ ⊥)                         -- ¬ ⊥ ==> ⊤
-  other  : (φ₁ : Prop)    → canonView φ₁
-
-
-canon-view : (φ : Prop) → canonView φ
-canon-view (φ ∧ ⊤) = sconj₁ _
-canon-view (⊤ ∧ φ) = sconj₂ _
-canon-view (φ ∧ ⊥) = sconj₃ _
-canon-view (⊥ ∧ φ) = sconj₄ _
-canon-view (φ ∧ φ₁)
-  with ⌊ eq φ φ₁ ⌋ | ⌊ eq φ (¬ φ₁) ⌋ | ⌊ eq (¬ φ) φ₁ ⌋
-...  | true  | _     | _    = sconj₅ _ _
-...  | _     | true  | _    = sconj₆ _ _
-...  | _     | _     | true = sconj₇ _ _
-...  | _     | _     | _    = sconj₈ _ _
-
-canon-view (φ ∨ ⊤) = sdisj₁ _
-canon-view (⊤ ∨ φ) = sdisj₂ _
-canon-view (φ ∨ ⊥) = sdisj₃ _
-canon-view (⊥ ∨ φ) = sdisj₄ _
-canon-view (φ ∨ φ₁)
-  with ⌊ eq φ φ₁ ⌋ | ⌊ eq φ (¬ φ₁) ⌋ | ⌊ eq (¬ φ) φ₁ ⌋
-...  | true  | _     | _    = sdisj₅ _ _
-...  | _     | true  | _    = sdisj₆ _ _
-...  | _     | _     | true = sdisj₇ _ _
-...  | _     | _     | _    = sdisj₈ _ _
-
-canon-view (¬ ⊤) = ntop
-canon-view (¬ ⊥) = nbot
-canon-view  φ    = other _
-
-canon : Prop → Prop
-canon φ with canon-view φ
-... | sconj₁ φ₁    = φ₁
-... | sconj₂ φ₁    = φ₁
-... | sconj₃ _     = ⊥
-... | sconj₄ _     = ⊥
-... | sconj₅ φ₁ _  = φ₁
-... | sconj₆ φ₁ φ₂ = ⊥
-... | sconj₇ φ₁ φ₂ = ⊥
-... | sconj₈ φ₁ φ₂ = φ₁ ∧ φ₂
-
-... | sdisj₁ φ₁    = ⊤
-... | sdisj₂ φ₁    = ⊤
-... | sdisj₃ φ₁    = φ₁
-... | sdisj₄ φ₁    = φ₁
-... | sdisj₅ φ₁ φ₂ = φ₁
-... | sdisj₆ φ₁ φ₂ = ⊤
-... | sdisj₇ φ₁ φ₂ = ⊤
-... | sdisj₈ φ₁ φ₂ = φ₁ ∨ φ₂
-
-... | ntop         = ⊤
-... | nbot         = ⊤
-... | other .φ     = φ
-
-
--- canon : ℕ → Prop → Prop
--- canon zero φ    = φ
--- canon (suc n) φ with canon-view φ
--- ... | sconj₁ φ₁    = canon n φ₁
--- ... | sconj₂ φ₁    = canon n φ₁
--- ... | sconj₃ _     = ⊥
--- ... | sconj₄ _     = ⊥
--- ... | sconj₅ φ₁ _  = canon n φ₁
--- ... | sconj₆ φ₁ φ₂ = ⊥
--- ... | sconj₇ φ₁ φ₂ = ⊥
--- ... | sconj₈ φ₁ φ₂ = canon (canon n φ₁ ∧ canon n φ₂)
-
--- ... | sdisj₁ φ₁    = canon n φ₁
--- ... | sdisj₂ φ₁    = canon n φ₁
--- ... | sdisj₃ φ₁    = canon n φ₁
--- ... | sdisj₄ φ₁    = canon n φ₁
--- ... | sdisj₅ φ₁ φ₂ = canon n φ₁
--- ... | sdisj₆ φ₁ φ₂ = ⊤
--- ... | sdisj₇ φ₁ φ₂ = ⊤
--- ... | sdisj₈ φ₁ φ₂ = canon (canon n φ₁ ∨ canon n φ₂)
-
--- ... | nconj φ₁ φ₂  = φ₂
--- ... | ndisj φ₁ φ₂  = φ₂
--- ... | nneg φ₁      = canon n φ₁
--- ... | ntop         = ⊤
--- ... | nbot         = ⊤
--- ... | other .φ     = φ
-
--- snnf : Prop → Prop
--- snnf φ = (canon (ubsizetree (nnf φ)) (nnf φ))
-
--- canonicalize_to_ : Prop → Prop →  Prop
--- canonicalize φ to φ₁
---   with ⌊ eq φ₁ (snnf φ) ⌋
--- ...  | true  = snnf φ
--- ...  | false with ⌊ eq φ₁ (dist′ (snnf φ)) ⌋
--- ...          | true = dist′ (snnf φ)
--- ...          | false  with ⌊ eq φ₁ (dist (snnf φ)) ⌋
--- ...                      | true = dnf (dist φ)
--- ...                      | false = φ₁
-
 _∈-∨_ : Prop → Prop → Bool
 φ ∈-∨ ψ
   with ⌊ eq φ ψ ⌋
@@ -212,11 +92,7 @@ thm-rmDuplicatesCNF
 thm-rmDuplicatesCNF {Γ}{φ} Γ⊢φ =
   thm-reorder-∧∨ Γ⊢φ (rmDuplicatesCNF φ)
 
--- Remove φ ∨ ¬ φ pairs.
-
-
 -- φ ∨ ¬ φ deletions in a right-associated formula.
-
 rmPairs-∨ : Prop → Prop
 rmPairs-∨ φ
   with disj-view φ
@@ -238,31 +114,99 @@ rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false
 rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | false = φ₁ ∨ rmPairs-∨ φ₂
 rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | true  = ⊤
 
-
--- We assumed here that the formula is a disjunction and its right-associated.
-clean-∧∨ : Prop → Prop
-clean-∧∨ φ
+-- apply rmParis-∨ in the conjunctions.
+rmPairs-∧∨ : Prop → Prop
+rmPairs-∧∨ φ
   with conj-view φ
 ...  | other _    = rmPairs-∨ φ
-...  | conj φ₁ φ₂
-     with ⌊ eq (clean-∧∨ φ₁) ⊤ ⌋
-...  | true  = clean-∧∨ φ₂
+...  | conj φ₁ φ₂ = rmPairs-∨ φ₁ ∧ rmPairs-∨ φ₂
+
+data canonView : Prop  → Set where
+
+-- Conjunction simplification cases.
+  sconj₁ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊤)     -- φ ∧ ⊤ ==> φ.
+  sconj₂ : (φ₁ : Prop)    → canonView (⊤ ∧ φ₁)     -- ⊤ ∧ φ ==> φ.
+  sconj₃ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊥)     -- φ ∧ ⊥ ==> ⊥.
+  sconj₄ : (φ₁ : Prop)    → canonView (⊥ ∧ φ₁)     -- ⊥ ∧ φ ==> ⊥.
+  sconj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)
+
+-- Disjunction simplification cases.
+  sdisj₁ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> ⊤.
+  sdisj₂ : (φ₁ : Prop)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> ⊤.
+  sdisj₃ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
+  sdisj₄ : (φ₁ : Prop)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
+  sdisj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)
+
+  ntop   : canonView (¬ ⊤)                         -- ¬ ⊤ ==> ⊥
+  nbot   : canonView (¬ ⊥)                         -- ¬ ⊥ ==> ⊤
+  other  : (φ₁ : Prop)    → canonView φ₁
+
+
+canon-view : (φ : Prop) → canonView φ
+canon-view (φ ∧ ⊤)  = sconj₁ _
+canon-view (⊤ ∧ φ)  = sconj₂ _
+canon-view (φ ∧ ⊥)  = sconj₃ _
+canon-view (⊥ ∧ φ)  = sconj₄ _
+canon-view (φ ∧ ψ)  = sconj₅ _ _
+canon-view (φ ∨ ⊤)  = sdisj₁ _
+canon-view (⊤ ∨ φ)  = sdisj₂ _
+canon-view (φ ∨ ⊥)  = sdisj₃ _
+canon-view (⊥ ∨ φ)  = sdisj₄ _
+canon-view (φ ∨ φ₁) = sdisj₅ _ _
+canon-view (¬ ⊤)    = ntop
+canon-view (¬ ⊥)    = nbot
+canon-view  φ       = other _
+
+
+-- We assumed here that the formula is a disjunction and its right-associated.
+canonicalize : Prop → Prop
+canonicalize φ
+  with canon-view φ
+canonicalize .(φ₁ ∧ ⊤)  | sconj₁ φ₁ = canonicalize φ₁
+canonicalize .(⊤ ∧ φ₁)  | sconj₂ φ₁ = canonicalize φ₁
+canonicalize .(φ₁ ∧ ⊥)  | sconj₃ φ₁ = ⊥
+canonicalize .(⊥ ∧ φ₁)  | sconj₄ φ₁ = ⊥
+canonicalize .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂
+  with ⌊ eq (canonicalize φ₁) ⊤ ⌋
+...  | true = canonicalize φ₂
 ...  | false
-     with  ⌊ eq (clean-∧∨ φ₁) ⊥ ⌋
+     with ⌊ eq (canonicalize φ₁) ⊥ ⌋
 ...     |  true = ⊥
 ...     |  false
-        with ⌊ eq (clean-∧∨ φ₂) ⊤ ⌋
-...        | true  = clean-∧∨ φ₁
+        with ⌊ eq (canonicalize φ₂) ⊤ ⌋
+...        | true = canonicalize φ₁
 ...        | false
-           with  ⌊ eq (clean-∧∨ φ₂) ⊥ ⌋
-...           |  true = ⊥
-...           |  false = (clean-∧∨ φ₁) ∧ (clean-∧∨ φ₂)
+           with  ⌊ eq (canonicalize φ₂) ⊥ ⌋
+...           |  true  = ⊥
+...           |  false
+              with ⌊ eq φ₁ (¬ φ₂) ⌋
+...              | true = ⊥
+...              | false
+                 with ⌊ eq (¬ φ₁) φ₂ ⌋
+...                 | true  = ⊥
+...                 | false = (canonicalize φ₁) ∧ (canonicalize φ₂)
 
+canonicalize .(φ₁ ∨ ⊤)  | sdisj₁ φ₁ = ⊤
+canonicalize .(⊤ ∨ φ₁)  | sdisj₂ φ₁ = ⊤
+canonicalize .(φ₁ ∨ ⊥)  | sdisj₃ φ₁ = canonicalize φ₁
+canonicalize .(⊥ ∨ φ₁)  | sdisj₄ φ₁ = canonicalize φ₁
+canonicalize .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂
+  with ⌊ eq (canonicalize φ₁) ⊤ ⌋
+...  | true = ⊤
+...  | false
+     with ⌊ eq (canonicalize φ₁) ⊥ ⌋
+...     | true = canonicalize φ₂
+...     | false
+        with ⌊ eq (canonicalize φ₂) ⊤ ⌋
+...        | true = ⊤
+...        | false
+           with  ⌊ eq (canonicalize φ₂) ⊥ ⌋
+...           | true  = canonicalize φ₁
+...           | false = (canonicalize φ₁) ∨ (canonicalize φ₂)
+canonicalize .(¬ ⊤)     | ntop = ⊥
+canonicalize .(¬ ⊥)     | nbot = ⊤
+canonicalize φ          | other .φ = φ
 
---∧ clean-∧∨ φ₂
-
-clean : Prop → Prop
-clean φ = clean-∧∨ (rmDuplicatesCNF φ)
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.
