@@ -16,9 +16,10 @@ open import Data.Bool
   using    ( Bool; true; false; if_then_else_ )
 
 open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
-open import Data.Prop.Syntax n
-open import Data.Prop.Theorems n
-open import Data.Prop.Views n
+
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Theorems n
+open import Data.PropFormula.Views n
 
 open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
@@ -30,17 +31,17 @@ open import Relation.Nullary                      renaming (¬_ to ¬₂)
 -- Spliting the goal.
 ------------------------------------------------------------------------------
 
-data ShuntView : Prop → Set where
-  case₁ : (φ₁ φ₂ φ₃ : Prop) → ShuntView (φ₁ ⇒ (φ₂ ⇒ φ₃))
-  case₂ : (φ₁ φ₂ φ₃ : Prop) → ShuntView (φ₁ ⇒ (φ₂ ∧ φ₃))
-  other : (φ : Prop)        → ShuntView φ
+data ShuntView : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → ShuntView (φ₁ ⇒ (φ₂ ⇒ φ₃))
+  case₂ : (φ₁ φ₂ φ₃ : PropFormula) → ShuntView (φ₁ ⇒ (φ₂ ∧ φ₃))
+  other : (φ : PropFormula)        → ShuntView φ
 
-unshunt-view : (φ : Prop) → ShuntView φ
+unshunt-view : (φ : PropFormula) → ShuntView φ
 unshunt-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
 unshunt-view (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
 unshunt-view φ                 = other _
 
-unshunt′ : ℕ → Prop → Prop
+unshunt′ : ℕ → PropFormula → PropFormula
 unshunt′ zero φ  = φ
 unshunt′ (suc n) φ with unshunt-view φ
 ... | case₁ φ₁ φ₂ φ₃ = unshunt′ n ((φ₁ ∧ φ₂) ⇒ φ₃)
@@ -68,7 +69,7 @@ thm-inv-unshunt′ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
         (∧-proj₂ Γ⊢ushuntnφ)))
 ... | other _ = Γ⊢ushuntnφ
 
-calls-unshunt : Prop → ℕ
+calls-unshunt : PropFormula → ℕ
 calls-unshunt φ with unshunt-view φ
 ... | case₁ _ _ φ₃  = 2 + calls-unshunt φ₃
 ... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
@@ -81,7 +82,7 @@ postulate
     → Γ ⊢ φ
     → Γ ⊢ unshunt′ n φ
 
-unshunt : Prop → Prop
+unshunt : PropFormula → PropFormula
 unshunt φ = unshunt′ (calls-unshunt φ + 1) φ
 
 postulate
@@ -97,21 +98,21 @@ thm-inv-unshunt
 
 thm-inv-unshunt {_} {φ} = thm-inv-unshunt′ (calls-unshunt φ + 1)
 
-data StripView : Prop → Set where
-  conj     : (φ₁ φ₂ : Prop) → StripView (φ₁ ∧ φ₂)
-  disj     : (φ₁ φ₂ : Prop) → StripView (φ₁ ∨ φ₂)
-  impl     : (φ₁ φ₂ : Prop) → StripView (φ₁ ⇒ φ₂)
-  biimpl   : (φ₁ φ₂ : Prop) → StripView (φ₁ ⇔ φ₂)
-  nconj    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∧ φ₂))
-  ndisj    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ∨ φ₂))
-  nimpl    : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ⇒ φ₂))
-  nbiimpl  : (φ₁ φ₂ : Prop) → StripView (¬ (φ₁ ⇔ φ₂))
-  nneg     : (φ₁ : Prop)    → StripView (¬ ¬ φ₁)
+data StripView : PropFormula → Set where
+  conj     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
+  disj     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∨ φ₂)
+  impl     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇒ φ₂)
+  biimpl   : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇔ φ₂)
+  nconj    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∧ φ₂))
+  ndisj    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∨ φ₂))
+  nimpl    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇒ φ₂))
+  nbiimpl  : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇔ φ₂))
+  nneg     : (φ₁ : PropFormula)    → StripView (¬ ¬ φ₁)
   nbot     : StripView (¬ ⊥)
   ntop     : StripView (¬ ⊤)
-  other    : (φ₁ : Prop)    → StripView φ₁
+  other    : (φ₁ : PropFormula)    → StripView φ₁
 
-split-view : (φ : Prop) → StripView φ
+split-view : (φ : PropFormula) → StripView φ
 split-view (φ₁ ∧ φ₂)     = conj _ _
 split-view (φ₁ ∨ φ₂)     = disj _ _
 split-view (φ₁ ⇒ φ₂)     = impl _ _
@@ -126,7 +127,7 @@ split-view (¬ (¬ φ₁))    = nneg _
 split-view φ₁            = other _
 
 
-splitₙ : ℕ → Prop → Prop
+splitₙ : ℕ → PropFormula → PropFormula
 splitₙ zero φ = φ
 splitₙ (suc n) φ
   with split-view φ
@@ -272,7 +273,7 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
 ... | other φ₁ = Γ⊢splitₙ
 
-split-calls : Prop → ℕ
+split-calls : PropFormula → ℕ
 split-calls φ with split-view φ
 ... | conj φ₁ φ₂    = split-calls φ₁ + split-calls φ₂ + 1
 ... | disj φ₁ φ₂    = split-calls φ₂ + 1
@@ -287,7 +288,7 @@ split-calls φ with split-view φ
 ... | ntop          = 1
 ... | other .φ      = 1
 
-split : Prop → Prop
+split : PropFormula → PropFormula
 split φ = splitₙ (split-calls φ) φ
 
 thm-split
@@ -301,5 +302,5 @@ atp-split
   → Γ ⊢ split φ ⇒ φ
 atp-split {Γ} {φ} = ⇒-intro (thm-split (assume {Γ = Γ} (split φ)))
 
-strip_to_ : Prop → Prop → Prop
+strip_to_ : PropFormula → PropFormula → PropFormula
 strip φ to ψ = conjunct (split φ) ψ

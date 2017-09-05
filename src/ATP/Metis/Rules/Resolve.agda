@@ -9,15 +9,15 @@ module ATP.Metis.Rules.Resolve ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Prop.Syntax n
-open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
-open import Data.Prop.Properties n           using ( eq; subst )
-open import Data.Prop.NormalForms n          using ( cnf; thm-cnf )
-open import Data.Prop.Views n
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
+open import Data.PropFormula.Properties n           using ( eq; subst )
+open import Data.PropFormula.NormalForms n          using ( cnf; thm-cnf )
+open import Data.PropFormula.Views n
   using ( DisjView; disj-view; disj; other)
 
-open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
-open import Data.Prop.Theorems.Disjunction n
+open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
+open import Data.PropFormula.Theorems.Disjunction n
   using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₁; resolve₀)
 
 open import Data.Bool                        using ( true; false )
@@ -30,16 +30,16 @@ open import ATP.Metis.Rules.Reordering n
 ------------------------------------------------------------------------------
 
 -- Resolution using reorder-∨.
-data ResView : Prop → Set where
-  case₁ : (φ₁ φ₂ φ₃ φ₄ : Prop) → ResView ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))
-  other : (φ : Prop)           → ResView φ
+data ResView : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ φ₄ : PropFormula) → ResView ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))
+  other : (φ : PropFormula)           → ResView φ
 
-res-view : (φ : Prop) → ResView φ
+res-view : (φ : PropFormula) → ResView φ
 res-view ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
 res-view φ                       = other _
 
 
-helper-resolve : Prop → Prop
+helper-resolve : PropFormula → PropFormula
 helper-resolve φ
   with res-view φ
 helper-resolve φ                        | other .φ    = φ
@@ -86,7 +86,7 @@ thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | c
                 (∧-proj₂ Γ⊢φ))
 
 
-resolve : Prop → Prop → Prop → Prop → Prop
+resolve : PropFormula → PropFormula → PropFormula → PropFormula → PropFormula
 resolve goal l φ₁ φ₂ =
   helper-resolve $
      (reorder-∨ φ₁ $ l ∨ goal)
@@ -94,8 +94,8 @@ resolve goal l φ₁ φ₂ =
 
 atp-resolve
   : ∀ {Γ} {φ₁ φ₂}
-  → (ψ : Prop)   -- goal
-  → (l : Prop)   -- literal
+  → (ψ : PropFormula)   -- goal
+  → (l : PropFormula)   -- literal
   → Γ ⊢ φ₁       -- left side
   → Γ ⊢ φ₂       -- right side
   → Γ ⊢ resolve ψ l φ₁ φ₂

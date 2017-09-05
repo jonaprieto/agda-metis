@@ -16,14 +16,14 @@ open import Data.Bool.Base
   using    ( true; false )
   renaming ( _∨_ to _or_ )
 
-open import Data.Prop.Dec n                  using ( ⌊_⌋ ; yes ; no )
-open import Data.Prop.Properties n           using ( eq ; subst )
-open import Data.Prop.Syntax n
-open import Data.Prop.Theorems n
-open import Data.Prop.NormalForms n
-open import Data.Prop.Views n
+open import Data.PropFormula.Dec n                  using ( ⌊_⌋ ; yes ; no )
+open import Data.PropFormula.Properties n           using ( eq ; subst )
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Theorems n
+open import Data.PropFormula.NormalForms n
+open import Data.PropFormula.Views n
 
-open import Data.Prop.SyntaxExperiment n    using ( right-assoc-∧ )
+open import Data.PropFormula.SyntaxExperiment n    using ( right-assoc-∧ )
 
 open import Data.Bool using (Bool; true; false) renaming (_∨_ to _or_ )
 
@@ -36,7 +36,7 @@ open import Relation.Binary.PropositionalEquality
 
 -- All formulas are in NNF.
 
-_∈-∨_ : Prop → Prop → Bool
+_∈-∨_ : PropFormula → PropFormula → Bool
 φ ∈-∨ ψ
   with ⌊ eq φ ψ ⌋
 ...  | true = true
@@ -46,7 +46,7 @@ _∈-∨_ : Prop → Prop → Bool
 ...     | disj ψ₁ ψ₂ = φ ∈-∨ ψ₁ or φ ∈-∨ ψ₂
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-rmDuplicates-∨ : Prop → Prop
+rmDuplicates-∨ : PropFormula → PropFormula
 rmDuplicates-∨ φ
   with disj-view φ
 ... | other _  = φ
@@ -55,7 +55,7 @@ rmDuplicates-∨ φ
 ...    | true  = rmDuplicates-∨ φ₂
 ...    | false = φ₁ ∨ rmDuplicates-∨ φ₂
 
-_∈-∧_ : Prop → Prop → Bool
+_∈-∧_ : PropFormula → PropFormula → Bool
 φ ∈-∧ ψ
   with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
 ...  | true = true
@@ -66,13 +66,13 @@ _∈-∧_ : Prop → Prop → Bool
 
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-rmDuplicates-∧∨ : Prop → Prop
+rmDuplicates-∧∨ : PropFormula → PropFormula
 rmDuplicates-∧∨ φ
   with conj-view φ
 ...  | other _    = rmDuplicates-∨ (right-assoc-∨ φ)
 ...  | conj φ₁ φ₂ = rmDuplicates-∧∨ φ₁ ∧ rmDuplicates-∧∨ φ₂
 
-rmDuplicates-∧ : Prop → Prop
+rmDuplicates-∧ : PropFormula → PropFormula
 rmDuplicates-∧ φ
   with conj-view φ
 ...  | other _  = φ
@@ -81,7 +81,7 @@ rmDuplicates-∧ φ
 ...     | true  = rmDuplicates-∧ φ₂
 ...     | false = φ₁ ∧ rmDuplicates-∧ φ₂
 
-rmDuplicatesCNF : Prop → Prop
+rmDuplicatesCNF : PropFormula → PropFormula
 rmDuplicatesCNF φ =
   rmDuplicates-∧ (rmDuplicates-∧∨ (right-assoc-∧ (cnf φ)))
 
@@ -93,7 +93,7 @@ thm-rmDuplicatesCNF {Γ}{φ} Γ⊢φ =
   thm-reorder-∧∨ Γ⊢φ (rmDuplicatesCNF φ)
 
 -- φ ∨ ¬ φ deletions in a right-associated formula.
-rmPairs-∨ : Prop → Prop
+rmPairs-∨ : PropFormula → PropFormula
 rmPairs-∨ φ
   with disj-view φ
 ... | other .φ   = φ
@@ -115,34 +115,34 @@ rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | false =
 rmPairs-∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ | pos .φ₁ | false | true  = ⊤
 
 -- apply rmParis-∨ in the conjunctions.
-rmPairs-∧∨ : Prop → Prop
+rmPairs-∧∨ : PropFormula → PropFormula
 rmPairs-∧∨ φ
   with conj-view φ
 ...  | other _    = rmPairs-∨ φ
 ...  | conj φ₁ φ₂ = rmPairs-∨ φ₁ ∧ rmPairs-∨ φ₂
 
-data canonView : Prop  → Set where
+data canonView : PropFormula  → Set where
 
 -- Conjunction simplification cases.
-  sconj₁ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊤)     -- φ ∧ ⊤ ==> φ.
-  sconj₂ : (φ₁ : Prop)    → canonView (⊤ ∧ φ₁)     -- ⊤ ∧ φ ==> φ.
-  sconj₃ : (φ₁ : Prop)    → canonView (φ₁ ∧ ⊥)     -- φ ∧ ⊥ ==> ⊥.
-  sconj₄ : (φ₁ : Prop)    → canonView (⊥ ∧ φ₁)     -- ⊥ ∧ φ ==> ⊥.
-  sconj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∧ φ₂)
+  sconj₁ : (φ₁ : PropFormula)    → canonView (φ₁ ∧ ⊤)     -- φ ∧ ⊤ ==> φ.
+  sconj₂ : (φ₁ : PropFormula)    → canonView (⊤ ∧ φ₁)     -- ⊤ ∧ φ ==> φ.
+  sconj₃ : (φ₁ : PropFormula)    → canonView (φ₁ ∧ ⊥)     -- φ ∧ ⊥ ==> ⊥.
+  sconj₄ : (φ₁ : PropFormula)    → canonView (⊥ ∧ φ₁)     -- ⊥ ∧ φ ==> ⊥.
+  sconj₅ : (φ₁ φ₂ : PropFormula) → canonView (φ₁ ∧ φ₂)
 
 -- Disjunction simplification cases.
-  sdisj₁ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> ⊤.
-  sdisj₂ : (φ₁ : Prop)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> ⊤.
-  sdisj₃ : (φ₁ : Prop)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
-  sdisj₄ : (φ₁ : Prop)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
-  sdisj₅ : (φ₁ φ₂ : Prop) → canonView (φ₁ ∨ φ₂)
+  sdisj₁ : (φ₁ : PropFormula)    → canonView (φ₁ ∨ ⊤)     -- φ ∨ ⊤ ==> ⊤.
+  sdisj₂ : (φ₁ : PropFormula)    → canonView (⊤ ∨ φ₁)     -- ⊤ ∨ φ ==> ⊤.
+  sdisj₃ : (φ₁ : PropFormula)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
+  sdisj₄ : (φ₁ : PropFormula)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
+  sdisj₅ : (φ₁ φ₂ : PropFormula) → canonView (φ₁ ∨ φ₂)
 
   ntop   : canonView (¬ ⊤)                         -- ¬ ⊤ ==> ⊥
   nbot   : canonView (¬ ⊥)                         -- ¬ ⊥ ==> ⊤
-  other  : (φ₁ : Prop)    → canonView φ₁
+  other  : (φ₁ : PropFormula)    → canonView φ₁
 
 
-canon-view : (φ : Prop) → canonView φ
+canon-view : (φ : PropFormula) → canonView φ
 canon-view (φ ∧ ⊤)  = sconj₁ _
 canon-view (⊤ ∧ φ)  = sconj₂ _
 canon-view (φ ∧ ⊥)  = sconj₃ _
@@ -159,7 +159,7 @@ canon-view  φ       = other _
 
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-canonicalize : Prop → Prop
+canonicalize : PropFormula → PropFormula
 canonicalize φ
   with canon-view φ
 canonicalize .(φ₁ ∧ ⊤)  | sconj₁ φ₁ = canonicalize φ₁
@@ -215,6 +215,6 @@ canonicalize φ          | other .φ = φ
 postulate
   atp-canonicalize
     : ∀ {Γ} {φ}
-    → (φ′ : Prop)
+    → (φ′ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ φ′

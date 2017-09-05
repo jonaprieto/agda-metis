@@ -1,36 +1,36 @@
-open import Data.Prop 9 public
+open import Data.PropFormula  9 public
 
 -- Variables.
 
-p : Prop
+p : PropFormula
 p = Var (# 0)
 
-q : Prop
+q : PropFormula
 q = Var (# 1)
 
-r : Prop
+r : PropFormula
 r = Var (# 2)
 
-s : Prop
+s : PropFormula
 s = Var (# 3)
 
-t : Prop
+t : PropFormula
 t = Var (# 4)
 
-a : Prop
+a : PropFormula
 a = Var (# 5)
 
-b : Prop
+b : PropFormula
 b = Var (# 6)
 
-c : Prop
+c : PropFormula
 c = Var (# 7)
 
-d : Prop
+d : PropFormula
 d = Var (# 8)
 
 
-open import Data.Prop.SyntaxExperiment 9 using ( right-assoc-∧ )
+open import Data.PropFormula.SyntaxExperiment 9 using ( right-assoc-∧ )
 open import ATP.Metis.Rules.Canonicalize 9
   using (rmDuplicates-∧; rmDuplicates-∧∨; rmDuplicates-∨; rmDuplicatesCNF; rmPairs-∨ )
 open import ATP.Metis.Rules.Reordering 9

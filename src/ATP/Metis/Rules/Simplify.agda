@@ -15,10 +15,10 @@ open import Data.Bool.Base
   using    ( Bool; true; false )
   renaming ( _∨_ to _or_; _∧_ to _and_ )
 
-open import Data.Prop.Dec n        using ( ⌊_⌋; yes; no )
-open import Data.Prop.Properties n using ( eq ; subst )
-open import Data.Prop.Syntax n
-open import Data.Prop.Theorems n
+open import Data.PropFormula.Dec n        using ( ⌊_⌋; yes; no )
+open import Data.PropFormula.Properties n using ( eq ; subst )
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Theorems n
 
 open import Function               using ( id ; _∘_ ; _$_ )
 open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
@@ -30,7 +30,7 @@ open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 -- and tries to simplify it based on the second one of the input.
 ------------------------------------------------------------------------------
 
-simplify : Prop → Prop → Prop
+simplify : PropFormula → PropFormula → PropFormula
 
 simplify ⊤ φ = ⊤
 simplify ⊥ φ = ⊥
@@ -136,18 +136,18 @@ atp-simplify₀ {Γ} {⊥} {_} Γ⊢⊥ _  = Γ⊢⊥
 -- is not bottom, it applies simplify flipping the formulas into the input.
 ------------------------------------------------------------------------------
 
-data S-View : Prop → Prop → Set where
-  normal : (φ ψ : Prop) → S-View φ ψ
-  swap   : (φ ψ : Prop) → S-View φ ψ
+data S-View : PropFormula → PropFormula → Set where
+  normal : (φ ψ : PropFormula) → S-View φ ψ
+  swap   : (φ ψ : PropFormula) → S-View φ ψ
 
-s-view : (x y : Prop) → S-View x y
+s-view : (x y : PropFormula) → S-View x y
 s-view φ ψ with simplify φ ψ
 ... | ⊥ = normal φ ψ
 ... | z with simplify ψ φ
 ...        | ⊥ = swap φ ψ
 ...        | w = normal φ ψ
 
-hard-simplify : Prop → Prop → Prop
+hard-simplify : PropFormula → PropFormula → PropFormula
 hard-simplify x y with s-view x y
 hard-simplify x y | normal .x .y = simplify x y
 hard-simplify x y | swap .x .y   = simplify y x
@@ -159,7 +159,7 @@ hard-simplify x y | swap .x .y   = simplify y x
 postulate
   atp-simplify
     : ∀ {Γ} {φ ψ}
-    → (γ : Prop)
+    → (γ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ ψ
     → Γ ⊢ γ

@@ -9,14 +9,14 @@ module ATP.Metis.Rules.Reordering ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Prop.Syntax n
-open import Data.Prop.Dec n                  using ( yes; no; ⌊_⌋ )
-open import Data.Prop.Properties n           using ( eq; subst )
-open import Data.Prop.Views n
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
+open import Data.PropFormula.Properties n           using ( eq; subst )
+open import Data.PropFormula.Views n
   using ( DisjView; disj-view; disj; other; conj-view; conj)
 
-open import Data.Prop.Theorems.Conjunction n using ( ∧-dmorgan₁ )
-open import Data.Prop.Theorems.Disjunction n
+open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
+open import Data.PropFormula.Theorems.Disjunction n
   using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₂; resolve₇)
 
 open import Data.Bool                        using ( true; false )
@@ -34,7 +34,7 @@ open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 -- Reordering of a disjunction.
 ------------------------------------------------------------------------------
 
-build-∨ : Prop → Prop → Prop
+build-∨ : PropFormula → PropFormula → PropFormula
 build-∨ φ ψ
   with ⌊ eq φ ψ ⌋
 ... | true  = ψ
@@ -53,10 +53,10 @@ postulate
   thm-build-∨
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
-    → (ψ : Prop)
+    → (ψ : PropFormula)
     → Γ ⊢ build-∨ φ ψ
 
-factor : Prop → Prop
+factor : PropFormula → PropFormula
 factor φ
   with disj-view φ
 ... | other _ = φ
@@ -85,7 +85,7 @@ thm-factor {Γ}{φ} Γ⊢φ
            Γ⊢φ
 ...    | no _            = Γ⊢φ
 
-helper-build : Prop → Prop → Prop
+helper-build : PropFormula → PropFormula → PropFormula
 helper-build φ ψ
   with disj-view φ
 ... | other _    = build-∨ φ ψ
@@ -94,7 +94,7 @@ helper-build φ ψ
 thm-helper-build
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ helper-build φ ψ
 
 thm-helper-build {Γ} {φ} Γ⊢φ ψ
@@ -111,17 +111,17 @@ thm-helper-build {Γ} {φ} Γ⊢φ ψ
                   (thm-helper-build (assume {Γ = Γ} φ₂) ψ))))
             Γ⊢φ)
 
-data TDisjView : Prop → Set where
-  case₁ : (φ₁ φ₂ φ₃ : Prop) → TDisjView ((φ₁ ∨ φ₂) ∨ φ₃)
-  case₂ : (φ₁ φ₂ : Prop) → TDisjView (φ₁ ∨ φ₂)
-  other : (φ : Prop) → TDisjView φ
+data TDisjView : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → TDisjView ((φ₁ ∨ φ₂) ∨ φ₃)
+  case₂ : (φ₁ φ₂ : PropFormula) → TDisjView (φ₁ ∨ φ₂)
+  other : (φ : PropFormula) → TDisjView φ
 
-tdisj-view : (φ : Prop) → TDisjView φ
+tdisj-view : (φ : PropFormula) → TDisjView φ
 tdisj-view ((φ₁ ∨ φ₂) ∨ φ₃) = case₁ _ _ _
 tdisj-view (φ ∨ ψ)          = case₂ _ _
 tdisj-view φ                = other _
 
-right-assoc-∨ₙ : ℕ → Prop → Prop
+right-assoc-∨ₙ : ℕ → PropFormula → PropFormula
 right-assoc-∨ₙ zero φ  = φ
 right-assoc-∨ₙ (suc n) φ
   with tdisj-view φ
@@ -151,14 +151,14 @@ thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | case₂ φ ψ =
     Γ⊢φ
 thm-right-assoc-∨ₙ {Γ} {_} (suc n₁) Γ⊢φ | other φ = Γ⊢φ
 
-iter-right-assoc-∨ : Prop → ℕ
+iter-right-assoc-∨ : PropFormula → ℕ
 iter-right-assoc-∨ φ
   with tdisj-view φ
 ... | case₁ φ₁ φ₂ φ₃ = 2 + iter-right-assoc-∨ φ₂ + iter-right-assoc-∨ φ₃
 ... | case₂ φ₁ φ₂ = 2 + iter-right-assoc-∨ φ₂
 ... | other .φ = 1
 
-right-assoc-∨ : Prop → Prop
+right-assoc-∨ : PropFormula → PropFormula
 right-assoc-∨ φ = right-assoc-∨ₙ (iter-right-assoc-∨ φ) φ
 
 thm-right-assoc-∨
@@ -167,13 +167,13 @@ thm-right-assoc-∨
   → Γ ⊢ right-assoc-∨ φ
 thm-right-assoc-∨ {Γ}{φ} Γ⊢φ = thm-right-assoc-∨ₙ (iter-right-assoc-∨ φ) Γ⊢φ
 
-reorder-∨ : Prop → Prop → Prop
+reorder-∨ : PropFormula → PropFormula → PropFormula
 reorder-∨ φ ψ = helper-build (right-assoc-∨ φ) ψ
 
 thm-reorder-∨
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ reorder-∨ φ ψ
 thm-reorder-∨ {Γ} {φ} Γ⊢φ ψ = thm-helper-build (thm-right-assoc-∨ Γ⊢φ) ψ
 
@@ -181,7 +181,7 @@ thm-reorder-∨ {Γ} {φ} Γ⊢φ ψ = thm-helper-build (thm-right-assoc-∨ Γ�
 -- Reordering a conjunction.
 ------------------------------------------------------------------------------
 
-reorder-∧ : Prop → Prop → Prop
+reorder-∧ : PropFormula → PropFormula → PropFormula
 reorder-∧ φ ψ
   with ⌊ eq φ ψ ⌋
 ...  | true = φ
@@ -199,7 +199,7 @@ reorder-∧ φ ψ
 thm-reorder-∧
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ reorder-∧ φ ψ
 
 thm-reorder-∧ {Γ} {φ} Γ⊢φ ψ
@@ -223,7 +223,7 @@ thm-reorder-∧ {Γ} {φ} Γ⊢φ ψ
 -- Reordering a conjunction of disjunctions.
 -- Conversion from a CNF formula φ to another CNF formula ψ.
 
-conjuct-∨ : Prop → Prop → Prop
+conjuct-∨ : PropFormula → PropFormula → PropFormula
 conjuct-∨ φ ψ
   with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
 ... | true  = ψ
@@ -250,7 +250,7 @@ conjuct-∨ .(φ₁ ∧ φ₂) ψ | false | other .ψ | (conj φ₁ φ₂)
 
 thm-conjunct-∨
   : ∀ {Γ} {φ}
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ φ
   → Γ ⊢ conjuct-∨ φ ψ
 
@@ -282,7 +282,7 @@ thm-conjunct-∨ {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | other .ψ | (conj 
 ... | no  _ = Γ⊢φ
 
 
-reorder-∧∨ : Prop → Prop → Prop
+reorder-∧∨ : PropFormula → PropFormula → PropFormula
 reorder-∧∨ φ ψ
   with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
 ...  | true = ψ
@@ -301,7 +301,7 @@ reorder-∧∨ φ ψ
 thm-reorder-∧∨
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ reorder-∧∨ φ ψ
 
 thm-reorder-∧∨ {Γ} {φ} Γ⊢φ ψ

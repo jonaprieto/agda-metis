@@ -9,10 +9,10 @@ module ATP.Metis.Rules.Clausify ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Prop.Dec n
-open import Data.Prop.Properties n
-open import Data.Prop.Syntax n
-open import Data.Prop.NormalForms n using ( cnf; thm-cnf )
+open import Data.PropFormula.Dec n
+open import Data.PropFormula.Properties n
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.NormalForms n using ( cnf; thm-cnf )
 open import Data.Bool               using ( true; false )
 
 open import ATP.Metis.Rules.Reordering n
@@ -21,7 +21,7 @@ open import Function using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
-clausify : Prop → Prop → Prop
+clausify : PropFormula → PropFormula → PropFormula
 clausify φ ψ
   with ⌊ eq φ ψ ⌋
 ...  | true  = ψ
@@ -29,7 +29,7 @@ clausify φ ψ
 
 atp-clausify
     : ∀ {Γ} {φ}
-    → (ψ : Prop)
+    → (ψ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
 

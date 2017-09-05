@@ -11,9 +11,9 @@ module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
 
 open import Data.Bool.Base         using ( Bool; false; true )
 
-open import Data.Prop.Syntax n
-open import Data.Prop.Dec n        using ( yes; no; ⌊_⌋ )
-open import Data.Prop.Properties n using ( eq; subst )
+open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Dec n        using ( yes; no; ⌊_⌋ )
+open import Data.PropFormula.Properties n using ( eq; subst )
 
 open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 
@@ -22,11 +22,11 @@ open import Function               using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
-data ConjView : Prop → Set where
-  conj  : (φ₁ φ₂ : Prop) → ConjView (φ₁ ∧ φ₂)
-  other : (φ : Prop)     → ConjView φ
+data ConjView : PropFormula → Set where
+  conj  : (φ₁ φ₂ : PropFormula) → ConjView (φ₁ ∧ φ₂)
+  other : (φ : PropFormula)     → ConjView φ
 
-conj-view : (φ : Prop) → ConjView φ
+conj-view : (φ : PropFormula) → ConjView φ
 conj-view (φ ∧ ψ) = conj _ _
 conj-view φ       = other _
 
@@ -38,7 +38,7 @@ data Step  : Set where
 Path : Set
 Path = List Step
 
-conjunct-path : Prop → Prop → Path → Path
+conjunct-path : PropFormula → PropFormula → Path → Path
 conjunct-path φ ψ path
     with ⌊ eq φ ψ ⌋
 ... | true  = path ∷ʳ pick
@@ -53,7 +53,7 @@ conjunct-path φ ψ path
 ...               | []              = []
 
 
-conjunct : Prop → Prop → Prop
+conjunct : PropFormula → PropFormula → PropFormula
 conjunct φ ψ
   with conj-view φ | conjunct-path φ ψ []
 ...  | _           | []        = φ
@@ -64,7 +64,7 @@ conjunct φ ψ
 
 atp-conjunct
   : ∀ {Γ} {φ}
-  → (ψ : Prop)
+  → (ψ : PropFormula)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
 thm-conjunct = atp-conjunct

@@ -1,35 +1,35 @@
 open import ATP.Metis 9 public
-open import Data.Prop 9 public
+open import Data.PropFormula  9 public
 
 open import ATP.Metis.Rules.Reordering 9
 
 -- Variables.
 
-p : Prop
+p : PropFormula
 p = Var (# 0)
 
-q : Prop
+q : PropFormula
 q = Var (# 1)
 
-r : Prop
+r : PropFormula
 r = Var (# 2)
 
-s : Prop
+s : PropFormula
 s = Var (# 3)
 
-t : Prop
+t : PropFormula
 t = Var (# 4)
 
-a : Prop
+a : PropFormula
 a = Var (# 5)
 
-b : Prop
+b : PropFormula
 b = Var (# 6)
 
-c : Prop
+c : PropFormula
 c = Var (# 7)
 
-d : Prop
+d : PropFormula
 d = Var (# 8)
 
 -- Premise.
@@ -39,12 +39,12 @@ d = Var (# 8)
 
 -- Conjecture.
 
-goal : Prop
+goal : PropFormula
 goal = (p ⇒ ((p ⇒ q) ⇒ q))
 
 -- Subgoal.
 
-subgoal₀ : Prop
+subgoal₀ : PropFormula
 subgoal₀ = ((p ∧ (p ⇒ q)) ⇒ q)
 
 tt : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
@@ -57,10 +57,10 @@ c2 : Γ , ¬ subgoal₀ ⊢ (¬ p) ∨ q
 c2 = atp-conjunct (¬ p ∨ q) tt
 
 -- testing reorder-∨
-original : Prop
+original : PropFormula
 original = a ∨ (b ∨ c)
 
-norder : Prop
+norder : PropFormula
 norder = (c ∨ b) ∨ a
 
 fm1 = ((a ∨ b) ∨ c) ∨ d
@@ -86,10 +86,10 @@ test3 = refl
 -- test4 : ⌊ eq (reorder-∨ (a ∨ (b ∨ (c ∨ d))) (((a ∨ b) ∨ c) ∨ d) ) (((a ∨ b) ∨ c) ∨ d) ⌋ ≡ true
 -- test4 = refl
 
--- phi : Prop
+-- phi : PropFormula
 -- phi = p ∨ ((q ∧ r) ∨ s)
 
--- psi : Prop
+-- psi : PropFormula
 -- psi = (s ∨ p) ∨ (r ∧ q)
 
 -- test-41 : ⌊ eq (reorder-∨ phi psi) psi ⌋ ≡ true
@@ -148,8 +148,8 @@ cla1 = (clausify cl1 acl1)
 -- (¬ q ∨ ¬ p ∨ ¬ p ∧
 -- (¬ q ∨ ¬ q ∨ ¬ p))))
 
-tcl1 : ⌊ eq (clausify cl1 acl1) acl1 ⌋ ≡ true
-tcl1 = {!!} -- refl
+-- tcl1 : ⌊ eq (clausify cl1 acl1) acl1 ⌋ ≡ true
+-- tcl1 = {!!} -- refl
 
 -- ctest6 : ⌊ eq (right-assoc-∧ (cnf from6)) (right-assoc-∧ cnf6) ⌋ ≡ true
 -- ctest6 = refl
