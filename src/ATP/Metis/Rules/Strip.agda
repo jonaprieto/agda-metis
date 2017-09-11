@@ -3,7 +3,7 @@
 -- Strip inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using ( ℕ ; zero ; suc; _+_ )
+open import Data.Nat using ( ℕ ; zero ; suc; _+_) renaming (_⊔_ to max )
 
 module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
@@ -42,49 +42,49 @@ unshunt-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
 unshunt-view (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
 unshunt-view φ                = other _
 
-unshunt′ : ℕ → PropFormula → PropFormula
-unshunt′ zero φ  = φ
-unshunt′ (suc n) φ with unshunt-view φ
-... | case₁ φ₁ φ₂ φ₃ = unshunt′ n ((φ₁ ∧ φ₂) ⇒ φ₃)
-... | case₂ φ₁ φ₂ φ₃ = (unshunt′ n (φ₁ ⇒ φ₂)) ∧ (unshunt′ n (φ₁ ⇒ φ₃))
+unshuntₙ : ℕ → PropFormula → PropFormula
+unshuntₙ zero φ  = φ
+unshuntₙ (suc n) φ with unshunt-view φ
+... | case₁ φ₁ φ₂ φ₃ = unshuntₙ n ((φ₁ ∧ φ₂) ⇒ φ₃)
+... | case₂ φ₁ φ₂ φ₃ = (unshuntₙ n (φ₁ ⇒ φ₂)) ∧ (unshuntₙ n (φ₁ ⇒ φ₃))
 ... | other _        = φ
 
-thm-inv-unshunt′
+thm-inv-unshuntₙ
   : ∀ {Γ} {φ}
   → (n : ℕ)
-  → Γ ⊢ unshunt′ n φ
+  → Γ ⊢ unshuntₙ n φ
   → Γ ⊢ φ
 
-thm-inv-unshunt′ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
-thm-inv-unshunt′ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
+thm-inv-unshuntₙ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
+thm-inv-unshuntₙ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
 ... | case₁ φ₁ φ₂ φ₃ =
   ∧⇒-to-⇒⇒
-    (thm-inv-unshunt′ n
+    (thm-inv-unshuntₙ n
       Γ⊢ushuntnφ)
 ... | case₂ φ₁ φ₂ φ₃ =
   ⇒∧⇒-to-⇒∧
     (∧-intro
-      (thm-inv-unshunt′ n
+      (thm-inv-unshuntₙ n
         (∧-proj₁ Γ⊢ushuntnφ))
-      (thm-inv-unshunt′ n
+      (thm-inv-unshuntₙ n
         (∧-proj₂ Γ⊢ushuntnφ)))
 ... | other _ = Γ⊢ushuntnφ
 
-calls-unshunt : PropFormula → ℕ
-calls-unshunt φ with unshunt-view φ
-... | case₁ _ _ φ₃  = 2 + calls-unshunt φ₃
-... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
-... | other .φ      = 1
+unshunt-complexity : PropFormula → ℕ
+unshunt-complexity φ with unshunt-view φ
+... | case₁ _ _ φ₃  = unshunt-complexity φ₃ + 2
+... | case₂ _ φ₂ φ₃ = max (unshunt-complexity φ₂) (unshunt-complexity φ₃) + 1
+... | other .φ      = 0
 
 unshunt : PropFormula → PropFormula
-unshunt φ = unshunt′ (calls-unshunt φ + 1) φ
+unshunt φ = unshuntₙ (unshunt-complexity φ + 1) φ
 
 thm-inv-unshunt
   : ∀ {Γ} {φ}
   → Γ ⊢ unshunt φ
   → Γ ⊢ φ
 
-thm-inv-unshunt {_} {φ} = thm-inv-unshunt′ (calls-unshunt φ + 1)
+thm-inv-unshunt {_} {φ} = thm-inv-unshuntₙ (unshunt-complexity φ + 1)
 
 data StripView : PropFormula → Set where
   conj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
@@ -261,29 +261,29 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
 ... | other φ₁ = Γ⊢splitₙ
 
-split-calls : PropFormula → ℕ
-split-calls φ with split-view φ
-... | conj φ₁ φ₂    = split-calls φ₁ + split-calls φ₂ + 1
-... | disj φ₁ φ₂    = split-calls φ₂ + 1
-... | impl φ₁ φ₂    = split-calls φ₂ + 1
-... | biimpl φ₁ φ₂  = split-calls φ₁ + split-calls φ₂ + 1
-... | nconj φ₁ φ₂   = split-calls (¬ φ₂) + 1
-... | ndisj φ₁ φ₂   = split-calls (¬ φ₁) + split-calls (¬ φ₂) + 1
-... | nimpl φ₁ φ₂   = split-calls φ₁ + split-calls (¬ φ₂) + 1
-... | nbiimpl φ₁ φ₂ = split-calls (¬ φ₁) + split-calls (¬ φ₂) + 1
-... | nneg φ₁       = split-calls φ₁ + 1
+split-complexity : PropFormula → ℕ
+split-complexity φ with split-view φ
+... | conj φ₁ φ₂    = max (split-complexity φ₁) (split-complexity φ₂) + 1
+... | disj φ₁ φ₂    = split-complexity φ₂ + 1
+... | impl φ₁ φ₂    = split-complexity φ₂ + 1
+... | biimpl φ₁ φ₂  = (max (split-complexity φ₁) (split-complexity φ₂)) + 1
+... | nconj φ₁ φ₂   = split-complexity (¬ φ₂) + 1
+... | ndisj φ₁ φ₂   = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | nimpl φ₁ φ₂   = max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
+... | nbiimpl φ₁ φ₂ = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | nneg φ₁       = split-complexity φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
-... | other .φ      = 1
+... | other .φ      = 0
 
 split : PropFormula → PropFormula
-split φ = splitₙ (split-calls φ) φ
+split φ = splitₙ (split-complexity φ) φ
 
 thm-split
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ
   → Γ ⊢ φ
-thm-split {_} {φ} = thm-splitₙ (split-calls φ)
+thm-split {_} {φ} = thm-splitₙ (split-complexity φ)
 
 atp-split
   : ∀ {Γ} {φ}
