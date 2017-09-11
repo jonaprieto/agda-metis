@@ -17,11 +17,12 @@ open import Data.Bool
 
 open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
 
-open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Syntax   n
 open import Data.PropFormula.Theorems n
-open import Data.PropFormula.Views n
+open import Data.PropFormula.Views    n
 
-open import Function                              using ( _$_; id; _∘_ )
+open import Function using ( _$_; id; _∘_ )
+
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
 open import Relation.Nullary                      renaming (¬_ to ¬₂)
 
@@ -39,7 +40,7 @@ data ShuntView : PropFormula → Set where
 unshunt-view : (φ : PropFormula) → ShuntView φ
 unshunt-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
 unshunt-view (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
-unshunt-view φ                 = other _
+unshunt-view φ                = other _
 
 unshunt′ : ℕ → PropFormula → PropFormula
 unshunt′ zero φ  = φ
@@ -75,21 +76,8 @@ calls-unshunt φ with unshunt-view φ
 ... | case₂ _ φ₂ φ₃ = 1 + calls-unshunt φ₂ + calls-unshunt φ₃
 ... | other .φ      = 1
 
-postulate
-  thm-unshunt′
-    : ∀ {Γ} {φ}
-    → (n : ℕ)
-    → Γ ⊢ φ
-    → Γ ⊢ unshunt′ n φ
-
 unshunt : PropFormula → PropFormula
 unshunt φ = unshunt′ (calls-unshunt φ + 1) φ
-
-postulate
-  thm-unshunt
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ unshunt φ
 
 thm-inv-unshunt
   : ∀ {Γ} {φ}
@@ -99,18 +87,18 @@ thm-inv-unshunt
 thm-inv-unshunt {_} {φ} = thm-inv-unshunt′ (calls-unshunt φ + 1)
 
 data StripView : PropFormula → Set where
-  conj     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
-  disj     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∨ φ₂)
-  impl     : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇒ φ₂)
-  biimpl   : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇔ φ₂)
-  nconj    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∧ φ₂))
-  ndisj    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∨ φ₂))
-  nimpl    : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇒ φ₂))
-  nbiimpl  : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇔ φ₂))
-  nneg     : (φ₁ : PropFormula)    → StripView (¬ ¬ φ₁)
-  nbot     : StripView (¬ ⊥)
-  ntop     : StripView (¬ ⊤)
-  other    : (φ₁ : PropFormula)    → StripView φ₁
+  conj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
+  disj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∨ φ₂)
+  impl    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇒ φ₂)
+  biimpl  : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇔ φ₂)
+  nconj   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∧ φ₂))
+  ndisj   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∨ φ₂))
+  nimpl   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇒ φ₂))
+  nbiimpl : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇔ φ₂))
+  nneg    : (φ₁ : PropFormula)    → StripView (¬ ¬ φ₁)
+  nbot    : StripView (¬ ⊥)
+  ntop    : StripView (¬ ⊤)
+  other   : (φ₁ : PropFormula)    → StripView φ₁
 
 split-view : (φ : PropFormula) → StripView φ
 split-view (φ₁ ∧ φ₂)     = conj _ _
