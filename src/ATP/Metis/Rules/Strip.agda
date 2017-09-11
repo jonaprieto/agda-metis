@@ -70,21 +70,22 @@ thm-inv-unshuntₙ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
         (∧-proj₂ Γ⊢ushuntnφ)))
 ... | other _ = Γ⊢ushuntnφ
 
-unshunt-complexity : PropFormula → ℕ
-unshunt-complexity φ with unshunt-view φ
-... | case₁ _ _ φ₃  = unshunt-complexity φ₃ + 2
-... | case₂ _ φ₂ φ₃ = max (unshunt-complexity φ₂) (unshunt-complexity φ₃) + 1
+-- Unshunt complexity measure.
+unshunt-cmeasure : PropFormula → ℕ
+unshunt-cmeasure φ with unshunt-view φ
+... | case₁ _ _ φ₃  = unshunt-cmeasure φ₃ + 2
+... | case₂ _ φ₂ φ₃ = max (unshunt-cmeasure φ₂) (unshunt-cmeasure φ₃) + 1
 ... | other .φ      = 0
 
 unshunt : PropFormula → PropFormula
-unshunt φ = unshuntₙ (unshunt-complexity φ + 1) φ
+unshunt φ = unshuntₙ (unshunt-cmeasure φ + 1) φ
 
 thm-inv-unshunt
   : ∀ {Γ} {φ}
   → Γ ⊢ unshunt φ
   → Γ ⊢ φ
 
-thm-inv-unshunt {_} {φ} = thm-inv-unshuntₙ (unshunt-complexity φ + 1)
+thm-inv-unshunt {_} {φ} = thm-inv-unshuntₙ (unshunt-cmeasure φ + 1)
 
 data StripView : PropFormula → Set where
   conj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
@@ -119,14 +120,19 @@ splitₙ : ℕ → PropFormula → PropFormula
 splitₙ zero φ = φ
 splitₙ (suc n) φ
   with split-view φ
-...  | conj φ₁ φ₂    = unshunt (splitₙ n φ₁) ∧ unshunt (φ₁ ⇒ splitₙ n φ₂)
+...  | conj φ₁ φ₂    = unshunt (splitₙ n φ₁) ∧
+                       unshunt (φ₁ ⇒ splitₙ n φ₂)
 ...  | disj φ₁ φ₂    = unshunt (¬ φ₁ ⇒ (splitₙ n φ₂))
 ...  | impl φ₁ φ₂    = unshunt (φ₁ ⇒ (splitₙ n φ₂))
-...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (splitₙ n φ₂)) ∧ unshunt (φ₂ ⇒ (splitₙ n φ₁))
+...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (splitₙ n φ₂)) ∧
+                       unshunt (φ₂ ⇒ (splitₙ n φ₁))
 ...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (splitₙ n (¬ φ₂)))
-...  | ndisj φ₁ φ₂   = unshunt (splitₙ n (¬ φ₁)) ∧ unshunt (¬ φ₁ ⇒ splitₙ n (¬ φ₂))
-...  | nimpl φ₁ φ₂   = unshunt (splitₙ n φ₁) ∧ unshunt (φ₁ ⇒ splitₙ n (¬ φ₂))
-...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧ unshunt ((¬ φ₂) ⇒ splitₙ n φ₁)
+...  | ndisj φ₁ φ₂   = unshunt (splitₙ n (¬ φ₁)) ∧
+                       unshunt (¬ φ₁ ⇒ splitₙ n (¬ φ₂))
+...  | nimpl φ₁ φ₂   = unshunt (splitₙ n φ₁) ∧
+                       unshunt (φ₁ ⇒ splitₙ n (¬ φ₂))
+...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧
+                       unshunt ((¬ φ₂) ⇒ splitₙ n φ₁)
 ...  | nneg φ₁       = unshunt (splitₙ n φ₁)
 ...  | nbot          = ⊤
 ...  | ntop          = ⊥
@@ -261,29 +267,30 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
 ... | other φ₁ = Γ⊢splitₙ
 
-split-complexity : PropFormula → ℕ
-split-complexity φ with split-view φ
-... | conj φ₁ φ₂    = max (split-complexity φ₁) (split-complexity φ₂) + 1
-... | disj φ₁ φ₂    = split-complexity φ₂ + 1
-... | impl φ₁ φ₂    = split-complexity φ₂ + 1
-... | biimpl φ₁ φ₂  = (max (split-complexity φ₁) (split-complexity φ₂)) + 1
-... | nconj φ₁ φ₂   = split-complexity (¬ φ₂) + 1
-... | ndisj φ₁ φ₂   = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
-... | nimpl φ₁ φ₂   = max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
-... | nbiimpl φ₁ φ₂ = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
-... | nneg φ₁       = split-complexity φ₁ + 1
+-- Split complexity measure.
+split-cmeasure : PropFormula → ℕ
+split-cmeasure φ with split-view φ
+... | conj φ₁ φ₂    = max (split-cmeasure φ₁) (split-cmeasure φ₂) + 1
+... | disj φ₁ φ₂    = split-cmeasure φ₂ + 1
+... | impl φ₁ φ₂    = split-cmeasure φ₂ + 1
+... | biimpl φ₁ φ₂  = max (split-cmeasure φ₁) (split-cmeasure φ₂) + 1
+... | nconj φ₁ φ₂   = split-cmeasure (¬ φ₂) + 1
+... | ndisj φ₁ φ₂   = max (split-cmeasure (¬ φ₁)) (split-cmeasure (¬ φ₂)) + 1
+... | nimpl φ₁ φ₂   = max (split-cmeasure φ₁) (split-cmeasure (¬ φ₂)) + 1
+... | nbiimpl φ₁ φ₂ = max (split-cmeasure (¬ φ₁)) (split-cmeasure (¬ φ₂)) + 1
+... | nneg φ₁       = split-cmeasure φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
 ... | other .φ      = 0
 
 split : PropFormula → PropFormula
-split φ = splitₙ (split-complexity φ) φ
+split φ = splitₙ (split-cmeasure φ) φ
 
 thm-split
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ
   → Γ ⊢ φ
-thm-split {_} {φ} = thm-splitₙ (split-complexity φ)
+thm-split {_} {φ} = thm-splitₙ (split-cmeasure φ)
 
 atp-split
   : ∀ {Γ} {φ}

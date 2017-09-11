@@ -10,15 +10,15 @@ module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
 ------------------------------------------------------------------------------
 
 open import Data.Bool.Base         using ( Bool; false; true )
-
-open import Data.PropFormula.Syntax n
-open import Data.PropFormula.Dec n        using ( yes; no; ⌊_⌋ )
-open import Data.PropFormula.Properties n using ( eq; subst )
-
 open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 
+open import Data.PropFormula.Dec n        using ( yes; no; ⌊_⌋ )
+open import Data.PropFormula.Properties n using ( eq; subst )
+open import Data.PropFormula.Syntax n
+
+open import Function using ( _$_; id )
+
 open import Relation.Binary.PropositionalEquality using ( refl )
-open import Function               using ( _$_; id )
 
 ------------------------------------------------------------------------------
 
