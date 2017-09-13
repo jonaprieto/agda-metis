@@ -20,8 +20,8 @@ open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
 open import Data.PropFormula.Theorems.Disjunction n
   using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₁; resolve₀)
 
-open import Data.Bool                        using ( true; false )
-open import Function                         using ( _$_; id; _∘_ )
+open import Data.Bool                             using ( true; false )
+open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
 open import ATP.Metis.Rules.Reordering n
@@ -87,7 +87,7 @@ thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | c
 
 
 resolve : PropFormula → PropFormula → PropFormula → PropFormula → PropFormula
-resolve goal l φ₁ φ₂ =
+resolve φ₁ φ₂ l goal =
   helper-resolve $
      (reorder-∨ φ₁ $ l ∨ goal)
    ∧ (reorder-∨ φ₂ $ ¬ l ∨ goal)
@@ -98,7 +98,7 @@ atp-resolve
   → (l : PropFormula)   -- literal
   → Γ ⊢ φ₁       -- left side
   → Γ ⊢ φ₂       -- right side
-  → Γ ⊢ resolve ψ l φ₁ φ₂
+  → Γ ⊢ resolve φ₁ φ₂ l ψ
 
 atp-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
   thm-helper-resolve

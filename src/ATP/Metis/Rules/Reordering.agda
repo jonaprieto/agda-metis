@@ -24,9 +24,9 @@ open import Function                         using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
 open import ATP.Metis.Rules.Conjunct n
-  using ( conjunct; atp-conjunct; Path; pick; proj₁; proj₂; ConjView )
+  using ( conjunct; atp-conjunct; ConjView )
 
-open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
+open import Data.List.Base  using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 
 ------------------------------------------------------------------------------
 
