@@ -30,49 +30,41 @@ conj-view : (φ : PropFormula) → ConjView φ
 conj-view (φ ∧ ψ) = conj _ _
 conj-view φ       = other _
 
-data Step  : Set where
-  pick  : Step
-  proj₁ : Step
-  proj₂ : Step
-
-Path : Set
-Path = List Step
-
-conjunct-path : PropFormula → PropFormula → Path → Path
-conjunct-path φ ψ path
-    with ⌊ eq φ ψ ⌋
-... | true  = path ∷ʳ pick
-... | false
-    with conj-view φ
-...    | other _ = []
-...    | conj φ₁ φ₂
-       with conjunct-path φ₁ ψ []
-...       | subpath@(_ ∷ _) = (path ∷ʳ proj₁) ++ subpath
-...       | [] with conjunct-path φ₂ ψ []
-...               | subpath@(_ ∷ _) = (path ∷ʳ proj₂) ++ subpath
-...               | []              = []
-
 
 conjunct : PropFormula → PropFormula → PropFormula
 conjunct φ ψ
-  with conj-view φ | conjunct-path φ ψ []
-...  | _           | []        = φ
-...  | conj _ _    | pick  ∷ _ = φ
-...  | conj φ₁ _   | proj₁ ∷ _ = conjunct φ₁ ψ
-...  | conj _  φ₂  | proj₂ ∷ _ = conjunct φ₂ ψ
-...  | other .φ    | _         = φ
+  with ⌊ eq φ ψ ⌋
+... | true  = ψ
+... | false
+    with conj-view φ
+... | other _  =  φ
+... | conj φ₁ φ₂
+    with ⌊ eq (conjunct φ₁ ψ) ψ ⌋
+...    | true  = ψ
+...    | false
+       with ⌊ eq (conjunct φ₂ ψ) ψ ⌋
+...       | true   = ψ
+...       | false  = φ
 
-atp-conjunct
+thm-conjunct
   : ∀ {Γ} {φ}
   → (ψ : PropFormula)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
-thm-conjunct = atp-conjunct
 
-atp-conjunct {Γ} {φ} ψ Γ⊢φ
-  with conj-view φ | conjunct-path φ ψ []
-...  | _           | []        = Γ⊢φ
-...  | conj φ₁ _   | pick  ∷ _ = Γ⊢φ
-...  | conj _ φ₂   | proj₁ ∷ _ = atp-conjunct ψ (∧-proj₁ Γ⊢φ)
-...  | conj _ _    | proj₂ ∷ _ = atp-conjunct ψ (∧-proj₂ Γ⊢φ)
-...  | other .φ    | (_ ∷ _)   = Γ⊢φ
+atp-conjunct = thm-conjunct
+
+thm-conjunct {Γ} {φ} ψ Γ⊢φ
+  with eq φ ψ
+... | yes p₁  = subst p₁ Γ⊢φ
+... | no _
+    with conj-view φ
+...    | other _  = Γ⊢φ
+...    | conj φ₁ φ₂
+       with eq (conjunct φ₁ ψ) ψ
+...       | yes p₂  = subst p₂ (thm-conjunct ψ (∧-proj₁ Γ⊢φ))
+...       | no _
+          with eq (conjunct φ₂ ψ) ψ
+...          | yes p₃ = subst p₃ (thm-conjunct ψ (∧-proj₂ Γ⊢φ))
+...          | no _   = Γ⊢φ
+
