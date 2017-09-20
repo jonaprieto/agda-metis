@@ -75,7 +75,7 @@ unshunt-cmeasure : PropFormula → ℕ
 unshunt-cmeasure φ with unshunt-view φ
 ... | case₁ _ _ φ₃  = unshunt-cmeasure φ₃ + 2
 ... | case₂ _ φ₂ φ₃ = max (unshunt-cmeasure φ₂) (unshunt-cmeasure φ₃) + 1
-... | other .φ      = 0
+... | other .φ      = 1
 
 unshunt : PropFormula → PropFormula
 unshunt φ = unshuntₙ (unshunt-cmeasure φ + 1) φ
@@ -281,7 +281,7 @@ split-cmeasure φ with split-view φ
 ... | nneg φ₁       = split-cmeasure φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
-... | other .φ      = 0
+... | other .φ      = 1
 
 split : PropFormula → PropFormula
 split φ = splitₙ (split-cmeasure φ) φ
