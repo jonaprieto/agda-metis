@@ -202,7 +202,7 @@ reorder-∧ φ ψ
 ...  | true = φ
 ...  | false
      with conj-view ψ
-...     | other _  = conjunct φ ψ
+...     | other _ = conjunct φ ψ
 ...     | conj ψ₁ ψ₂
         with ⌊ eq (reorder-∧ φ ψ₁) ψ₁ ⌋
 ...        | false = φ
@@ -225,7 +225,7 @@ thm-reorder-∧ {Γ} {φ} Γ⊢φ ψ
 ...    | other _  = atp-conjunct ψ Γ⊢φ
 ...    | conj ψ₁ ψ₂
        with eq (reorder-∧ φ ψ₁) ψ₁
-...       | no  _  = Γ⊢φ
+...       | no  _ = Γ⊢φ
 ...       | yes p₁
           with eq (reorder-∧ φ ψ₂) ψ₂
 ...          | no  _  = Γ⊢φ
