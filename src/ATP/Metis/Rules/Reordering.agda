@@ -43,18 +43,33 @@ build-∨ φ ψ
 ...    | other _    = φ
 ...    | disj ψ₁ ψ₂
        with ⌊ eq (build-∨ φ ψ₁) ψ₁ ⌋
-...       | true = (build-∨ φ ψ₁) ∨ ψ₂ -- TODO : return ψ₁ and use subst theorem.
+...       | true = ψ₁ ∨ ψ₂
 ...       | false
           with ⌊ eq (build-∨ φ ψ₂) ψ₂ ⌋
-...          | true  = ψ₁ ∨ (build-∨ φ ψ₂)  -- TODO: return ψ₂ and use subst theorem.
+...          | true  = ψ₁ ∨ ψ₂
 ...          | false = φ
 
-postulate
-  thm-build-∨
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → (ψ : PropFormula)
-    → Γ ⊢ build-∨ φ ψ
+
+thm-build-∨
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ build-∨ φ ψ
+
+thm-build-∨ {Γ}{φ} Γ⊢φ ψ
+  with eq φ ψ
+... | yes φ≡ψ  = subst φ≡ψ Γ⊢φ
+... | no  _
+    with disj-view ψ
+...    | other _    = Γ⊢φ
+...    | disj ψ₁ ψ₂
+       with eq (build-∨ φ ψ₁) ψ₁
+...       | yes p₁ = ∨-intro₁ ψ₂ (subst p₁ (thm-build-∨ Γ⊢φ ψ₁))
+...       | no  _
+          with eq (build-∨ φ ψ₂) ψ₂
+...          | yes p₂  = ∨-intro₂ ψ₁ (subst p₂ (thm-build-∨ Γ⊢φ ψ₂))
+...          | no  _   = Γ⊢φ
+
 
 factor : PropFormula → PropFormula
 factor φ
