@@ -27,13 +27,15 @@ clausify φ ψ
 ...  | true  = ψ
 ...  | false = reorder-∧∨ (cnf φ) ψ
 
-atp-clausify
+thm-clausify
     : ∀ {Γ} {φ}
     → (ψ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
+atp-clausify = thm-clausify
 
-atp-clausify {Γ} {φ} ψ Γ⊢φ
+thm-clausify {Γ} {φ} ψ Γ⊢φ
   with eq φ ψ
 ...  | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ...  | no  _   = thm-reorder-∧∨ (thm-cnf Γ⊢φ) ψ
+
