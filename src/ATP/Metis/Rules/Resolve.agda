@@ -76,7 +76,7 @@ thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | c
                 (subst⊢∨₁
                   (⇒-intro (subst p₁ (assume {Γ = Γ} φ₃)))
                   (∧-proj₂ Γ⊢φ)))
-...       | no _   = helper -- TODO: this is above (repeated)
+...       | no _   = helper
           where
             helper : Γ ⊢ φ₂ ∨ φ₄
             helper = resolve₀
@@ -92,15 +92,17 @@ resolve φ₁ φ₂ l goal =
      (reorder-∨ φ₁ $ l ∨ goal)
    ∧ (reorder-∨ φ₂ $ ¬ l ∨ goal)
 
-atp-resolve
+thm-resolve
   : ∀ {Γ} {φ₁ φ₂}
   → (ψ : PropFormula)   -- goal
   → (l : PropFormula)   -- literal
-  → Γ ⊢ φ₁       -- left side
-  → Γ ⊢ φ₂       -- right side
+  → Γ ⊢ φ₁              -- left side
+  → Γ ⊢ φ₂              -- right side
   → Γ ⊢ resolve φ₁ φ₂ l ψ
 
-atp-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
+atp-resolve = thm-resolve
+
+thm-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
   thm-helper-resolve
     (∧-intro
       (thm-reorder-∨ Γ⊢φ₁ (l ∨ ψ))
