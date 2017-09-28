@@ -77,8 +77,8 @@ rm-∧ φ
 ...     | true  = rm-∧ φ₂
 ...     | false = φ₁ ∧ rm-∧ φ₂
 
-redun : PropFormula → PropFormula
-redun φ =
+redun₀ : PropFormula → PropFormula
+redun₀ φ =
   rm-∧ (rm-∧∨ (right-assoc-∧ (cnf φ)))
 
 -- With the following theorem, we aim to remove from the proposition
@@ -87,11 +87,14 @@ redun φ =
 --      --------   and    --------.
 --         φ                 φ
 
+redun : PropFormula → PropFormula
+redun φ = reorder-∧∨ φ (redun₀ φ)
+
 thm-redun
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ reorder-∧∨ φ (redun φ)
-thm-redun {Γ}{φ} Γ⊢φ = thm-reorder-∧∨ Γ⊢φ (redun φ)
+  → Γ ⊢ redun φ
+thm-redun {Γ}{φ} Γ⊢φ = thm-reorder-∧∨ Γ⊢φ (redun₀ φ)
 
 -----------------------------------------------------------------------------
 
@@ -375,6 +378,17 @@ thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
                            (thm-canon (assume {Γ = Γ} φ₂)))))
                      Γ⊢φ
 thm-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
+
+
+canonicalize : PropFormula → PropFormula
+canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun
+
+thm-canonicalize
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ canonicalize φ
+
+thm-canonicalize = thm-canon ∘ thm-rmBot-∧ ∘ thm-rmPEM-∧∨ ∘ thm-redun
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.
