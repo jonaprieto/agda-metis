@@ -21,7 +21,7 @@ open import Data.PropFormula.Dec n                 using ( ⌊_⌋ ; yes ; no )
 open import Data.PropFormula.NormalForms n
 open import Data.PropFormula.Properties n          using ( eq ; subst )
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.SyntaxExperiment n    using ( right-assoc-∧ )
+open import Data.PropFormula.SyntaxExperiment n    using ( right-assoc-∧; thm-right-assoc-∧ )
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views n
 
@@ -78,8 +78,7 @@ rm-∧ φ
 ...     | false = φ₁ ∧ rm-∧ φ₂
 
 redun₀ : PropFormula → PropFormula
-redun₀ φ =
-  rm-∧ (rm-∧∨ (right-assoc-∧ (cnf φ)))
+redun₀ = rm-∧ ∘ rm-∧∨
 
 -- With the following theorem, we aim to remove from the proposition
 -- redundancies of the following two kinds:
@@ -381,14 +380,15 @@ thm-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
 
 
 canonicalize : PropFormula → PropFormula
-canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun
+canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
 
 thm-canonicalize
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ canonicalize φ
 
-thm-canonicalize = thm-canon ∘ thm-rmBot-∧ ∘ thm-rmPEM-∧∨ ∘ thm-redun
+thm-canonicalize =
+  thm-canon ∘ thm-rmBot-∧ ∘ thm-rmPEM-∧∨ ∘ thm-redun ∘ thm-right-assoc-∧ ∘ thm-cnf
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.

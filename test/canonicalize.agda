@@ -32,7 +32,8 @@ d = Var (# 8)
 
 open import Data.PropFormula.SyntaxExperiment 9 using ( right-assoc-∧ )
 open import ATP.Metis.Rules.Canonicalize 9
-  using (rmDuplicates-∧; rmDuplicates-∧∨; rmDuplicates-∨; rmDuplicatesCNF; rmPairs-∨ )
+  using (rm-∧; rm-∧∨; rm-∨; redun; rmPEM-∨; rmPEM-∧∨; rmBot-∧; redun₀;
+  canonicalize; thm-canonicalize; atp-canonicalize )
 open import ATP.Metis.Rules.Reordering 9
   using (right-assoc-∨)
 open import Relation.Binary.PropositionalEquality
@@ -47,10 +48,10 @@ rtest7 = refl
 
 to7 = (r ∨ (q ∨ p))
 
-test7 : ⌊ eq (rmDuplicates-∨ (right-assoc-∨ from7)) to7 ⌋ ≡ true
+test7 : ⌊ eq (rm-∨ (right-assoc-∨ from7)) to7 ⌋ ≡ true
 test7 = refl
 
-test71 : ⌊ eq (rmDuplicatesCNF from7) to7 ⌋ ≡ true
+test71 : ⌊ eq (redun from7) to7 ⌋ ≡ true
 test71 = refl
 
 lazy : ∀ {Γ}{φ} → Γ , φ ⊢ ⊤
@@ -59,5 +60,11 @@ lazy = ⊤-intro
 from8 = (q ∨ (q ∨ (r ∨ (p ∨ (q ∨ ¬ q)))))
 to8 = ⊤
 
-rtest8 : ⌊ eq (rmPairs-∨ from8) to8 ⌋ ≡ true
-rtest8 = refl -- refl
+rtest8 : ⌊ eq (rmPEM-∨ from8) to8 ⌋ ≡ true
+rtest8 = refl
+
+form1 : PropFormula
+form1 = canonicalize (¬ ((p ∧ q) ⇒ p))
+
+rtest9 : ⌊ eq (canonicalize form1) ⊥ ⌋ ≡ true
+rtest9 = refl
