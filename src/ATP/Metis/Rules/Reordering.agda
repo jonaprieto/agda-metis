@@ -300,7 +300,7 @@ thm-conjunct-∨ {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | other .ψ | (conj 
 reorder-∧∨ : PropFormula → PropFormula → PropFormula
 reorder-∧∨ φ ψ
   with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
-...  | true = ψ
+...  | true  = ψ
 ...  | false
      with conj-view ψ
 ...     | other _  = conjuct-∨ φ ψ
