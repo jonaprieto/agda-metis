@@ -252,9 +252,6 @@ data canonView : PropFormula  → Set where
   sdisj₃ : (φ₁ : PropFormula)    → canonView (φ₁ ∨ ⊥)     -- φ ∨ ⊥ ==> φ.
   sdisj₄ : (φ₁ : PropFormula)    → canonView (⊥ ∨ φ₁)     -- ⊥ ∨ φ ==> φ.
   sdisj₅ : (φ₁ φ₂ : PropFormula) → canonView (φ₁ ∨ φ₂)
-
-  ntop   : canonView (¬ ⊤)                         -- ¬ ⊤ ==> ⊥
-  nbot   : canonView (¬ ⊥)                         -- ¬ ⊥ ==> ⊤
   other  : (φ₁ : PropFormula)    → canonView φ₁
 
 
@@ -269,60 +266,115 @@ canon-view (⊤ ∨ φ)  = sdisj₂ _
 canon-view (φ ∨ ⊥)  = sdisj₃ _
 canon-view (⊥ ∨ φ)  = sdisj₄ _
 canon-view (φ ∨ φ₁) = sdisj₅ _ _
-canon-view (¬ ⊤)    = ntop
-canon-view (¬ ⊥)    = nbot
 canon-view  φ       = other _
 
 
 -- We assumed here that the formula is a disjunction and its right-associated.
-canonicalize : PropFormula → PropFormula
-canonicalize φ
+canon : PropFormula → PropFormula
+canon φ
   with canon-view φ
-canonicalize .(φ₁ ∧ ⊤)  | sconj₁ φ₁ = canonicalize φ₁
-canonicalize .(⊤ ∧ φ₁)  | sconj₂ φ₁ = canonicalize φ₁
-canonicalize .(φ₁ ∧ ⊥)  | sconj₃ φ₁ = ⊥
-canonicalize .(⊥ ∧ φ₁)  | sconj₄ φ₁ = ⊥
-canonicalize .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂
-  with ⌊ eq (canonicalize φ₁) ⊤ ⌋
-...  | true = canonicalize φ₂
+canon .(φ₁ ∧ ⊤)  | sconj₁ φ₁ = canon φ₁
+canon .(⊤ ∧ φ₁)  | sconj₂ φ₁ = canon φ₁
+canon .(φ₁ ∧ ⊥)  | sconj₃ φ₁ = ⊥
+canon .(⊥ ∧ φ₁)  | sconj₄ φ₁ = ⊥
+canon .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂
+  with ⌊ eq (canon φ₁) ⊤ ⌋
+...  | true = canon φ₂
 ...  | false
-     with ⌊ eq (canonicalize φ₁) ⊥ ⌋
-...     |  true = ⊥
-...     |  false
-        with ⌊ eq (canonicalize φ₂) ⊤ ⌋
-...        | true = canonicalize φ₁
+     with ⌊ eq (canon φ₁) ⊥ ⌋
+...     | true = ⊥
+...     | false
+        with ⌊ eq (canon φ₂) ⊤ ⌋
+...        | true = canon φ₁
 ...        | false
-           with  ⌊ eq (canonicalize φ₂) ⊥ ⌋
+           with  ⌊ eq (canon φ₂) ⊥ ⌋
 ...           |  true  = ⊥
-...           |  false
-              with ⌊ eq φ₁ (¬ φ₂) ⌋
-...              | true = ⊥
-...              | false
-                 with ⌊ eq (¬ φ₁) φ₂ ⌋
-...                 | true  = ⊥
-...                 | false = (canonicalize φ₁) ∧ (canonicalize φ₂)
+...           |  false = canon φ₁ ∧ canon φ₂
 
-canonicalize .(φ₁ ∨ ⊤)  | sdisj₁ φ₁ = ⊤
-canonicalize .(⊤ ∨ φ₁)  | sdisj₂ φ₁ = ⊤
-canonicalize .(φ₁ ∨ ⊥)  | sdisj₃ φ₁ = canonicalize φ₁
-canonicalize .(⊥ ∨ φ₁)  | sdisj₄ φ₁ = canonicalize φ₁
-canonicalize .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂
-  with ⌊ eq (canonicalize φ₁) ⊤ ⌋
+canon .(φ₁ ∨ ⊤)  | sdisj₁ φ₁ = ⊤
+canon .(⊤ ∨ φ₁)  | sdisj₂ φ₁ = ⊤
+canon .(φ₁ ∨ ⊥)  | sdisj₃ φ₁ = canon φ₁
+canon .(⊥ ∨ φ₁)  | sdisj₄ φ₁ = canon φ₁
+canon .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂
+  with ⌊ eq (canon φ₁) ⊤ ⌋
 ...  | true = ⊤
 ...  | false
-     with ⌊ eq (canonicalize φ₁) ⊥ ⌋
-...     | true = canonicalize φ₂
+     with ⌊ eq (canon φ₁) ⊥ ⌋
+...     | true = canon φ₂
 ...     | false
-        with ⌊ eq (canonicalize φ₂) ⊤ ⌋
+        with ⌊ eq (canon φ₂) ⊤ ⌋
 ...        | true = ⊤
 ...        | false
-           with  ⌊ eq (canonicalize φ₂) ⊥ ⌋
-...           | true  = canonicalize φ₁
-...           | false = (canonicalize φ₁) ∨ (canonicalize φ₂)
-canonicalize .(¬ ⊤)     | ntop = ⊥
-canonicalize .(¬ ⊥)     | nbot = ⊤
-canonicalize φ          | other .φ = φ
+           with  ⌊ eq (canon φ₂) ⊥ ⌋
+...           | true  = canon φ₁
+...           | false = canon φ₁ ∨ canon φ₂
+canon φ          | other .φ = φ
 
+thm-canon
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ canon φ
+
+thm-canon {Γ} {φ} Γ⊢φ
+  with canon-view φ
+thm-canon {Γ} {.(φ₁ ∧ ⊤) } Γ⊢φ | sconj₁ φ₁ = thm-canon (∧-proj₁ Γ⊢φ)
+thm-canon {Γ} {.(⊤ ∧ φ₁) } Γ⊢φ | sconj₂ φ₁ = thm-canon (∧-proj₂ Γ⊢φ)
+thm-canon {Γ} {.(φ₁ ∧ ⊥) } Γ⊢φ | sconj₃ φ₁ = ∧-proj₂ Γ⊢φ
+thm-canon {Γ} {.(⊥ ∧ φ₁) } Γ⊢φ | sconj₄ φ₁ = ∧-proj₁ Γ⊢φ
+thm-canon {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂
+  with eq (canon φ₁) ⊤
+...  | yes p = thm-canon (∧-proj₂ Γ⊢φ)
+...  | no _
+     with eq (canon φ₁) ⊥
+...     | yes p = subst p (thm-canon (∧-proj₁ Γ⊢φ))
+...     | no _
+        with eq (canon φ₂) ⊤
+...        | yes p = thm-canon (∧-proj₁ Γ⊢φ)
+...        | no _
+           with  eq (canon φ₂) ⊥
+...           |  yes p  = subst p (thm-canon (∧-proj₂ Γ⊢φ))
+...           |  no _ = ∧-intro (thm-canon (∧-proj₁ Γ⊢φ)) (thm-canon (∧-proj₂ Γ⊢φ))
+
+thm-canon {Γ} {.(φ₁ ∨ ⊤) } Γ⊢φ | sdisj₁ φ₁ = ⊤-intro
+thm-canon {Γ} {.(⊤ ∨ φ₁) } Γ⊢φ | sdisj₂ φ₁ = ⊤-intro
+thm-canon {Γ} {.(φ₁ ∨ ⊥) } Γ⊢φ | sdisj₃ φ₁ = thm-canon (φ∨⊥-to-φ Γ⊢φ)
+thm-canon {Γ} {.(⊥ ∨ φ₁) } Γ⊢φ | sdisj₄ φ₁ = thm-canon (φ∨⊥-to-φ (∨-comm Γ⊢φ))
+thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
+  with eq (canon φ₁) ⊤
+...  | yes p = ⊤-intro
+...  | no _
+     with eq (canon φ₁) ⊥
+...     | yes p =
+            ⇒-elim
+              (⇒-intro
+                (∨-elim {Γ = Γ}
+                  (⊥-elim (canon φ₂) (subst p (thm-canon (assume {Γ = Γ} φ₁))))
+                  (thm-canon (assume {Γ = Γ} φ₂))))
+             Γ⊢φ
+...     | no _
+        with eq (canon φ₂) ⊤
+...        | yes _ = ⊤-intro
+...        | no _
+           with  eq (canon φ₂) ⊥
+...           | yes p₂  =
+                    ⇒-elim
+                      (⇒-intro
+                        (∨-elim {Γ = Γ}
+                        (thm-canon (assume {Γ = Γ} φ₁))
+                        (⊥-elim (canon φ₁)
+                          (subst p₂
+                            (thm-canon (assume {Γ = Γ} φ₂))))))
+                    Γ⊢φ
+...           | no _ =
+                   ⇒-elim
+                     (⇒-intro
+                       (∨-elim {Γ = Γ}
+                         (∨-intro₁ (canon φ₂)
+                           (thm-canon (assume {Γ = Γ} φ₁)))
+                         (∨-intro₂ (canon φ₁)
+                           (thm-canon (assume {Γ = Γ} φ₂)))))
+                     Γ⊢φ
+thm-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
 
 ------------------------------------------------------------------------------
 -- atp-canonicalize.
