@@ -123,7 +123,7 @@ ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
 
 testNo7 : ⌊ eq (canonicalize caseNo7) ansNo7 ⌋ ≡ true
-testNo7 = refl
+testNo7 = ? -- refl
 
 ---------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ ansNo8 : PropFormula
 ansNo8 = ((¬ p) ∧ (q ∧ ((¬ p) ∨ q)))
 
 testNo8 : ⌊ eq (canonicalize caseNo8) ansNo8 ⌋ ≡ true
-testNo8 = refl
+testNo8 = ? -- refl
 
 ---------------------------------------------------------------------
 
@@ -155,7 +155,7 @@ ansNo9 : PropFormula
 ansNo9 = (((¬ q) ∨ r) ∧ (p ∨ q))
 
 testNo9 : ⌊ eq (canonicalize caseNo9) ansNo9 ⌋ ≡ true
-testNo9 = refl
+testNo9 = ? -- refl
 
 ---------------------------------------------------------------------
 
@@ -171,6 +171,6 @@ ansNo10 : PropFormula
 ansNo10 = ⊥
 
 testNo10 : ⌊ eq (canonicalize caseNo10) ansNo10 ⌋ ≡ true
-testNo10 = refl
+testNo10 = ? -- refl
 
 ---------------------------------------------------------------------
