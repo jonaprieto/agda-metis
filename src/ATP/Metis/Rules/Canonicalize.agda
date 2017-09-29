@@ -132,7 +132,7 @@ thm-rmPEM-∨ {Γ} {φ} Γ⊢φ
   with neg-view φ₁
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ
   with φ ∈-∨ φ₂
-thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | true  = ⊤-canonicalize
+thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | true  = ⊤-intro
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | false
   with ⌊ eq (rmPEM-∨ φ₂) ⊤ ⌋
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | false | false =
