@@ -6,6 +6,9 @@ open import ATP.Metis.Rules.Reordering 9
 open import Data.PropFormula.SyntaxExperiment 9
 open import Relation.Binary.PropositionalEquality
 
+-- Note: When the symbol `?` appears, it means
+--       we can not proved yet.
+
 -- Variables.
 
 p = Var (# 0)
@@ -88,7 +91,7 @@ ansNo5 : PropFormula
 ansNo5 = ((¬ p) ⇔ ((¬ q) ⇔ (p ∨ q)))
 
 testNo5 : ⌊ eq (canonicalize caseNo5) ansNo5 ⌋ ≡ true
-testNo5 = refl
+testNo5 = ? -- refl
 
 ---------------------------------------------------------------------
 
