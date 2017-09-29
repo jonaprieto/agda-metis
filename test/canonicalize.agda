@@ -107,7 +107,7 @@ ansNo6 : PropFormula
 ansNo6 = ((p ∧ q) ∨ (p ∧ r))
 
 testNo6 : ⌊ eq (canonicalize caseNo6) ansNo6 ⌋ ≡ true
-testNo6 = refl
+testNo6 = ? -- refl
 
 ---------------------------------------------------------------------
 
