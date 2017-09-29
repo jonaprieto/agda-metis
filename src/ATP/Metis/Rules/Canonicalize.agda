@@ -17,11 +17,12 @@ open import Data.Bool.Base
   using    ( true; false )
   renaming ( _∨_ to _or_ )
 
-open import Data.PropFormula.Dec n                 using ( ⌊_⌋ ; yes ; no )
+open import Data.PropFormula.Dec n        using ( ⌊_⌋ ; yes ; no )
 open import Data.PropFormula.NormalForms n
-open import Data.PropFormula.Properties n          using ( eq ; subst )
+open import Data.PropFormula.Properties n using ( eq ; subst )
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.SyntaxExperiment n    using ( right-assoc-∧; thm-right-assoc-∧ )
+open import Data.PropFormula.SyntaxExperiment n
+  using ( right-assoc-∧; thm-right-assoc-∧ )
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views n
 
@@ -131,7 +132,7 @@ thm-rmPEM-∨ {Γ} {φ} Γ⊢φ
   with neg-view φ₁
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ
   with φ ∈-∨ φ₂
-thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | true  = ⊤-intro
+thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | true  = ⊤-canonicalize
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | false
   with ⌊ eq (rmPEM-∨ φ₂) ⊤ ⌋
 thm-rmPEM-∨ {Γ} {.(¬ φ ∨ φ₂)} Γ⊢φ | disj .(¬ φ) φ₂ | neg φ | false | false =
@@ -379,15 +380,15 @@ thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
 thm-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
 
 
-canonicalize : PropFormula → PropFormula
-canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
+canonicalize₀ : PropFormula → PropFormula
+canonicalize₀ =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
 
-thm-canonicalize
+thm-canonicalize₀
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ canonicalize φ
+  → Γ ⊢ canonicalize₀ φ
 
-thm-canonicalize =
+thm-canonicalize₀ =
   thm-canon ∘ thm-rmBot-∧ ∘ thm-rmPEM-∧∨ ∘ thm-redun ∘ thm-right-assoc-∧ ∘ thm-cnf
 
 ------------------------------------------------------------------------------
@@ -395,8 +396,17 @@ thm-canonicalize =
 ------------------------------------------------------------------------------
 
 postulate
-  atp-canonicalize
+  thm-canonicalize
     : ∀ {Γ} {φ}
-    → (φ′ : PropFormula)
+    → (ψ : PropFormula)
     → Γ ⊢ φ
-    → Γ ⊢ φ′
+    → Γ ⊢ canonicalize₀ φ
+
+atp-canonicalize = thm-canonicalize
+
+postulate
+  thm-canonicalize-axiom
+    : ∀ {Γ} {φ}
+    → (ψ : PropFormula)
+    → Γ ⊢ φ
+    → Γ ⊢ ψ
