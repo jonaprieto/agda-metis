@@ -11,7 +11,6 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
 open import ATP.Metis.Rules.Reordering n
-  using ( right-assoc-∨; reorder-∧∨; thm-reorder-∧∨; reorder-∨ )
 
 open import Data.Bool.Base
   using    ( true; false )
@@ -57,7 +56,7 @@ rm-∨ φ
 rm-∧∨ : PropFormula → PropFormula
 rm-∧∨ φ
   with conj-view φ
-...  | other _    = rm-∨ (right-assoc-∨ φ)
+...  | other _    = rm-∨ (rdisj φ)
 ...  | conj φ₁ φ₂ = rm-∧∨ φ₁ ∧ rm-∧∨ φ₂
 
 _∈-∧_ : PropFormula → PropFormula → Bool

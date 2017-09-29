@@ -268,29 +268,29 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | other φ₁ = Γ⊢splitₙ
 
 -- Split complexity measure.
-split-cmeasure : PropFormula → ℕ
-split-cmeasure φ with split-view φ
-... | conj φ₁ φ₂    = max (split-cmeasure φ₁) (split-cmeasure φ₂) + 1
-... | disj φ₁ φ₂    = split-cmeasure φ₂ + 1
-... | impl φ₁ φ₂    = split-cmeasure φ₂ + 1
-... | biimpl φ₁ φ₂  = max (split-cmeasure φ₁) (split-cmeasure φ₂) + 1
-... | nconj φ₁ φ₂   = split-cmeasure (¬ φ₂) + 1
-... | ndisj φ₁ φ₂   = max (split-cmeasure (¬ φ₁)) (split-cmeasure (¬ φ₂)) + 1
-... | nimpl φ₁ φ₂   = max (split-cmeasure φ₁) (split-cmeasure (¬ φ₂)) + 1
-... | nbiimpl φ₁ φ₂ = max (split-cmeasure (¬ φ₁)) (split-cmeasure (¬ φ₂)) + 1
-... | nneg φ₁       = split-cmeasure φ₁ + 1
+split-complexity : PropFormula → ℕ
+split-complexity φ with split-view φ
+... | conj φ₁ φ₂    = max (split-complexity φ₁) (split-complexity φ₂) + 1
+... | disj φ₁ φ₂    = split-complexity φ₂ + 1
+... | impl φ₁ φ₂    = split-complexity φ₂ + 1
+... | biimpl φ₁ φ₂  = max (split-complexity φ₁) (split-complexity φ₂) + 1
+... | nconj φ₁ φ₂   = split-complexity (¬ φ₂) + 1
+... | ndisj φ₁ φ₂   = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | nimpl φ₁ φ₂   = max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
+... | nbiimpl φ₁ φ₂ = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | nneg φ₁       = split-complexity φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
 ... | other .φ      = 1
 
 split : PropFormula → PropFormula
-split φ = splitₙ (split-cmeasure φ) φ
+split φ = splitₙ (split-complexity φ) φ
 
 thm-split
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ
   → Γ ⊢ φ
-thm-split {_} {φ} = thm-splitₙ (split-cmeasure φ)
+thm-split {_} {φ} = thm-splitₙ (split-complexity φ)
 
 atp-split
   : ∀ {Γ} {φ}

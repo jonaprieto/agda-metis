@@ -25,7 +25,6 @@ open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
 open import ATP.Metis.Rules.Reordering n
-  using ( reorder-∨; thm-reorder-∨; reorder-∧∨; thm-reorder-∧∨)
 
 ------------------------------------------------------------------------------
 
@@ -39,11 +38,11 @@ res-view ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
 res-view φ                       = other _
 
 
-helper-resolve : PropFormula → PropFormula
-helper-resolve φ
+rsol : PropFormula → PropFormula
+rsol φ
   with res-view φ
-helper-resolve φ                        | other .φ    = φ
-helper-resolve .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ₄
+rsol φ                        | other .φ    = φ
+rsol .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ₄
   with ⌊ eq φ₃ (¬ φ₁) ⌋
 ...    | false = (φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)
 ...    | true
@@ -52,15 +51,15 @@ helper-resolve .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ 
 ...       | false = φ₂ ∨ φ₄
 
 
-thm-helper-resolve
+lem-rsol
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ helper-resolve φ
+  → Γ ⊢ rsol φ
 
-thm-helper-resolve {Γ} {φ} Γ⊢φ
+lem-rsol {Γ} {φ} Γ⊢φ
   with res-view φ
-thm-helper-resolve {Γ} {_} Γ⊢φ                        | other _     = Γ⊢φ
-thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
+lem-rsol {Γ} {_} Γ⊢φ                        | other _     = Γ⊢φ
+lem-rsol {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
   with eq φ₃ (¬ φ₁)
 ...    | no  _ = Γ⊢φ
 ...    | yes p₁
@@ -85,13 +84,20 @@ thm-helper-resolve {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | c
                 (⇒-intro (subst p₁ (assume {Γ = Γ} φ₃)))
                 (∧-proj₂ Γ⊢φ))
 
+{-
+  The best scenario for resolve rule:
+
+           φ₁                      ϕ₂
+       ──────── reorder-∨     ────────── reorder-∨
+        l ∨ goal               ¬ l ∨ goal
+   ──────────────────────────────────────────  resolve φ₁ φ₂ l goal
+                        goal
+
+-}
 
 resolve : PropFormula → PropFormula → PropFormula → PropFormula → PropFormula
 resolve φ₁ φ₂ l goal =
-  helper-resolve $
-     (reorder-∨ φ₁ $ l ∨ goal)
-   ∧ (reorder-∨ φ₂ $ ¬ l ∨ goal)
-
+  rsol $ (reorder-∨ φ₁ $ l ∨ goal) ∧ (reorder-∨ φ₂ $ ¬ l ∨ goal)
 thm-resolve
   : ∀ {Γ} {φ₁ φ₂}
   → (ψ : PropFormula)   -- goal
@@ -103,7 +109,7 @@ thm-resolve
 atp-resolve = thm-resolve
 
 thm-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
-  thm-helper-resolve
+  lem-rsol
     (∧-intro
       (thm-reorder-∨ Γ⊢φ₁ (l ∨ ψ))
       (thm-reorder-∨ Γ⊢φ₂ (¬ l ∨ ψ)))
