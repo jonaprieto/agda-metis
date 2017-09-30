@@ -3,8 +3,6 @@
 -- Simplify inference rule.
 ------------------------------------------------------------------------------
 
--- {-# OPTIONS --exact-split #-}
-
 open import Data.Nat using ( ℕ )
 
 module ATP.Metis.Rules.Simplify ( n : ℕ ) where
@@ -20,7 +18,7 @@ open import Data.PropFormula.Properties n using ( eq ; subst )
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Theorems n
 
-open import Function               using ( id ; _∘_ ; _$_ )
+open import Function using ( id ; _∘_ ; _$_ )
 open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 
 ------------------------------------------------------------------------------
@@ -71,20 +69,20 @@ simplify (φ ∧ ψ) ω with ⌊ eq φ (¬ ω) ⌋ or ⌊ eq ω (¬ φ) ⌋
 ...         | true  = ⊥
 
 ------------------------------------------------------------------------------
--- atp-simplify₀.
+-- thm-simplify₀.
 ------------------------------------------------------------------------------
 
-atp-simplify₀
+thm-simplify₀
   : ∀ {Γ} {φ ψ}
   → Γ ⊢ φ
   → Γ ⊢ ψ
   → Γ ⊢ simplify φ ψ
 
-atp-simplify₀ {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ with eq ⊥ ψ
+thm-simplify₀ {Γ} {Var x} {ψ}  Γ⊢Varx Γ⊢ψ with eq ⊥ ψ
 ... | no  ⊥≢ψ = Γ⊢Varx
 ... | yes ⊥≡ψ = subst (sym ⊥≡ψ) Γ⊢ψ
 
-atp-simplify₀ {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ | eq ⊥ φ | eq ⊤ φ
+thm-simplify₀ {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ | eq ⊥ φ | eq ⊤ φ
 ... | no  φ≢ψ | no  ⊥≢φ | no  ⊤≢φ = ∧-intro Γ⊢¬φ Γ⊢ψ
 ... | no  φ≢ψ | no  ⊥≢φ | yes ⊤≡φ = ¬⊤-to-⊥ (¬-inside (sym ⊤≡φ) Γ⊢¬φ)
 ... | no  φ≢ψ | yes ⊥≡φ | no  ⊤≢φ = Γ⊢ψ
@@ -94,17 +92,17 @@ atp-simplify₀ {Γ} {¬ φ} {ψ} Γ⊢¬φ Γ⊢ψ with eq φ ψ | eq ⊥ φ | 
 ... | yes φ≡ψ | yes ⊥≡φ | no  ⊤≢φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
 ... | yes φ≡ψ | yes ⊥≡φ | yes ⊤≡φ = ¬-elim Γ⊢¬φ (subst (sym φ≡ψ) Γ⊢ψ)
 
-atp-simplify₀ {Γ} {φ ⇔ ψ} {ω} Γ⊢φ⇔ψ Γ⊢ω with eq φ ω | eq ψ ω
+thm-simplify₀ {Γ} {φ ⇔ ψ} {ω} Γ⊢φ⇔ψ Γ⊢ω with eq φ ω | eq ψ ω
 ... | no  φ≢ω | no  ψ≢ω = ∧-intro Γ⊢φ⇔ψ Γ⊢ω
 ... | no  φ≢ω | yes ψ≡ω = ⇔-elim₂ (subst (sym ψ≡ω) Γ⊢ω) Γ⊢φ⇔ψ
 ... | yes φ≡ω | no  ψ≢ω = ⇔-elim₁ (subst (sym φ≡ω) Γ⊢ω) Γ⊢φ⇔ψ
 ... | yes φ≡ω | yes ψ≡ω = subst (sym ψ≡ω) Γ⊢ω
 
-atp-simplify₀ {Γ} {φ ⇒ ψ} {ω} Γ⊢φ⇒ψ Γ⊢ω with eq φ ω
+thm-simplify₀ {Γ} {φ ⇒ ψ} {ω} Γ⊢φ⇒ψ Γ⊢ω with eq φ ω
 ... | no  φ≢ω = ∧-intro Γ⊢φ⇒ψ Γ⊢ω
 ... | yes φ≡ω = ⇒-elim Γ⊢φ⇒ψ (subst (sym φ≡ω) Γ⊢ω)
 
-atp-simplify₀ {Γ} {ψ ∨ ω} {φ} Γ⊢ψ∨ω Γ⊢φ with eq φ (¬ ψ)
+thm-simplify₀ {Γ} {ψ ∨ ω} {φ} Γ⊢ψ∨ω Γ⊢φ with eq φ (¬ ψ)
 ... | yes φ≡¬ψ = resolve₇ Γ⊢ψ∨ω Γ⊢¬ψ
     where
       Γ⊢¬ψ : Γ ⊢ ¬ ψ
@@ -117,7 +115,7 @@ atp-simplify₀ {Γ} {ψ ∨ ω} {φ} Γ⊢ψ∨ω Γ⊢φ with eq φ (¬ ψ)
                   Γ⊢¬ω : Γ ⊢ ¬ ω
                   Γ⊢¬ω = subst φ≡¬ω Γ⊢φ
 
-atp-simplify₀ {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | eq ω (¬ φ)
+thm-simplify₀ {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | eq ω (¬ φ)
 ... | yes φ≡¬ω | no  ω≡¬φ = ¬-elim (subst φ≡¬ω (∧-proj₁ Γ⊢φ∧ψ)) Γ⊢ω
 ... | yes φ≡¬ω | yes ω≡¬φ = ¬-elim (subst φ≡¬ω (∧-proj₁ Γ⊢φ∧ψ)) Γ⊢ω
 ... | no  φ≢¬ω | yes ω≡¬φ = ¬-elim (subst ω≡¬φ Γ⊢ω) (∧-proj₁ Γ⊢φ∧ψ)
@@ -128,8 +126,8 @@ atp-simplify₀ {Γ} {φ ∧ ψ} {ω} Γ⊢φ∧ψ Γ⊢ω with eq φ (¬ ω) | 
 ...    | yes ψ≡¬ω   | no  ω≡¬ψ = ¬-elim (subst ψ≡¬ω (∧-proj₂ Γ⊢φ∧ψ)) Γ⊢ω
 ...    | yes ψ≡¬ω   | yes ω≡¬ψ = ¬-elim (subst ψ≡¬ω (∧-proj₂ Γ⊢φ∧ψ)) Γ⊢ω
 
-atp-simplify₀ {Γ} {⊤} {_} Γ⊢⊤ _ = Γ⊢⊤
-atp-simplify₀ {Γ} {⊥} {_} Γ⊢⊥ _  = Γ⊢⊥
+thm-simplify₀ {Γ} {⊤} {_} Γ⊢⊤ _ = Γ⊢⊤
+thm-simplify₀ {Γ} {⊥} {_} Γ⊢⊥ _  = Γ⊢⊥
 
 ------------------------------------------------------------------------------
 -- Hard-simplify function: applies simplify onto two formulas, if the results
@@ -153,17 +151,17 @@ hard-simplify x y | normal .x .y = simplify x y
 hard-simplify x y | swap .x .y   = simplify y x
 
 ------------------------------------------------------------------------------
--- atp-simplify.
+-- thm-simplify.
 ------------------------------------------------------------------------------
 
 postulate
-  atp-simplify
+  thm-simplify
     : ∀ {Γ} {φ ψ}
     → (γ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ ψ
     → Γ ⊢ γ
 
--- atp-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ with s-view φ ψ
--- atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | normal φ ψ = atp-simplify₀ Γ⊢φ Γ⊢ψ
--- atp-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | swap φ ψ   = atp-simplify₀ Γ⊢ψ Γ⊢φ
+-- thm-simplify {Γ} {φ} {ψ} Γ⊢φ Γ⊢ψ with s-view φ ψ
+-- thm-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | normal φ ψ = thm-simplify₀ Γ⊢φ Γ⊢ψ
+-- thm-simplify {Γ} {.φ} {.ψ} Γ⊢φ Γ⊢ψ | swap φ ψ   = thm-simplify₀ Γ⊢ψ Γ⊢φ

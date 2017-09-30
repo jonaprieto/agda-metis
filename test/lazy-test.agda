@@ -51,10 +51,10 @@ tt : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
 tt = thm-cnf (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
 
 c1 : Γ , ¬ subgoal₀ ⊢ ¬ q
-c1 = atp-conjunct (¬ q) tt
+c1 = thm-conjunct (¬ q) tt
 
 c2 : Γ , ¬ subgoal₀ ⊢ (¬ p) ∨ q
-c2 = atp-conjunct (¬ p ∨ q) tt
+c2 = thm-conjunct (¬ p ∨ q) tt
 
 -- testing reorder-∨
 original : PropFormula

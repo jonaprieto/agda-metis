@@ -290,8 +290,8 @@ canon .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂
 ...        | true = canon φ₁
 ...        | false
            with  ⌊ eq (canon φ₂) ⊥ ⌋
-...           |  true  = ⊥
-...           |  false = canon φ₁ ∧ canon φ₂
+...           | true  = ⊥
+...           | false = canon φ₁ ∧ canon φ₂
 
 canon .(φ₁ ∨ ⊤)  | sdisj₁ φ₁ = ⊤
 canon .(⊤ ∨ φ₁)  | sdisj₂ φ₁ = ⊤
@@ -310,38 +310,39 @@ canon .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂
            with  ⌊ eq (canon φ₂) ⊥ ⌋
 ...           | true  = canon φ₁
 ...           | false = canon φ₁ ∨ canon φ₂
-canon φ          | other .φ = φ
 
-thm-canon
+canon φ         | other .φ = φ
+
+lem-canon
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ canon φ
 
-thm-canon {Γ} {φ} Γ⊢φ
+lem-canon {Γ} {φ} Γ⊢φ
   with canon-view φ
-thm-canon {Γ} {.(φ₁ ∧ ⊤) } Γ⊢φ | sconj₁ φ₁ = thm-canon (∧-proj₁ Γ⊢φ)
-thm-canon {Γ} {.(⊤ ∧ φ₁) } Γ⊢φ | sconj₂ φ₁ = thm-canon (∧-proj₂ Γ⊢φ)
-thm-canon {Γ} {.(φ₁ ∧ ⊥) } Γ⊢φ | sconj₃ φ₁ = ∧-proj₂ Γ⊢φ
-thm-canon {Γ} {.(⊥ ∧ φ₁) } Γ⊢φ | sconj₄ φ₁ = ∧-proj₁ Γ⊢φ
-thm-canon {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂
+lem-canon {Γ} {.(φ₁ ∧ ⊤) } Γ⊢φ | sconj₁ φ₁ = lem-canon (∧-proj₁ Γ⊢φ)
+lem-canon {Γ} {.(⊤ ∧ φ₁) } Γ⊢φ | sconj₂ φ₁ = lem-canon (∧-proj₂ Γ⊢φ)
+lem-canon {Γ} {.(φ₁ ∧ ⊥) } Γ⊢φ | sconj₃ φ₁ = ∧-proj₂ Γ⊢φ
+lem-canon {Γ} {.(⊥ ∧ φ₁) } Γ⊢φ | sconj₄ φ₁ = ∧-proj₁ Γ⊢φ
+lem-canon {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂
   with eq (canon φ₁) ⊤
-...  | yes p = thm-canon (∧-proj₂ Γ⊢φ)
+...  | yes p = lem-canon (∧-proj₂ Γ⊢φ)
 ...  | no _
      with eq (canon φ₁) ⊥
-...     | yes p = subst p (thm-canon (∧-proj₁ Γ⊢φ))
+...     | yes p = subst p (lem-canon (∧-proj₁ Γ⊢φ))
 ...     | no _
         with eq (canon φ₂) ⊤
-...        | yes p = thm-canon (∧-proj₁ Γ⊢φ)
+...        | yes p = lem-canon (∧-proj₁ Γ⊢φ)
 ...        | no _
            with  eq (canon φ₂) ⊥
-...           |  yes p  = subst p (thm-canon (∧-proj₂ Γ⊢φ))
-...           |  no _ = ∧-intro (thm-canon (∧-proj₁ Γ⊢φ)) (thm-canon (∧-proj₂ Γ⊢φ))
+...           | yes p  = subst p (lem-canon (∧-proj₂ Γ⊢φ))
+...           | no _ = ∧-intro (lem-canon (∧-proj₁ Γ⊢φ)) (lem-canon (∧-proj₂ Γ⊢φ))
 
-thm-canon {Γ} {.(φ₁ ∨ ⊤) } Γ⊢φ | sdisj₁ φ₁ = ⊤-intro
-thm-canon {Γ} {.(⊤ ∨ φ₁) } Γ⊢φ | sdisj₂ φ₁ = ⊤-intro
-thm-canon {Γ} {.(φ₁ ∨ ⊥) } Γ⊢φ | sdisj₃ φ₁ = thm-canon (φ∨⊥-to-φ Γ⊢φ)
-thm-canon {Γ} {.(⊥ ∨ φ₁) } Γ⊢φ | sdisj₄ φ₁ = thm-canon (φ∨⊥-to-φ (∨-comm Γ⊢φ))
-thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
+lem-canon {Γ} {.(φ₁ ∨ ⊤) } Γ⊢φ | sdisj₁ φ₁ = ⊤-intro
+lem-canon {Γ} {.(⊤ ∨ φ₁) } Γ⊢φ | sdisj₂ φ₁ = ⊤-intro
+lem-canon {Γ} {.(φ₁ ∨ ⊥) } Γ⊢φ | sdisj₃ φ₁ = lem-canon (φ∨⊥-to-φ Γ⊢φ)
+lem-canon {Γ} {.(⊥ ∨ φ₁) } Γ⊢φ | sdisj₄ φ₁ = lem-canon (φ∨⊥-to-φ (∨-comm Γ⊢φ))
+lem-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
   with eq (canon φ₁) ⊤
 ...  | yes p = ⊤-intro
 ...  | no _
@@ -350,8 +351,8 @@ thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
             ⇒-elim
               (⇒-intro
                 (∨-elim {Γ = Γ}
-                  (⊥-elim (canon φ₂) (subst p (thm-canon (assume {Γ = Γ} φ₁))))
-                  (thm-canon (assume {Γ = Γ} φ₂))))
+                  (⊥-elim (canon φ₂) (subst p (lem-canon (assume {Γ = Γ} φ₁))))
+                  (lem-canon (assume {Γ = Γ} φ₂))))
              Γ⊢φ
 ...     | no _
         with eq (canon φ₂) ⊤
@@ -359,39 +360,31 @@ thm-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
 ...        | no _
            with  eq (canon φ₂) ⊥
 ...           | yes p₂  =
-                    ⇒-elim
-                      (⇒-intro
-                        (∨-elim {Γ = Γ}
-                        (thm-canon (assume {Γ = Γ} φ₁))
-                        (⊥-elim (canon φ₁)
-                          (subst p₂
-                            (thm-canon (assume {Γ = Γ} φ₂))))))
+                  ⇒-elim
+                    (⇒-intro
+                      (∨-elim {Γ = Γ}
+                      (lem-canon (assume {Γ = Γ} φ₁))
+                      (⊥-elim (canon φ₁)
+                        (subst p₂
+                          (lem-canon (assume {Γ = Γ} φ₂))))))
                     Γ⊢φ
 ...           | no _ =
-                   ⇒-elim
-                     (⇒-intro
-                       (∨-elim {Γ = Γ}
-                         (∨-intro₁ (canon φ₂)
-                           (thm-canon (assume {Γ = Γ} φ₁)))
-                         (∨-intro₂ (canon φ₁)
-                           (thm-canon (assume {Γ = Γ} φ₂)))))
+                  ⇒-elim
+                   (⇒-intro
+                     (∨-elim {Γ = Γ}
+                       (∨-intro₁ (canon φ₂)
+                         (lem-canon (assume {Γ = Γ} φ₁)))
+                       (∨-intro₂ (canon φ₁)
+                         (lem-canon (assume {Γ = Γ} φ₂)))))
                      Γ⊢φ
-thm-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
+lem-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
 
 
-canonicalize₀ : PropFormula → PropFormula
-canonicalize₀ =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
-
-thm-canonicalize₀
-  : ∀ {Γ} {φ}
-  → Γ ⊢ φ
-  → Γ ⊢ canonicalize₀ φ
-
-thm-canonicalize₀ =
-  thm-canon ∘ thm-rmBot-∧ ∘ thm-rmPEM-∧∨ ∘ thm-redun ∘ thm-right-assoc-∧ ∘ thm-cnf
+canonicalize : PropFormula → PropFormula
+canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
 
 ------------------------------------------------------------------------------
--- atp-canonicalize.
+-- thm-canonicalize.
 ------------------------------------------------------------------------------
 
 postulate
@@ -399,9 +392,12 @@ postulate
     : ∀ {Γ} {φ}
     → (ψ : PropFormula)
     → Γ ⊢ φ
-    → Γ ⊢ canonicalize₀ φ
+    → Γ ⊢ canonicalize φ
 
-atp-canonicalize = thm-canonicalize
+-- thm-canonicalize = 
+--   lem-canon ∘ thm-rmBot-∧ ∘
+--      thm-rmPEM-∧∨ ∘ thm-redun ∘
+--         thm-right-assoc-∧ ∘ thm-cnf
 
 postulate
   thm-canonicalize-axiom

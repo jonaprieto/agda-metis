@@ -24,7 +24,7 @@ open import Function                         using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
 open import ATP.Metis.Rules.Conjunct n
-  using ( conjunct; atp-conjunct; ConjView )
+  using ( conjunct; thm-conjunct; ConjView )
 
 open import Data.List.Base  using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 
@@ -69,7 +69,6 @@ lem-build-∨ {Γ}{φ} Γ⊢φ ψ
           with eq (build-∨ φ ψ₂) ψ₂
 ...          | yes p₂  = ∨-intro₂ ψ₁ (subst p₂ (lem-build-∨ Γ⊢φ ψ₂))
 ...          | no  _   = Γ⊢φ
-
 
 factor : PropFormula → PropFormula
 factor φ
@@ -224,7 +223,7 @@ lem-reorder-∧ {Γ} {φ} Γ⊢φ ψ
 ... | true = Γ⊢φ
 ... | false
     with conj-view ψ
-...    | other _  = atp-conjunct ψ Γ⊢φ
+...    | other _  = thm-conjunct ψ Γ⊢φ
 ...    | conj ψ₁ ψ₂
        with eq (reorder-∧ φ ψ₁) ψ₁
 ...       | no  _ = Γ⊢φ

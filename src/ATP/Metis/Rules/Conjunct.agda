@@ -30,7 +30,6 @@ conj-view : (φ : PropFormula) → ConjView φ
 conj-view (φ ∧ ψ) = conj _ _
 conj-view φ       = other _
 
-
 conjunct : PropFormula → PropFormula → PropFormula
 conjunct φ ψ
   with ⌊ eq φ ψ ⌋
@@ -51,8 +50,6 @@ thm-conjunct
   → (ψ : PropFormula)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
-
-atp-conjunct = thm-conjunct
 
 thm-conjunct {Γ} {φ} ψ Γ⊢φ
   with eq φ ψ

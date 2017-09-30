@@ -37,7 +37,6 @@ res-view : (φ : PropFormula) → ResView φ
 res-view ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
 res-view φ                       = other _
 
-
 rsol : PropFormula → PropFormula
 rsol φ
   with res-view φ
@@ -49,7 +48,6 @@ rsol .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ�
        with ⌊ eq φ₄ φ₂ ⌋
 ...       | true  = φ₂
 ...       | false = φ₂ ∨ φ₄
-
 
 lem-rsol
   : ∀ {Γ} {φ}
@@ -105,8 +103,6 @@ thm-resolve
   → Γ ⊢ φ₁              -- left side
   → Γ ⊢ φ₂              -- right side
   → Γ ⊢ resolve φ₁ φ₂ l ψ
-
-atp-resolve = thm-resolve
 
 thm-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
   lem-rsol

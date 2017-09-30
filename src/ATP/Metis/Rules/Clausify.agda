@@ -32,7 +32,6 @@ thm-clausify
     → (ψ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
-atp-clausify = thm-clausify
 
 thm-clausify {Γ} {φ} ψ Γ⊢φ
   with eq φ ψ

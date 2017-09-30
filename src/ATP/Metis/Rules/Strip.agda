@@ -9,7 +9,7 @@ module ATP.Metis.Rules.Strip ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Rules.Conjunct n using ( conjunct; atp-conjunct )
+open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
 
 open import Data.Bool
   renaming ( _∧_ to _&&_; _∨_ to _||_ )
@@ -29,7 +29,7 @@ open import Relation.Nullary                      renaming (¬_ to ¬₂)
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
--- Spliting the goal.
+-- Splitting the goal.
 ------------------------------------------------------------------------------
 
 data ShuntView : PropFormula → Set where
@@ -49,43 +49,43 @@ unshuntₙ (suc n) φ with unshunt-view φ
 ... | case₂ φ₁ φ₂ φ₃ = (unshuntₙ n (φ₁ ⇒ φ₂)) ∧ (unshuntₙ n (φ₁ ⇒ φ₃))
 ... | other _        = φ
 
-thm-inv-unshuntₙ
+lem-unshuntₙ
   : ∀ {Γ} {φ}
   → (n : ℕ)
   → Γ ⊢ unshuntₙ n φ
   → Γ ⊢ φ
 
-thm-inv-unshuntₙ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
-thm-inv-unshuntₙ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
+lem-unshuntₙ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
+lem-unshuntₙ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
 ... | case₁ φ₁ φ₂ φ₃ =
   ∧⇒-to-⇒⇒
-    (thm-inv-unshuntₙ n
+    (lem-unshuntₙ n
       Γ⊢ushuntnφ)
 ... | case₂ φ₁ φ₂ φ₃ =
   ⇒∧⇒-to-⇒∧
     (∧-intro
-      (thm-inv-unshuntₙ n
+      (lem-unshuntₙ n
         (∧-proj₁ Γ⊢ushuntnφ))
-      (thm-inv-unshuntₙ n
+      (lem-unshuntₙ n
         (∧-proj₂ Γ⊢ushuntnφ)))
 ... | other _ = Γ⊢ushuntnφ
 
--- Unshunt complexity measure.
-unshunt-cmeasure : PropFormula → ℕ
-unshunt-cmeasure φ with unshunt-view φ
-... | case₁ _ _ φ₃  = unshunt-cmeasure φ₃ + 2
-... | case₂ _ φ₂ φ₃ = max (unshunt-cmeasure φ₂) (unshunt-cmeasure φ₃) + 1
+unshunt-complexity : PropFormula → ℕ
+unshunt-complexity φ with unshunt-view φ
+... | case₁ _ _ φ₃  = unshunt-complexity φ₃ + 2
+... | case₂ _ φ₂ φ₃ = 
+        max (unshunt-complexity φ₂) (unshunt-complexity φ₃) + 1
 ... | other .φ      = 1
 
 unshunt : PropFormula → PropFormula
-unshunt φ = unshuntₙ (unshunt-cmeasure φ + 1) φ
+unshunt φ = unshuntₙ (unshunt-complexity φ + 1) φ
 
-thm-inv-unshunt
+lem-unshunt
   : ∀ {Γ} {φ}
   → Γ ⊢ unshunt φ
   → Γ ⊢ φ
 
-thm-inv-unshunt {_} {φ} = thm-inv-unshuntₙ (unshunt-cmeasure φ + 1)
+lem-unshunt {_} {φ} = lem-unshuntₙ (unshunt-complexity φ + 1)
 
 data StripView : PropFormula → Set where
   conj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
@@ -115,7 +115,6 @@ split-view (¬ (φ₁ ⇔ φ₂)) = nbiimpl _ _
 split-view (¬ (¬ φ₁))    = nneg _
 split-view φ₁            = other _
 
-
 splitₙ : ℕ → PropFormula → PropFormula
 splitₙ zero φ = φ
 splitₙ (suc n) φ
@@ -138,25 +137,24 @@ splitₙ (suc n) φ
 ...  | ntop          = ⊥
 ...  | other .φ      = φ
 
--- * SplitₙGoal theorem.
-thm-splitₙ
+lem-splitₙ
   : ∀ {Γ} {φ}
   → (n : ℕ)
   → Γ ⊢ splitₙ n φ
   → Γ ⊢ φ
 
-thm-splitₙ {_} {_} zero Γ⊢splitₙ = Γ⊢splitₙ
-thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
+lem-splitₙ {_} {_} zero Γ⊢splitₙ = Γ⊢splitₙ
+lem-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 ... | conj φ₁ φ₂ =
   ∧-intro
     helper
-    (thm-splitₙ n
+    (lem-splitₙ n
       (⇒-elim
-        (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ))
+        (lem-unshunt (∧-proj₂ Γ⊢splitₙ))
         helper ))
   where
     helper : Γ ⊢ φ₁
-    helper = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
+    helper = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
 
 ... | disj φ₁ φ₂ =
   ⇒-elim
@@ -164,19 +162,19 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
       (∨-elim {Γ = Γ}
         (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
         (∨-intro₂ φ₁
-          (thm-splitₙ n
+          (lem-splitₙ n
             (⇒-elim
-              (thm-inv-unshunt
+              (lem-unshunt
                 (weaken (¬ φ₁) Γ⊢splitₙ))
               (assume {Γ = Γ} (¬ φ₁)))))))
     (PEM {Γ = Γ} {φ = φ₁})
 
 ... | impl φ₁ φ₂ =
  ⇒-intro
-   (thm-splitₙ n
+   (lem-splitₙ n
      (⇒-elim
        (weaken φ₁
-         (thm-inv-unshunt Γ⊢splitₙ))
+         (lem-unshunt Γ⊢splitₙ))
          (assume {Γ = Γ} φ₁)))
 
 ... | biimpl φ₁ φ₂ =
@@ -184,18 +182,18 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
   where
     helper₁ : Γ ⊢ φ₁ ⇒ φ₂
     helper₁ = ⇒-intro
-         (thm-splitₙ n
+         (lem-splitₙ n
            (⇒-elim
              (weaken φ₁
-               (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ)))
+               (lem-unshunt (∧-proj₁ Γ⊢splitₙ)))
              (assume {Γ = Γ} φ₁)))
 
     helper₂ : Γ ⊢ φ₂ ⇒ φ₁
     helper₂ = ⇒-intro
-          (thm-splitₙ n
+          (lem-splitₙ n
             (⇒-elim
               (weaken φ₂
-                (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ)))
+                (lem-unshunt (∧-proj₂ Γ⊢splitₙ)))
              (assume {Γ = Γ} φ₂)))
 
 ... |  nconj φ₁ φ₂ =
@@ -204,23 +202,23 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       (⇒-intro
-        (thm-splitₙ n
+        (lem-splitₙ n
           (⇒-elim
             (weaken φ₁
-              (thm-inv-unshunt Γ⊢splitₙ))
+              (lem-unshunt Γ⊢splitₙ))
           (assume {Γ = Γ} φ₁))))
 
 ... | ndisj φ₁ φ₂ =
   ¬∧¬-to-¬∨
     (∧-intro
       helper
-      (thm-splitₙ n
+      (lem-splitₙ n
         (⇒-elim
-          (thm-inv-unshunt (∧-proj₂ Γ⊢splitₙ))
+          (lem-unshunt (∧-proj₂ Γ⊢splitₙ))
           helper)))
   where
     helper : Γ ⊢ ¬ φ₁
-    helper = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
+    helper = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
 
 ... | nimpl φ₁ φ₂ =
   ¬-intro
@@ -234,14 +232,14 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
         (weaken (φ₁ ⇒ φ₂) Γ⊢φ₁)))
   where
     Γ⊢φ₁ : Γ ⊢ φ₁
-    Γ⊢φ₁ = thm-splitₙ n (thm-inv-unshunt (∧-proj₁ Γ⊢splitₙ))
+    Γ⊢φ₁ = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
 
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       ⇒-intro
-        (thm-splitₙ n
+        (lem-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₁ (∧-proj₂ Γ⊢splitₙ)))
+            (lem-unshunt (weaken φ₁ (∧-proj₂ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
 ... | nbiimpl φ₁ φ₂ = ⇒¬∧¬⇒-to-¬⇔ (∧-intro helper₁ helper₂)
@@ -249,20 +247,20 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
     helper₁ : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper₁ =
       ⇒-intro
-        (thm-splitₙ n
+        (lem-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken φ₁ (∧-proj₁ Γ⊢splitₙ)))
+            (lem-unshunt (weaken φ₁ (∧-proj₁ Γ⊢splitₙ)))
             (assume {Γ = Γ} φ₁)))
 
     helper₂ : Γ ⊢ ¬ φ₂ ⇒ φ₁
     helper₂ =
       ⇒-intro
-        (thm-splitₙ n
+        (lem-splitₙ n
           (⇒-elim
-            (thm-inv-unshunt (weaken (¬ φ₂) (∧-proj₂ Γ⊢splitₙ)))
+            (lem-unshunt (weaken (¬ φ₂) (∧-proj₂ Γ⊢splitₙ)))
             (assume {Γ = Γ} (¬ φ₂))))
 
-... | nneg φ₁  = ¬¬-equiv₂ (thm-splitₙ n (thm-inv-unshunt Γ⊢splitₙ))
+... | nneg φ₁  = ¬¬-equiv₂ (lem-splitₙ n (lem-unshunt Γ⊢splitₙ))
 ... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
 ... | other φ₁ = Γ⊢splitₙ
@@ -270,14 +268,19 @@ thm-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
 -- Split complexity measure.
 split-complexity : PropFormula → ℕ
 split-complexity φ with split-view φ
-... | conj φ₁ φ₂    = max (split-complexity φ₁) (split-complexity φ₂) + 1
+... | conj φ₁ φ₂    = 
+        max (split-complexity φ₁) (split-complexity φ₂) + 1
 ... | disj φ₁ φ₂    = split-complexity φ₂ + 1
 ... | impl φ₁ φ₂    = split-complexity φ₂ + 1
-... | biimpl φ₁ φ₂  = max (split-complexity φ₁) (split-complexity φ₂) + 1
+... | biimpl φ₁ φ₂  = 
+        max (split-complexity φ₁) (split-complexity φ₂) + 1
 ... | nconj φ₁ φ₂   = split-complexity (¬ φ₂) + 1
-... | ndisj φ₁ φ₂   = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
-... | nimpl φ₁ φ₂   = max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
-... | nbiimpl φ₁ φ₂ = max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | ndisj φ₁ φ₂   = 
+        max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
+... | nimpl φ₁ φ₂   = 
+        max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
+... | nbiimpl φ₁ φ₂ = 
+        max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
 ... | nneg φ₁       = split-complexity φ₁ + 1
 ... | nbot          = 1
 ... | ntop          = 1
@@ -286,16 +289,16 @@ split-complexity φ with split-view φ
 split : PropFormula → PropFormula
 split φ = splitₙ (split-complexity φ) φ
 
-thm-split
+lem-split
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ
   → Γ ⊢ φ
-thm-split {_} {φ} = thm-splitₙ (split-complexity φ)
+lem-split {_} {φ} = lem-splitₙ (split-complexity φ)
 
-atp-split
+thm-strip
   : ∀ {Γ} {φ}
   → Γ ⊢ split φ ⇒ φ
-atp-split {Γ} {φ} = ⇒-intro (thm-split (assume {Γ = Γ} (split φ)))
+thm-strip {Γ} {φ} = ⇒-intro (lem-split (assume {Γ = Γ} (split φ)))
 
 strip_to_ : PropFormula → PropFormula → PropFormula
 strip φ to ψ = conjunct (split φ) ψ
