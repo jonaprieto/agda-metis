@@ -27,7 +27,7 @@ open import Data.PropFormula.Views n
 
 open import Data.Bool using (Bool; true; false) renaming (_∨_ to _or_ )
 
-open import Function  using ( _$_; id ; _∘_ )
+open import Function  using ( _$_; id ; _∘_ ; case_of_; case_return_of_)
 open import Relation.Binary.PropositionalEquality
   using ( _≡_; refl; sym ; trans)
 
@@ -394,14 +394,21 @@ postulate
     → Γ ⊢ φ
     → Γ ⊢ canonicalize φ
 
--- thm-canonicalize = 
+-- thm-canonicalize =
 --   lem-canon ∘ thm-rmBot-∧ ∘
 --      thm-rmPEM-∧∨ ∘ thm-redun ∘
 --         thm-right-assoc-∧ ∘ thm-cnf
+
+canonicalize-axiom : PropFormula → PropFormula → PropFormula
+canonicalize-axiom φ ψ
+  with ⌊ eq φ ψ ⌋
+...  | true  = ψ
+...  | false = dnf φ
 
 postulate
   thm-canonicalize-axiom
     : ∀ {Γ} {φ}
     → (ψ : PropFormula)
     → Γ ⊢ φ
-    → Γ ⊢ ψ
+    → Γ ⊢ canonicalize-axiom φ ψ
+
