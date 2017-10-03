@@ -72,8 +72,7 @@ ansNo3 = ⊥
 
 outCaseNo3 : PropFormula
 outCaseNo3 = canonicalize caseNo3 ansNo3
-
--- oo = resolve (p) (¬ p ∨ q) p q
+-- Var zero ∧ (¬ Var zero ∨ Var (suc zero)
 
 testNo3 : ⌊ eq outCaseNo3 ansNo3 ⌋ ≡ true
 testNo3 = {!refl!} -- refl
@@ -149,10 +148,11 @@ ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
 
 outCaseNo7 : PropFormula
-outCaseNo7 = canonicalize caseNo7 ansNo7
+outCaseNo7 = canonicalize-axiom caseNo7 ansNo7
+-- (¬ Var zero ∨ Var (suc zero)) ∧ (¬ Var (suc zero) ∨ Var zero)
 
 testNo7 : ⌊ eq outCaseNo7 ansNo7 ⌋ ≡ true
-testNo7 = {!!} -- refl
+testNo7 = refl -- refl
 
 ---------------------------------------------------------------------
 
@@ -169,6 +169,7 @@ ansNo8 = ((¬ p) ∧ (q ∧ ((¬ p) ∨ q)))
 
 outCaseNo8 : PropFormula
 outCaseNo8 = canonicalize caseNo8 ansNo8
+-- (¬ Var zero ∨ Var (suc zero)) ∧ Var (suc zero)
 
 testNo8 : ⌊ eq outCaseNo8 ansNo8 ⌋ ≡ true
 testNo8 = {!!} -- refl
