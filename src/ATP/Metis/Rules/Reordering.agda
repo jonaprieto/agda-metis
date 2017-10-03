@@ -241,27 +241,27 @@ lem-reorder-∧ {Γ} {φ} Γ⊢φ ψ
 -- Conversion from a CNF formula φ to another CNF formula ψ.
 ------------------------------------------------------------------------------
 
-conjuct-∨ : PropFormula → PropFormula → PropFormula
-conjuct-∨ φ ψ
+conjunct-∨ : PropFormula → PropFormula → PropFormula
+conjunct-∨ φ ψ
   with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
 ... | true  = ψ
 ... | false
     with conj-view ψ
-conjuct-∨ φ .(ψ₁ ∧ ψ₂) | false | conj ψ₁ ψ₂
-  with  ⌊ eq (conjuct-∨ φ ψ₁) ψ₁ ⌋
+conjunct-∨ φ .(ψ₁ ∧ ψ₂) | false | conj ψ₁ ψ₂
+  with  ⌊ eq (conjunct-∨ φ ψ₁) ψ₁ ⌋
 ... | false = φ
 ... | true
   with  ⌊ eq (reorder-∨ φ ψ₂) ψ₂ ⌋
 ... | false = φ
 ... | true  = ψ₁ ∧ ψ₂
-conjuct-∨ φ ψ          | false | other .ψ
+conjunct-∨ φ ψ          | false | other .ψ
   with conj-view φ
-conjuct-∨ φ ψ          | false | other .ψ | (other .φ)  = φ
-conjuct-∨ .(φ₁ ∧ φ₂) ψ | false | other .ψ | (conj φ₁ φ₂)
-  with ⌊ eq (conjuct-∨ φ₁ ψ) ψ ⌋
+conjunct-∨ φ ψ          | false | other .ψ | (other .φ)  = φ
+conjunct-∨ .(φ₁ ∧ φ₂) ψ | false | other .ψ | (conj φ₁ φ₂)
+  with ⌊ eq (conjunct-∨ φ₁ ψ) ψ ⌋
 ... | true = ψ
 ... | false
-    with  ⌊ eq (conjuct-∨ φ₂ ψ) ψ ⌋
+    with  ⌊ eq (conjunct-∨ φ₂ ψ) ψ ⌋
 ... | true = ψ
 ... | false = φ₁ ∧ φ₂
 
@@ -269,7 +269,7 @@ lem-conjunct-∨
   : ∀ {Γ} {φ}
   → (ψ : PropFormula)
   → Γ ⊢ φ
-  → Γ ⊢ conjuct-∨ φ ψ
+  → Γ ⊢ conjunct-∨ φ ψ
 
 lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ
   with eq (reorder-∨ φ ψ) ψ
@@ -277,7 +277,7 @@ lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ
 ... | no _
     with conj-view ψ
 lem-conjunct-∨ {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | conj ψ₁ ψ₂
-  with  eq (conjuct-∨ φ ψ₁) ψ₁
+  with  eq (conjunct-∨ φ ψ₁) ψ₁
 ... | no _ = Γ⊢φ
 ... | yes p₂
   with  eq (reorder-∨ φ ψ₂) ψ₂
@@ -291,10 +291,10 @@ lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ
 lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ | (other .φ)
   = Γ⊢φ
 lem-conjunct-∨ {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | other .ψ | (conj φ₁ φ₂)
-  with eq (conjuct-∨ φ₁ ψ) ψ
+  with eq (conjunct-∨ φ₁ ψ) ψ
 ... | yes p₄ = subst p₄ (lem-conjunct-∨ ψ (∧-proj₁ Γ⊢φ))
 ... | no _
-  with  eq (conjuct-∨ φ₂ ψ) ψ
+  with  eq (conjunct-∨ φ₂ ψ) ψ
 ... | yes p₅ = subst p₅ (lem-conjunct-∨ ψ (∧-proj₂ Γ⊢φ))
 ... | no  _ = Γ⊢φ
 
@@ -305,7 +305,7 @@ reorder-∧∨ φ ψ
 ...  | true  = ψ
 ...  | false
      with conj-view ψ
-...     | other _  = conjuct-∨ φ ψ
+...     | other _  = conjunct-∨ φ ψ
 ...     | conj ψ₁ ψ₂
         with ⌊ eq (reorder-∧∨ φ ψ₁) ψ₁ ⌋
 ...        | false = φ

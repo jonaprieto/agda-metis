@@ -33,11 +33,11 @@ d = Var (# 8)
 open import Data.PropFormula.SyntaxExperiment 9 using ( right-assoc-∧ )
 open import ATP.Metis.Rules.Canonicalize 9
 open import ATP.Metis.Rules.Reordering 9
-  using (right-assoc-∨; reorder-∨ )
+
 open import Relation.Binary.PropositionalEquality
 
 open import ATP.Metis.Rules.Resolve 9
-  using ( resolve; helper-resolve )
+
 
 r1 = resolve q (¬ q) q ⊥
 
@@ -48,7 +48,7 @@ r2 = resolve p ((¬ p) ∨ q) p q
 tr2 : ⌊ eq r2 q ⌋ ≡ true
 tr2 = refl
 
-q2 = helper-resolve ((p ∨ q) ∧ (¬ p ∨ q))
+q2 = rsol ((p ∨ q) ∧ (¬ p ∨ q))
 
 r3 = resolve p ((¬ p) ∨ ((¬ q) ∨ r)) p ((¬ q) ∨ r)
 tr3 : ⌊ eq r3 (¬ q ∨ r) ⌋ ≡ true

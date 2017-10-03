@@ -1,11 +1,12 @@
 ------------------------------------------------------------------------------
 -- Agda-Metis Library.
 -- Check module.
--- Description:
--- 
+--
+-- * Description:
+--
 -- Some inference rules are composition of other rules.
 -- Many of them work as follows:
--- * rule₁,₂,₃ : from Γ⊢ϕ try to construct Γ⊢ψ, for some ϕ, ψ ∈ PropFormula.
+--  - rule₁,₂,₃ : from Γ⊢ϕ try to construct Γ⊢ψ, for some ϕ, ψ ∈ PropFormula.
 -- Then, we want to build a strong rule that compose other rules, and all rules
 -- including the new one follows the same principle described above.
 --
@@ -16,7 +17,7 @@
 -- Step 2 : Apply the next rule to Γ⊢ϕ, ψ ∈ PropFormula,
 -- Step 3 : If last step produces Γ⊢ψ, stop, else,
 --          go to Step 2 but instead of Γ⊢ϕ, we use Γ⊢last-rule(ϕ) and ψ.
--- Step 4 : If there is more rules for applying go to Step 0. Otherwise stop.
+-- Step 4 : If there is more rules for applying go to Step 2. Otherwise stop.
 ------------------------------------------------------------------------------
 
 open import Data.Nat using ( ℕ; suc; zero )
@@ -39,7 +40,6 @@ BinaryFunc = PropFormula → PropFormula → PropFormula
 data Check : (f : BinaryFunc) (x y : PropFormula) → Set where
   Stop     : (f : BinaryFunc) → (x y : PropFormula) → Check f x y
   Continue : (f : BinaryFunc) → (x y : PropFormula) → Check f x y
-
 
 toCheck
   : (f : BinaryFunc)

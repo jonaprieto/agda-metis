@@ -91,6 +91,7 @@ lem-rsol {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
    ──────────────────────────────────────────  resolve φ₁ φ₂ l goal
                         goal
 
+  Why the best? because reorder-∨ could not build for example (l ∨ goal).
 -}
 
 resolve : PropFormula → PropFormula → PropFormula → PropFormula → PropFormula

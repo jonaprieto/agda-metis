@@ -9,8 +9,10 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
+open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_)
 open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
 open import ATP.Metis.Rules.Reordering n
+open import ATP.Metis.Rules.Resolve n
 
 open import Data.Bool.Base
   using    ( true; false )
@@ -27,7 +29,7 @@ open import Data.PropFormula.Views n
 
 open import Data.Bool using (Bool; true; false) renaming (_∨_ to _or_ )
 
-open import Function  using ( _$_; id ; _∘_ ; case_of_; case_return_of_)
+open import Function  using ( _$_; id ; _∘_ ; flip )
 open import Relation.Binary.PropositionalEquality
   using ( _≡_; refl; sym ; trans)
 
@@ -379,25 +381,100 @@ lem-canon {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
                      Γ⊢φ
 lem-canon {Γ} {φ} Γ⊢φ | other .φ = Γ⊢φ
 
-
-canonicalize : PropFormula → PropFormula
-canonicalize =  canon ∘ rmBot-∧ ∘ rmPEM-∧∨ ∘ redun ∘ right-assoc-∧ ∘ cnf
-
 ------------------------------------------------------------------------------
--- thm-canonicalize.
-------------------------------------------------------------------------------
+-- Canonicalize functions.
 
-postulate
-  thm-canonicalize
-    : ∀ {Γ} {φ}
-    → (ψ : PropFormula)
-    → Γ ⊢ φ
-    → Γ ⊢ canonicalize φ
+s₁ : PropFormula → PropFormula → PropFormula
+s₁ φ ψ = (right-assoc-∧ ∘ cnf) φ
 
--- thm-canonicalize =
---   lem-canon ∘ thm-rmBot-∧ ∘
---      thm-rmPEM-∧∨ ∘ thm-redun ∘
---         thm-right-assoc-∧ ∘ thm-cnf
+thm-s₁
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₁ φ ψ
+thm-s₁ Γ⊢φ _ = (thm-right-assoc-∧ ∘ thm-cnf) Γ⊢φ
+
+s₂ : PropFormula → PropFormula → PropFormula
+s₂ φ ψ = redun φ
+
+thm-s₂
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₂ φ ψ
+thm-s₂ Γ⊢φ _ = thm-redun Γ⊢φ
+
+s₃ : PropFormula → PropFormula → PropFormula
+s₃ φ ψ = rmPEM-∧∨ φ
+  
+thm-s₃
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₃ φ ψ
+thm-s₃ Γ⊢φ _ = thm-rmPEM-∧∨ Γ⊢φ
+
+s₄ : PropFormula → PropFormula → PropFormula
+s₄ φ ψ =  rmBot-∧ φ
+
+thm-s₄
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₄ φ ψ
+thm-s₄ Γ⊢φ _ = thm-rmBot-∧ Γ⊢φ
+
+s₅ : PropFormula → PropFormula → PropFormula
+s₅ φ ψ =  canon φ
+
+thm-s₅
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₅ φ ψ
+thm-s₅ Γ⊢φ _ = lem-canon Γ⊢φ
+
+s₆ : PropFormula → PropFormula → PropFormula
+s₆ φ ψ
+  with conj-view φ
+... | conj φ₁ φ₂ = resolve φ₁ φ₂ φ₁ ψ
+... | other .φ   = φ
+
+thm-s₆
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : PropFormula)
+  → Γ ⊢ s₆ φ ψ
+thm-s₆ {Γ} {φ} Γ⊢φ ψ
+  with conj-view φ
+...  | conj φ₁ φ₂ = thm-resolve ψ φ₁ (∧-proj₁ Γ⊢φ) (∧-proj₂ Γ⊢φ)
+...  | other .φ   = Γ⊢φ
+
+
+canonicalize : PropFormula → PropFormula → PropFormula
+canonicalize =
+  -- s₆ ●
+  s₅ ●
+  s₄ ●
+  s₃ ●
+  s₂ ●
+  s₁
+
+
+thm-canonicalize
+  : ∀ {Γ} {φ}
+  → (ψ : PropFormula)
+  → Γ ⊢ φ
+  → Γ ⊢ canonicalize φ ψ
+
+thm-canonicalize ψ Γ⊢φ =
+  (
+  -- thm-s₆ ●⊢
+  thm-s₅ ●⊢
+  thm-s₄ ●⊢
+  thm-s₃ ●⊢
+  thm-s₂ ●⊢
+  thm-s₁) Γ⊢φ ψ
 
 canonicalize-axiom : PropFormula → PropFormula → PropFormula
 canonicalize-axiom φ ψ
