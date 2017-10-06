@@ -29,7 +29,7 @@ open import Data.PropFormula.Views n
 
 open import Data.Bool using (Bool; true; false) renaming (_∨_ to _or_ )
 
-open import Function  using ( _$_; id ; _∘_ ; flip )
+open import Function  using ( _$_; _∘_ ; flip )
 open import Relation.Binary.PropositionalEquality
   using ( _≡_; refl; sym ; trans)
 
@@ -450,6 +450,22 @@ thm-s₆ {Γ} {φ} Γ⊢φ ψ
 ...  | conj φ₁ φ₂ = thm-resolve ψ φ₁ (∧-proj₁ Γ⊢φ) (∧-proj₂ Γ⊢φ)
 ...  | other .φ   = Γ⊢φ
 
+infixl 3 ↑_
+
+↑_ : (PropFormula → PropFormula) → (PropFormula → PropFormula → PropFormula)
+↑ f = λ x y → f x 
+
+↑thm
+  : ∀ {f}
+  → (∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ f φ) -- unary rule
+  → (∀ {Γ} {φ} → Γ ⊢ φ → (ψ : PropFormula) →  Γ ⊢ (↑ f) φ ψ) -- binary unary
+↑thm rule = λ z ψ → rule z
+
+id : PropFormula → PropFormula
+id x = x
+
+thm-id : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
+thm-id {Γ} {φ} Γ⊢φ = Γ⊢φ
 
 canonicalize : PropFormula → PropFormula → PropFormula
 canonicalize =
@@ -458,29 +474,27 @@ canonicalize =
   s₄ ●
   s₃ ●
   s₂ ●
-  s₁
+  s₁ ●
+  (↑ id)
 
 
 thm-canonicalize
   : ∀ {Γ} {φ}
-  → (ψ : PropFormula)
+  → (ψ : PropFormula) 
   → Γ ⊢ φ
   → Γ ⊢ canonicalize φ ψ
 
-thm-canonicalize ψ Γ⊢φ =
+thm-canonicalize {Γ} {φ} ψ Γ⊢φ =
   (
-  -- thm-s₆ ●⊢
   thm-s₅ ●⊢
   thm-s₄ ●⊢
   thm-s₃ ●⊢
   thm-s₂ ●⊢
-  thm-s₁) Γ⊢φ ψ
-
+  thm-s₁ ●⊢
+  (↑thm thm-id)) Γ⊢φ ψ
+  
 canonicalize-axiom : PropFormula → PropFormula → PropFormula
-canonicalize-axiom φ ψ
-  with ⌊ eq φ ψ ⌋
-...  | true  = ψ
-...  | false = dnf φ
+canonicalize-axiom = (↑ dnf) ● (↑ nnf) ● (↑ id)
 
 postulate
   thm-canonicalize-axiom

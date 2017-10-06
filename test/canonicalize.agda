@@ -132,7 +132,7 @@ outCaseNo6 : PropFormula
 outCaseNo6 = canonicalize caseNo6 ansNo6
 
 testNo6 : ⌊ eq outCaseNo6 ansNo6 ⌋ ≡ true
-testNo6 = {!!} -- refl
+testNo6 = refl -- refl
 
 ---------------------------------------------------------------------
 
