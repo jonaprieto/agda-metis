@@ -112,3 +112,62 @@ thm-h
 thm-h = thm-f ●⊢ thm-g
 
 -}
+
+------------------------------------------------------------------------------
+-- Transform a unary function (or theorem) to a binary function (or theorem)
+-- f : X → X
+-- (↑f f) : X → X → Y
+-- For theorems, we use (↑t) function.
+
+infixl 3 ↑f_ 
+
+↑f_ : (PropFormula → PropFormula) → (PropFormula → PropFormula → PropFormula)
+↑f f = λ x y → f x 
+
+↑t
+  : ∀ {fun}
+  → (∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ fun φ) 
+  → (∀ {Γ} {φ} → Γ ⊢ φ → (ψ : PropFormula) →  Γ ⊢ (↑f fun) φ ψ) 
+↑t rule = λ z ψ → rule z
+
+id : PropFormula → PropFormula
+id x = x
+
+thm-id : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
+thm-id {Γ} {φ} Γ⊢φ = Γ⊢φ
+
+-- Then we can check for equality in each step of a chain of composition (●) of
+-- unary functions.
+
+-- Example
+
+{-
+f : PropFormula → PropFormula
+f x = x
+
+postulate
+  thm-f : ∀ {Γ} {ϕ}
+  → Γ ⊢ ϕ
+  → Γ ⊢ f ϕ
+
+g : PropFormula → PropFormula → PropFormula
+g x y = y
+
+postulate
+  thm-g : ∀ {Γ} {ϕ}
+    → Γ ⊢ ϕ
+    → (ψ : PropFormula)
+    → Γ ⊢ g ϕ ψ
+
+-- h = f ● g -- This fails, the ● composition needs both binary functions.
+
+h = (↑f f) ● g
+
+thm-h
+  : ∀ {Γ} {ϕ}
+  → Γ ⊢ ϕ
+  → (ψ : PropFormula)
+  → Γ ⊢ h ϕ ψ
+thm-h = (↑t thm-f) ●⊢ thm-g
+
+-}
