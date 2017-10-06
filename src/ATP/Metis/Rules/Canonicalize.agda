@@ -9,7 +9,7 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_)
+open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_; ↑f_; ↑t; id; thm-id)
 open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
 open import ATP.Metis.Rules.Reordering n
 open import ATP.Metis.Rules.Resolve n
@@ -450,22 +450,6 @@ thm-s₆ {Γ} {φ} Γ⊢φ ψ
 ...  | conj φ₁ φ₂ = thm-resolve ψ φ₁ (∧-proj₁ Γ⊢φ) (∧-proj₂ Γ⊢φ)
 ...  | other .φ   = Γ⊢φ
 
-infixl 3 ↑_
-
-↑_ : (PropFormula → PropFormula) → (PropFormula → PropFormula → PropFormula)
-↑ f = λ x y → f x 
-
-↑thm
-  : ∀ {f}
-  → (∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ f φ) -- unary rule
-  → (∀ {Γ} {φ} → Γ ⊢ φ → (ψ : PropFormula) →  Γ ⊢ (↑ f) φ ψ) -- binary unary
-↑thm rule = λ z ψ → rule z
-
-id : PropFormula → PropFormula
-id x = x
-
-thm-id : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
-thm-id {Γ} {φ} Γ⊢φ = Γ⊢φ
 
 canonicalize : PropFormula → PropFormula → PropFormula
 canonicalize =
@@ -475,7 +459,7 @@ canonicalize =
   s₃ ●
   s₂ ●
   s₁ ●
-  (↑ id)
+  (↑f id)
 
 
 thm-canonicalize
@@ -491,10 +475,10 @@ thm-canonicalize {Γ} {φ} ψ Γ⊢φ =
   thm-s₃ ●⊢
   thm-s₂ ●⊢
   thm-s₁ ●⊢
-  (↑thm thm-id)) Γ⊢φ ψ
+  (↑t thm-id)) Γ⊢φ ψ
   
 canonicalize-axiom : PropFormula → PropFormula → PropFormula
-canonicalize-axiom = (↑ dnf) ● (↑ nnf) ● (↑ id)
+canonicalize-axiom = (↑f dnf) ● (↑f nnf) ● (↑f id)
 
 postulate
   thm-canonicalize-axiom
