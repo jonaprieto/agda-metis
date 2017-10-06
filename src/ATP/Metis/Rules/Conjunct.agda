@@ -15,20 +15,13 @@ open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 open import Data.PropFormula.Dec n        using ( yes; no; ⌊_⌋ )
 open import Data.PropFormula.Properties n using ( eq; subst )
 open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Views n
 
 open import Function using ( _$_; id )
 
 open import Relation.Binary.PropositionalEquality using ( refl )
 
 ------------------------------------------------------------------------------
-
-data ConjView : PropFormula → Set where
-  conj  : (φ₁ φ₂ : PropFormula) → ConjView (φ₁ ∧ φ₂)
-  other : (φ : PropFormula)     → ConjView φ
-
-conj-view : (φ : PropFormula) → ConjView φ
-conj-view (φ ∧ ψ) = conj _ _
-conj-view φ       = other _
 
 conjunct : PropFormula → PropFormula → PropFormula
 conjunct φ ψ
