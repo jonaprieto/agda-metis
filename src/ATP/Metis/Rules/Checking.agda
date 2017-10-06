@@ -34,6 +34,11 @@ open import Data.PropFormula.Syntax n
 
 ------------------------------------------------------------------------------
 
+-- Many functions in Agda-Metis follow the same pattern:
+-- from a source formula, they try to build a target formula.
+-- that's the reason, many functions are binary and not unary functions.
+-- This module aims to help composition of such functions in a fancy way.
+
 BinaryFunc : Set
 BinaryFunc = PropFormula → PropFormula → PropFormula
 
@@ -119,15 +124,15 @@ thm-h = thm-f ●⊢ thm-g
 -- (↑f f) : X → X → Y
 -- For theorems, we use (↑t) function.
 
-infixl 3 ↑f_ 
+infixl 3 ↑f_
 
 ↑f_ : (PropFormula → PropFormula) → (PropFormula → PropFormula → PropFormula)
-↑f f = λ x y → f x 
+↑f f = λ x y → f x
 
 ↑t
   : ∀ {fun}
-  → (∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ fun φ) 
-  → (∀ {Γ} {φ} → Γ ⊢ φ → (ψ : PropFormula) →  Γ ⊢ (↑f fun) φ ψ) 
+  → (∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ fun φ)
+  → (∀ {Γ} {φ} → Γ ⊢ φ → (ψ : PropFormula) →  Γ ⊢ (↑f fun) φ ψ)
 ↑t rule = λ z ψ → rule z
 
 id : PropFormula → PropFormula

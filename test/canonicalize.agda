@@ -4,11 +4,10 @@
 
 open import Data.PropFormula 9 public
 
-open import ATP.Metis.Rules.Canonicalize 9
-open import ATP.Metis.Rules.Reordering 9
-open import ATP.Metis.Rules.Resolve 9
+open import ATP.Metis.Rules.Canonicalize 9 public
+open import ATP.Metis.Rules.Reordering 9 public
+open import ATP.Metis.Rules.Resolve 9 public
 
-open import Data.PropFormula.SyntaxExperiment 9
 open import Relation.Binary.PropositionalEquality
 
 -- Note: When the symbol `?` appears, it means
@@ -189,9 +188,10 @@ ansNo9 = (((¬ q) ∨ r) ∧ (p ∨ q))
 
 outCaseNo9 : PropFormula
 outCaseNo9 = canonicalize caseNo9 ansNo9
+-- ¬ Var (suc zero) ∨ Var (suc (suc zero)) ∧ (Var (suc zero) ∨ Var zero)
 
 testNo9 : ⌊ eq outCaseNo9 ansNo9 ⌋ ≡ true
-testNo9 = {!!} -- refl
+testNo9 = {!refl!} -- refl
 
 ---------------------------------------------------------------------
 
