@@ -3,8 +3,11 @@
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 9 public
+  hiding ( nnf; thm-nnf; cnf; thm-cnf)
 
 open import ATP.Metis.Rules.Canonicalize 9 public
+open import ATP.Metis.Rules.Normalization 9 public
+open import ATP.Metis.Rules.Checking 9 public
 open import ATP.Metis.Rules.Reordering 9 public
 open import ATP.Metis.Rules.Resolve 9 public
 
@@ -147,11 +150,11 @@ ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
 
 outCaseNo7 : PropFormula
-outCaseNo7 = canonicalize-axiom caseNo7 ansNo7
+outCaseNo7 = canonicalize caseNo7 ansNo7 -- nform caseNo7 ansNo7
 -- (¬ Var zero ∨ Var (suc zero)) ∧ (¬ Var (suc zero) ∨ Var zero)
 
 testNo7 : ⌊ eq outCaseNo7 ansNo7 ⌋ ≡ true
-testNo7 = refl -- refl
+testNo7 = {!refl!}
 
 ---------------------------------------------------------------------
 
@@ -167,11 +170,11 @@ ansNo8 : PropFormula
 ansNo8 = ((¬ p) ∧ (q ∧ ((¬ p) ∨ q)))
 
 outCaseNo8 : PropFormula
-outCaseNo8 = canonicalize caseNo8 ansNo8
+outCaseNo8 = nform caseNo8 ansNo8
 -- (¬ Var zero ∨ Var (suc zero)) ∧ Var (suc zero)
 
 testNo8 : ⌊ eq outCaseNo8 ansNo8 ⌋ ≡ true
-testNo8 = {!!} -- refl
+testNo8 = refl -- refl
 
 ---------------------------------------------------------------------
 
@@ -187,11 +190,11 @@ ansNo9 : PropFormula
 ansNo9 = (((¬ q) ∨ r) ∧ (p ∨ q))
 
 outCaseNo9 : PropFormula
-outCaseNo9 = canonicalize caseNo9 ansNo9
+outCaseNo9 = nform caseNo9 ansNo9
 -- ¬ Var (suc zero) ∨ Var (suc (suc zero)) ∧ (Var (suc zero) ∨ Var zero)
 
 testNo9 : ⌊ eq outCaseNo9 ansNo9 ⌋ ≡ true
-testNo9 = {!refl!} -- refl
+testNo9 = refl
 
 ---------------------------------------------------------------------
 

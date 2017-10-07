@@ -10,6 +10,7 @@ module ATP.Metis.Rules.Normalization (n : ℕ) where
 ------------------------------------------------------------------------------
 
 open import ATP.Metis.Rules.Checking n
+open import ATP.Metis.Rules.Reordering n
 
 open import Data.Bool.Base
   using ( Bool; true; false; if_then_else_; not)
@@ -20,9 +21,10 @@ open import Data.List using ( List; [_]; [];  _++_; _∷_ ; concatMap; map )
 
 open import Data.PropFormula.Properties n using ( subst )
 open import Data.PropFormula.Syntax n
+open import Data.PropFormula.SyntaxExperiment n
 open import Data.PropFormula.Views  n
 open import Data.PropFormula.NormalForms n
-  using (dnf-dist; thm-dnf-dist; cnf-dist; thm-cnf-dist)
+  using ( dnf-dist; thm-dnf-dist; cnf-dist; thm-cnf-dist )
 
 open import Relation.Nullary using (yes; no)
 open import Data.PropFormula.Theorems n
@@ -55,21 +57,21 @@ nnf-view (φ₁ ⇒ φ₂) = impl _ _
 nnf-view (¬ φ)     = nneg _
 nnf-view φ         = other _
 
-nnf : Polarity → PropFormula → PropFormula
-nnf ⊕ φ
+nnf₀ : Polarity → PropFormula → PropFormula
+nnf₀ ⊕ φ
   with nnf-view φ
-nnf ⊕ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = (nnf ⊕ φ₁) ∧ (nnf ⊕ φ₂)
-nnf ⊕ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = (nnf ⊕ φ₁) ∨ (nnf ⊕ φ₂)
-nnf ⊕ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂ = (nnf ⊝ φ₁) ∨ (nnf ⊕ φ₂)
-nnf ⊕ .(¬ φ)     | nneg φ     = nnf ⊝ φ
-nnf ⊕ φ          | other .φ   = φ
-nnf ⊝ φ
+nnf₀ ⊕ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = (nnf₀ ⊕ φ₁) ∧ (nnf₀ ⊕ φ₂)
+nnf₀ ⊕ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = (nnf₀ ⊕ φ₁) ∨ (nnf₀ ⊕ φ₂)
+nnf₀ ⊕ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂ = (nnf₀ ⊝ φ₁) ∨ (nnf₀ ⊕ φ₂)
+nnf₀ ⊕ .(¬ φ)     | nneg φ     = nnf₀ ⊝ φ
+nnf₀ ⊕ φ          | other .φ   = φ
+nnf₀ ⊝ φ
   with nnf-view φ
-nnf ⊝ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = (nnf ⊝ φ₁) ∨ (nnf ⊝ φ₂)
-nnf ⊝ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = (nnf ⊝ φ₁) ∧ (nnf ⊝ φ₂)
-nnf ⊝ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂ = (nnf ⊝ φ₂) ∧ (nnf ⊕ φ₁)
-nnf ⊝ .(¬ φ)     | nneg φ     = nnf ⊕ φ
-nnf ⊝ φ          | other .φ   = φ
+nnf₀ ⊝ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = (nnf₀ ⊝ φ₁) ∨ (nnf₀ ⊝ φ₂)
+nnf₀ ⊝ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = (nnf₀ ⊝ φ₁) ∧ (nnf₀ ⊝ φ₂)
+nnf₀ ⊝ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂ = (nnf₀ ⊝ φ₂) ∧ (nnf₀ ⊕ φ₁)
+nnf₀ ⊝ .(¬ φ)     | nneg φ     = nnf₀ ⊕ φ
+nnf₀ ⊝ φ          | other .φ   = ¬ φ
 
 polarity : PropFormula → Polarity
 polarity φ
@@ -78,73 +80,50 @@ polarity .(¬ φ) | neg φ  = ⊝
 polarity φ      | pos .φ = ⊕
 
 postulate
-  thm-nnf
+  thm-nnf₀
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
-    → Γ ⊢ nnf (polarity φ) φ
+    → Γ ⊢ nnf₀ ⊕ φ
 
 postulate
-  thm-from-nnf-⊕
+  thm-from-nnf₀
     : ∀ {Γ} {φ}
-    → Γ ⊢ nnf ⊕ φ
-    → Γ ⊢ φ
-
-postulate
-  thm-from-nnf-⊝
-    : ∀ {Γ} {φ}
-    → Γ ⊢ nnf ⊝ φ
+    → Γ ⊢ nnf₀ ⊕ φ
     → Γ ⊢ ¬ φ
 
-nnf-φ : PropFormula → PropFormula
-nnf-φ φ = nnf (polarity φ) φ
+nnf : PropFormula → PropFormula
+nnf φ = nnf₀ ⊕ φ
 
-
-----------------------------------------------------------------------------
--- Testing for a normal form.
-
-is∨ : PropFormula → Bool
-is∨ φ
-  with d-view φ
-is∨ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = false
-is∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = is∨ φ₁ and is∨ φ₂
-is∨ φ          | other .φ   = true
-
-is∧∨ : PropFormula → Bool
-is∧∨ φ
-  with d-view φ
-is∧∨ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = is∧∨ φ₁ and is∧∨ φ₂
-is∧∨ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = is∨ φ₁ and is∨ φ₂
-is∧∨ φ          | other .φ   = true
-
-is∧ : PropFormula → Bool
-is∧ φ
-  with d-view φ
-is∧ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = is∧ φ₁ and is∧ φ₂
-is∧ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = false
-is∧ φ          | other .φ   = true
-
-is∨∧ : PropFormula → Bool
-is∨∧ φ
-  with d-view φ
-is∨∧ .(φ₁ ∧ φ₂) | conj φ₁ φ₂ = is∧ φ₁ and is∧ φ₂
-is∨∧ .(φ₁ ∨ φ₂) | disj φ₁ φ₂ = is∨∧ φ₁ and is∨∧ φ₂
-is∨∧ φ          | other .φ   = true
-
-
-isNNF : PropFormula → Bool
-isNNF φ
-  with push-neg-view φ
-isNNF φ          | yes .φ     = false
-isNNF .(φ₁ ∧ φ₂) | no-∧ φ₁ φ₂ = isNNF φ₁ and isNNF φ₂
-isNNF .(φ₁ ∨ φ₂) | no-∨ φ₁ φ₂ = isNNF φ₁ and isNNF φ₂
-isNNF φ          | no .φ      = true
-
-isCNF : PropFormula → Bool
-isCNF φ = isNNF φ and is∧∨ φ
-
-isDNF : PropFormula → Bool
-isDNF φ = isNNF φ and is∨∧ φ
+postulate
+  thm-from-nnf
+    : ∀ {Γ} {φ}
+    → Γ ⊢ nnf φ
+    → Γ ⊢ φ
 
 ------------------------------------------------------------------------------
 
+const : PropFormula → (PropFormula → PropFormula)
+const φ = λ x → φ
+
+nform : PropFormula → PropFormula → PropFormula
+nform φ =
+  (
+   (dnf-nnf) ●
+   (cnf-nnf) ●
+   (↑f (const mem-nnf))
+  ) φ
+  where
+    mem-nnf : PropFormula
+    mem-nnf = nnf φ
+
+    cnf-nnf : PropFormula → PropFormula → PropFormula
+    cnf-nnf φ ψ = reorder-∧∨ (right-assoc-∧ (cnf-dist (mem-nnf))) ψ
+
+    dnf-nnf : PropFormula → PropFormula → PropFormula
+    dnf-nnf φ ψ = reorder-∨ (dnf-dist mem-nnf) ψ
+
+------------------------------------------------------------------------------
+
+-- cnf : PropFormula → PropFormula
+-- cnf φ ψ = reorder-∧∨ {!!} {!!}
 
