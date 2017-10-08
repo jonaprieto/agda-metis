@@ -102,6 +102,12 @@ nnf : PropFormula → PropFormula
 nnf φ = nnf₀ ⊕ φ
 
 postulate
+  thm-nnf
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ nnf φ
+
+postulate
   thm-from-nnf
     : ∀ {Γ} {φ}
     → Γ ⊢ nnf φ
@@ -176,5 +182,11 @@ nform φ =
   ● (↑f id)
   ) φ
 
+postulate
+  thm-nform
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → (ψ : PropFormula)
+    → Γ ⊢ nform φ ψ
 
 ------------------------------------------------------------------------------

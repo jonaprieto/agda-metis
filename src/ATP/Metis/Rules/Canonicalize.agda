@@ -9,6 +9,7 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
+open import ATP.Metis.Rules.Normalization n using ( nform; thm-nform )
 open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_; ↑f_; ↑t; id; thm-id)
 open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
 open import ATP.Metis.Rules.Reordering n
@@ -18,7 +19,7 @@ open import Data.Bool.Base
   using    ( true; false )
   renaming ( _∨_ to _or_ )
 
-open import Data.PropFormula.Dec n        using ( ⌊_⌋ ; yes ; no )
+open import Data.PropFormula.Dec n using ( ⌊_⌋ ; yes ; no )
 open import Data.PropFormula.NormalForms n
 open import Data.PropFormula.Properties n using ( eq ; subst )
 open import Data.PropFormula.Syntax n
@@ -406,7 +407,7 @@ thm-s₂ Γ⊢φ _ = thm-redun Γ⊢φ
 
 s₃ : PropFormula → PropFormula → PropFormula
 s₃ φ ψ = rmPEM-∧∨ φ
-  
+
 thm-s₃
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
@@ -459,12 +460,12 @@ canonicalize =
   s₃ ●
   s₂ ●
   s₁ ●
-  (↑f id)
+  nform
 
 
 thm-canonicalize
   : ∀ {Γ} {φ}
-  → (ψ : PropFormula) 
+  → (ψ : PropFormula)
   → Γ ⊢ φ
   → Γ ⊢ canonicalize φ ψ
 
@@ -475,8 +476,9 @@ thm-canonicalize {Γ} {φ} ψ Γ⊢φ =
   thm-s₃ ●⊢
   thm-s₂ ●⊢
   thm-s₁ ●⊢
-  (↑t thm-id)) Γ⊢φ ψ
-  
+  thm-nform
+  ) Γ⊢φ ψ
+
 canonicalize-axiom : PropFormula → PropFormula → PropFormula
 canonicalize-axiom = (↑f dnf) ● (↑f nnf) ● (↑f id)
 
@@ -486,4 +488,3 @@ postulate
     → (ψ : PropFormula)
     → Γ ⊢ φ
     → Γ ⊢ canonicalize-axiom φ ψ
-
