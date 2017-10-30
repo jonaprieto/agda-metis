@@ -95,7 +95,7 @@ resolve φ₁ φ₂ l goal =
   rsol ((reorder-∨ φ₁ (l ∨ goal)) ∧ (reorder-∨ φ₂ (¬ l ∨ goal)))
 
 -- Theorem.
-thm-resolve
+resolve-thm
   : ∀ {Γ} {φ₁ φ₂ : Premise}
   → (ψ : Conclusion)
   → (ℓ : Lit)
@@ -104,7 +104,7 @@ thm-resolve
   → Γ ⊢ resolve φ₁ φ₂ ℓ ψ
 
 -- Proof.
-thm-resolve ψ ℓ Γ⊢φ₁ Γ⊢φ₂ =
+resolve-thm ψ ℓ Γ⊢φ₁ Γ⊢φ₂ =
   rsol-lem
     (∧-intro
       (reorder-∨-lem Γ⊢φ₁ (ℓ ∨ ψ))
