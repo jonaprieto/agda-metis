@@ -3,17 +3,22 @@
 -- Reordering module.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using ( ℕ; suc; zero; _+_ )
+open import Data.Nat
+  using ( suc; zero; _+_ )
+  renaming ( ℕ to Nat; _⊔_ to max)
 
-module ATP.Metis.Rules.Reordering ( n : ℕ ) where
+module ATP.Metis.Rules.Reordering ( n : Nat ) where
 
 ------------------------------------------------------------------------------
+
+open import ATP.Metis.Synonyms n
 
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
 open import Data.PropFormula.Properties n           using ( eq; subst )
 open import Data.PropFormula.Views n
-  using ( DisjView; disj-view; disj; other; conj-view; conj)
+  using    ( DisjView; disj-view; other; conj-view; conj)
+  renaming ( disj to disjshape )
 
 open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
 open import Data.PropFormula.Theorems.Disjunction n
@@ -24,180 +29,200 @@ open import Function                         using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
 open import ATP.Metis.Rules.Conjunct n
-  using ( conjunct; thm-conjunct )
+  using ( conjunct; conjunct-thm )
 
 open import Data.List.Base  using (_∷_; []; [_]; List; _∷ʳ_; _++_)
 
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
--- Reordering of a disjunction.
+-- Reordering.
 ------------------------------------------------------------------------------
 
-build-∨ : PropFormula → PropFormula → PropFormula
+-- Right associative functions.
+
+data assoc-∨-Cases : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → assoc-∨-Cases ((φ₁ ∨ φ₂) ∨ φ₃)
+  case₂ : (φ₁ φ₂ : PropFormula)    → assoc-∨-Cases (φ₁ ∨ φ₂)
+  other : (φ : PropFormula)        → assoc-∨-Cases φ
+
+assoc-∨-cases : (φ : PropFormula) → assoc-∨-Cases φ
+assoc-∨-cases ((φ₁ ∨ φ₂) ∨ φ₃) = case₁ _ _ _
+assoc-∨-cases (φ ∨ ψ)          = case₂ _ _
+assoc-∨-cases φ                = other _
+
+-- Def.
+assoc-∨₁ : PropFormula → Nat → PropFormula
+assoc-∨₁ φ (suc n)
+  with assoc-∨-cases φ
+... | case₁ φ₁ φ₂ φ₃ = assoc-∨₁ (φ₁ ∨ (φ₂ ∨ φ₃)) n
+... | case₂ φ₁ φ₂    = φ₁ ∨ assoc-∨₁ φ₂ n
+... | other .φ       = φ
+assoc-∨₁ φ _  = φ
+
+-- Complexity measure.
+assoc-∨-cm : PropFormula → Nat
+assoc-∨-cm φ
+  with assoc-∨-cases φ
+... | case₁ φ₁ φ₂ φ₃ = assoc-∨-cm φ₂ + assoc-∨-cm φ₃ + 2
+... | case₂ φ₁ φ₂    = assoc-∨-cm φ₂ + 2
+... | other .φ       = 1
+
+assoc-∨₁-lem
+  : ∀ {Γ} {φ}
+  → (n : Nat)
+  → Γ ⊢ φ
+  → Γ ⊢ assoc-∨₁ φ n
+
+assoc-∨₁-lem zero Γ⊢φ = Γ⊢φ
+assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
+  with assoc-∨-cases φ
+... | case₁ φ₁ φ₂ φ₃ =
+  assoc-∨₁-lem n(∨-assoc₂ Γ⊢φ)
+... | case₂ φ₁ φ₂    =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (∨-intro₁ (assoc-∨₁ φ₂ n)
+          (assume {Γ = Γ} φ₁))
+        (∨-intro₂ φ₁ (assoc-∨₁-lem n
+          (assume {Γ = Γ} φ₂)))))
+    Γ⊢φ
+... | other _ = Γ⊢φ
+
+-- Def.
+assoc-∨ : PropFormula → PropFormula
+assoc-∨ φ = assoc-∨₁ φ (assoc-∨-cm φ)
+
+-- Lemma.
+assoc-∨-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ assoc-∨ φ
+
+-- Proof.
+assoc-∨-lem {_}{φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ -- ▩
+
+-- Def.
+build-∨ : Premise → Conclusion → PropFormula
 build-∨ φ ψ
   with ⌊ eq φ ψ ⌋
 ... | true  = ψ
 ... | false
     with disj-view ψ
 ...    | other _    = φ
-...    | disj ψ₁ ψ₂
-       with ⌊ eq (build-∨ φ ψ₁) ψ₁ ⌋
+...    | disjshape ψ₁ ψ₂
+       with ⌊ eq ψ₁ (build-∨ φ ψ₁)⌋
 ...       | true = ψ₁ ∨ ψ₂
 ...       | false
-          with ⌊ eq (build-∨ φ ψ₂) ψ₂ ⌋
+          with ⌊ eq  ψ₂ (build-∨ φ ψ₂) ⌋
 ...          | true  = ψ₁ ∨ ψ₂
 ...          | false = φ
 
-
-lem-build-∨
+-- Lemma.
+build-∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ build-∨ φ ψ
 
-lem-build-∨ {Γ}{φ} Γ⊢φ ψ
+-- Proof.
+build-∨-lem {_} {φ} Γ⊢φ ψ
   with eq φ ψ
-... | yes φ≡ψ  = subst φ≡ψ Γ⊢φ
+... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no  _
     with disj-view ψ
 ...    | other _    = Γ⊢φ
-...    | disj ψ₁ ψ₂
-       with eq (build-∨ φ ψ₁) ψ₁
-...       | yes p₁ = ∨-intro₁ ψ₂ (subst p₁ (lem-build-∨ Γ⊢φ ψ₁))
+...    | disjshape ψ₁ ψ₂
+       with eq ψ₁ (build-∨ φ ψ₁)
+...       | yes p₁ = ∨-intro₁ ψ₂ (subst (sym p₁) (build-∨-lem Γ⊢φ ψ₁))
 ...       | no  _
-          with eq (build-∨ φ ψ₂) ψ₂
-...          | yes p₂  = ∨-intro₂ ψ₁ (subst p₂ (lem-build-∨ Γ⊢φ ψ₂))
-...          | no  _   = Γ⊢φ
+          with eq ψ₂ (build-∨ φ ψ₂)
+...          | yes p₂ = ∨-intro₂ ψ₁ (subst (sym p₂) (build-∨-lem Γ⊢φ ψ₂))
+...          | no  _  = Γ⊢φ -- ▩
 
+-- Def.
 factor : PropFormula → PropFormula
 factor φ
   with disj-view φ
 ... | other _ = φ
-... | disj φ₁ φ₂
+... | disjshape φ₁ φ₂
     with eq φ₁ (factor φ₂)
 ...    | yes _ = φ₁
 ...    | no _  = φ
 
-lem-factor
+-- Lemma.
+factor-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
     → Γ ⊢ factor φ
-lem-factor {Γ}{φ} Γ⊢φ
-  with disj-view φ
-... | other _ = Γ⊢φ
-... | disj φ₁ φ₂
-  with eq φ₁ (factor φ₂)
-...    | yes φ₁≡factorφ₂ =
-         ⇒-elim
-           (⇒-intro
-             (∨-elim {Γ = Γ}
-               (assume {Γ = Γ} φ₁)
-               (subst
-                 (sym φ₁≡factorφ₂)
-                 (lem-factor $ assume {Γ = Γ} φ₂))))
-           Γ⊢φ
-...    | no _            = Γ⊢φ
 
-sbuild-∨ : PropFormula → PropFormula → PropFormula
+-- Proof.
+factor-lem {Γ}{φ} Γ⊢φ
+  with disj-view φ
+...  | other _ = Γ⊢φ
+...  | disjshape φ₁ φ₂
+     with eq φ₁ (factor φ₂)
+...     | yes φ₁≡factorφ₂ =
+           ⇒-elim
+             (⇒-intro
+               (∨-elim {Γ = Γ}
+                 (assume {Γ = Γ} φ₁)
+                 (subst
+                   (sym φ₁≡factorφ₂)
+                   (factor-lem $ assume {Γ = Γ} φ₂))))
+             Γ⊢φ
+...     | no _ = Γ⊢φ  -- ▩
+
+-- Def.
+sbuild-∨ : Premise → Conclusion → PropFormula
 sbuild-∨ φ ψ
   with disj-view φ
+... | disjshape φ₁ φ₂ = factor (build-∨ φ₁ ψ ∨ sbuild-∨ φ₂ ψ)
 ... | other _    = build-∨ φ ψ
-... | disj φ₁ φ₂ = factor (build-∨ φ₁ ψ ∨ sbuild-∨ φ₂ ψ)
 
-lem-sbuild-∨
+-- Lemma.
+sbuild-∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ sbuild-∨ φ ψ
 
-lem-sbuild-∨ {Γ} {φ} Γ⊢φ ψ
+-- Proof.
+sbuild-∨-lem {Γ} {φ} Γ⊢φ ψ
   with disj-view φ
-... | other _    = lem-build-∨ Γ⊢φ ψ
-... | disj φ₁ φ₂ =
-        lem-factor
+... | other _    = build-∨-lem Γ⊢φ ψ
+... | disjshape φ₁ φ₂ =
+        factor-lem
          (⇒-elim
             (⇒-intro
               (∨-elim {Γ = Γ}
                 (∨-intro₁ (sbuild-∨ φ₂ ψ)
-                  (lem-build-∨ (assume {Γ = Γ} φ₁) ψ))
+                  (build-∨-lem (assume {Γ = Γ} φ₁) ψ))
                 (∨-intro₂ (build-∨ φ₁ ψ)
-                  (lem-sbuild-∨ (assume {Γ = Γ} φ₂) ψ))))
-            Γ⊢φ)
+                  (sbuild-∨-lem (assume {Γ = Γ} φ₂) ψ))))
+            Γ⊢φ)  -- ▩
 
-data TDisjView : PropFormula → Set where
-  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → TDisjView ((φ₁ ∨ φ₂) ∨ φ₃)
-  case₂ : (φ₁ φ₂ : PropFormula)    → TDisjView (φ₁ ∨ φ₂)
-  other : (φ : PropFormula)        → TDisjView φ
+-- Def.
+reorder-∨ : Premise → Conclusion → PropFormula
+reorder-∨ φ ψ = sbuild-∨ (assoc-∨ φ) ψ
 
-tdisj-view : (φ : PropFormula) → TDisjView φ
-tdisj-view ((φ₁ ∨ φ₂) ∨ φ₃) = case₁ _ _ _
-tdisj-view (φ ∨ ψ)          = case₂ _ _
-tdisj-view φ                = other _
-
-rdisjₙ : ℕ → PropFormula → PropFormula
-rdisjₙ zero φ  = φ
-rdisjₙ (suc n) φ
-  with tdisj-view φ
-rdisjₙ (suc n₁) .((φ₁ ∨ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ =
-  rdisjₙ n₁ (φ₁ ∨ (φ₂ ∨ φ₃))
-rdisjₙ (suc n₁) .(φ ∨ ψ)          | case₂ φ ψ      =
-  φ ∨ rdisjₙ n₁ ψ
-rdisjₙ (suc n₁) φ                 | other .φ       = φ
-
-lem-rdisjₙ
-  : ∀ {Γ} {φ}
-  → (n : ℕ)
-  → Γ ⊢ φ
-  → Γ ⊢ rdisjₙ n φ
-
-lem-rdisjₙ {Γ} {φ} zero Γ⊢φ = Γ⊢φ
-lem-rdisjₙ {Γ} {φ} (suc n) Γ⊢φ
-  with tdisj-view φ
-lem-rdisjₙ {Γ} {_} (suc n₁) Γ⊢φ | case₁ φ₁ φ₂ φ₃ =
-  lem-rdisjₙ n₁ (∨-assoc₂ Γ⊢φ)
-lem-rdisjₙ {Γ} {_} (suc n₁) Γ⊢φ | case₂ φ ψ      =
-  ⇒-elim
-    (⇒-intro
-      (∨-elim {Γ = Γ}
-        (∨-intro₁ (rdisjₙ n₁ ψ)
-          (assume {Γ = Γ} φ))
-        (∨-intro₂ φ (lem-rdisjₙ n₁
-          (assume {Γ = Γ} ψ)))))
-    Γ⊢φ
-lem-rdisjₙ {Γ} {_} (suc n₁) Γ⊢φ | other φ = Γ⊢φ
-
-rdisj-complexity : PropFormula → ℕ
-rdisj-complexity φ
-  with tdisj-view φ
-... | case₁ φ₁ φ₂ φ₃ = 2 + rdisj-complexity φ₂ + rdisj-complexity φ₃
-... | case₂ φ₁ φ₂    = 2 + rdisj-complexity φ₂
-... | other .φ       = 1
-
-rdisj : PropFormula → PropFormula
-rdisj φ = rdisjₙ (rdisj-complexity φ) φ
-
-lem-rdisj
+-- Lemma.
+reorder-∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → Γ ⊢ rdisj φ
-lem-rdisj {Γ}{φ} Γ⊢φ = lem-rdisjₙ (rdisj-complexity φ) Γ⊢φ
-
-reorder-∨ : PropFormula → PropFormula → PropFormula
-reorder-∨ φ ψ = sbuild-∨ (rdisj φ) ψ
-
-thm-reorder-∨
-  : ∀ {Γ} {φ}
-  → Γ ⊢ φ
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ reorder-∨ φ ψ
-thm-reorder-∨ {Γ} {φ} Γ⊢φ ψ = lem-sbuild-∨ (lem-rdisj Γ⊢φ) ψ
+
+-- Proof.
+reorder-∨-lem Γ⊢φ ψ = sbuild-∨-lem (assoc-∨-lem Γ⊢φ) ψ -- ▩
 
 ------------------------------------------------------------------------------
--- Reordering a conjunction.
+-- Reordering conjunctions.
 ------------------------------------------------------------------------------
 
-reorder-∧ : PropFormula → PropFormula → PropFormula
+-- Def.
+reorder-∧ : Premise → Conclusion → PropFormula
 reorder-∧ φ ψ
   with ⌊ eq φ ψ ⌋
 ...  | true = φ
@@ -205,135 +230,153 @@ reorder-∧ φ ψ
      with conj-view ψ
 ...     | other _ = conjunct φ ψ
 ...     | conj ψ₁ ψ₂
-        with ⌊ eq (reorder-∧ φ ψ₁) ψ₁ ⌋
+        with ⌊ eq ψ₁ (reorder-∧ φ ψ₁)⌋
 ...        | false = φ
 ...        | true
-           with ⌊ eq (reorder-∧ φ ψ₂) ψ₂ ⌋
+           with ⌊ eq ψ₂ (reorder-∧ φ ψ₂) ⌋
 ...           | true  = ψ₁ ∧ ψ₂
 ...           | false = φ
 
-lem-reorder-∧
+-- Lemma.
+reorder-∧-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ reorder-∧ φ ψ
 
-lem-reorder-∧ {Γ} {φ} Γ⊢φ ψ
+-- Proof.
+reorder-∧-lem {Γ} {φ} Γ⊢φ ψ
   with ⌊ eq φ ψ ⌋
-... | true = Γ⊢φ
-... | false
-    with conj-view ψ
-...    | other _  = thm-conjunct ψ Γ⊢φ
-...    | conj ψ₁ ψ₂
-       with eq (reorder-∧ φ ψ₁) ψ₁
-...       | no  _ = Γ⊢φ
-...       | yes p₁
-          with eq (reorder-∧ φ ψ₂) ψ₂
-...          | no  _  = Γ⊢φ
-...          | yes p₂ =
-                   ∧-intro
-                   (subst p₁ (lem-reorder-∧ Γ⊢φ ψ₁))
-                   (subst p₂ (lem-reorder-∧ Γ⊢φ ψ₂))
-
+...  | true = Γ⊢φ
+...  | false
+     with conj-view ψ
+...     | other _  = conjunct-thm ψ Γ⊢φ
+...     | conj ψ₁ ψ₂
+        with eq ψ₁ (reorder-∧ φ ψ₁)
+...        | no  _ = Γ⊢φ
+...        | yes p₁
+           with eq ψ₂ (reorder-∧ φ ψ₂)
+...           | no  _  = Γ⊢φ
+...           | yes p₂ =
+                  ∧-intro
+                    (subst (sym p₁) (reorder-∧-lem Γ⊢φ ψ₁))
+                    (subst (sym p₂) (reorder-∧-lem Γ⊢φ ψ₂))  -- ▩
 
 -------------------------------------------------------------------------------
 -- Reordering a conjunction of disjunctions.
 -- Conversion from a CNF formula φ to another CNF formula ψ.
 ------------------------------------------------------------------------------
 
-conjunct-∨ : PropFormula → PropFormula → PropFormula
-conjunct-∨ φ ψ
-  with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
+-- Def.
+disj : Premise → Conclusion → PropFormula
+disj φ ψ
+  with ⌊ eq φ ψ ⌋
+disj φ ψ | true  = ψ
+disj φ ψ | false
+  with ⌊ eq ψ (reorder-∨ φ ψ) ⌋
 ... | true  = ψ
 ... | false
-    with conj-view ψ
-conjunct-∨ φ .(ψ₁ ∧ ψ₂) | false | conj ψ₁ ψ₂
-  with  ⌊ eq (conjunct-∨ φ ψ₁) ψ₁ ⌋
+  with conj-view ψ
+disj φ .(ψ₁ ∧ ψ₂) | false | false | conj ψ₁ ψ₂
+  with  ⌊ eq ψ₁ (disj φ ψ₁) ⌋
 ... | false = φ
 ... | true
-  with  ⌊ eq (reorder-∨ φ ψ₂) ψ₂ ⌋
-... | false = φ
-... | true  = ψ₁ ∧ ψ₂
-conjunct-∨ φ ψ          | false | other .ψ
+  with ⌊ eq ψ₂ (reorder-∨ φ ψ₂) ⌋
+...  | false = φ
+...  | true  = ψ₁ ∧ ψ₂
+disj φ ψ | false | false | other .ψ
   with conj-view φ
-conjunct-∨ φ ψ          | false | other .ψ | (other .φ)  = φ
-conjunct-∨ .(φ₁ ∧ φ₂) ψ | false | other .ψ | (conj φ₁ φ₂)
-  with ⌊ eq (conjunct-∨ φ₁ ψ) ψ ⌋
-... | true = ψ
-... | false
-    with  ⌊ eq (conjunct-∨ φ₂ ψ) ψ ⌋
-... | true = ψ
-... | false = φ₁ ∧ φ₂
+disj φ ψ          | false | false | other .ψ | (other .φ)  = φ
+disj .(φ₁ ∧ φ₂) ψ | false | false | other .ψ | (conj φ₁ φ₂)
+  with ⌊ eq ψ (disj φ₁ ψ) ⌋
+...  | true = ψ
+...  | false
+  with ⌊ eq ψ (disj φ₂ ψ) ⌋
+...  | true  = ψ
+...  | false = φ₁ ∧ φ₂
 
-lem-conjunct-∨
+-- Lemma.
+disj-lem
   : ∀ {Γ} {φ}
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ φ
-  → Γ ⊢ conjunct-∨ φ ψ
+  → Γ ⊢ disj φ ψ
 
-lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ
-  with eq (reorder-∨ φ ψ) ψ
-... | yes p₁ = subst p₁ (thm-reorder-∨ Γ⊢φ ψ)
+-- Proof.
+disj-lem {Γ}{φ} ψ Γ⊢φ
+  with eq φ ψ
+... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
+... | no  _
+  with eq ψ (reorder-∨ φ ψ)
+... | yes p₁ = subst (sym p₁) (reorder-∨-lem Γ⊢φ ψ)
 ... | no _
     with conj-view ψ
-lem-conjunct-∨ {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | conj ψ₁ ψ₂
-  with  eq (conjunct-∨ φ ψ₁) ψ₁
+disj-lem {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | no _ | conj ψ₁ ψ₂
+  with  eq ψ₁ (disj φ ψ₁)
 ... | no _ = Γ⊢φ
 ... | yes p₂
-  with  eq (reorder-∨ φ ψ₂) ψ₂
+  with  eq ψ₂ (reorder-∨ φ ψ₂)
 ... | no _   = Γ⊢φ
 ... | yes p₃ =
-          ∧-intro
-            (subst p₂ (lem-conjunct-∨ ψ₁ Γ⊢φ))
-            (subst p₃ (thm-reorder-∨ Γ⊢φ ψ₂))
-lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ
+        ∧-intro
+          (subst (sym p₂) (disj-lem ψ₁ Γ⊢φ))
+          (subst (sym p₃) (reorder-∨-lem Γ⊢φ ψ₂))
+disj-lem {Γ}{φ} ψ Γ⊢φ          | no _ | no _ | other .ψ
   with conj-view φ
-lem-conjunct-∨ {Γ}{φ} ψ Γ⊢φ          | no _ | other .ψ | (other .φ)
+disj-lem {Γ}{φ} ψ Γ⊢φ          | no _ | no _ | other .ψ | (other .φ)
   = Γ⊢φ
-lem-conjunct-∨ {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | other .ψ | (conj φ₁ φ₂)
-  with eq (conjunct-∨ φ₁ ψ) ψ
-... | yes p₄ = subst p₄ (lem-conjunct-∨ ψ (∧-proj₁ Γ⊢φ))
+disj-lem {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | no _ | other .ψ | (conj φ₁ φ₂)
+  with eq ψ (disj φ₁ ψ)
+... | yes p₄ = subst (sym p₄) (disj-lem ψ (∧-proj₁ Γ⊢φ))
 ... | no _
-  with  eq (conjunct-∨ φ₂ ψ) ψ
-... | yes p₅ = subst p₅ (lem-conjunct-∨ ψ (∧-proj₂ Γ⊢φ))
-... | no  _ = Γ⊢φ
+  with eq ψ (disj φ₂ ψ)
+... | yes p₅ = subst (sym p₅) (disj-lem ψ (∧-proj₂ Γ⊢φ))
+... | no  _ = Γ⊢φ -- ■
 
 
-reorder-∧∨ : PropFormula → PropFormula → PropFormula
+-- Def.
+reorder-∧∨ : Premise → Conclusion → PropFormula
 reorder-∧∨ φ ψ
-  with ⌊ eq (reorder-∨ φ ψ) ψ ⌋
+  with ⌊ eq φ ψ ⌋
+... | true  = ψ
+... | false
+  with ⌊ eq ψ (reorder-∨ φ ψ) ⌋
 ...  | true  = ψ
 ...  | false
      with conj-view ψ
-...     | other _  = conjunct-∨ φ ψ
+...     | other _  = disj φ ψ
 ...     | conj ψ₁ ψ₂
-        with ⌊ eq (reorder-∧∨ φ ψ₁) ψ₁ ⌋
+        with ⌊ eq ψ₁ (reorder-∧∨ φ ψ₁) ⌋
 ...        | false = φ
 ...        | true
-           with ⌊ eq (reorder-∧∨ φ ψ₂) ψ₂ ⌋
+           with ⌊ eq ψ₂ (reorder-∧∨ φ ψ₂) ⌋
 ...           | true  = ψ₁ ∧ ψ₂
 ...           | false = φ
 
-
-thm-reorder-∧∨
+-- Lemma.
+reorder-∧∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → (ψ : PropFormula)
   → Γ ⊢ reorder-∧∨ φ ψ
 
-thm-reorder-∧∨ {Γ} {φ} Γ⊢φ ψ
-  with eq (reorder-∨ φ ψ) ψ
-...  | yes p₀ = subst p₀ (thm-reorder-∨ Γ⊢φ ψ)
+-- Proof.
+reorder-∧∨-lem {Γ} {φ} Γ⊢φ ψ
+  with eq φ ψ
+...  | yes φ≡ψ = subst φ≡ψ Γ⊢φ
+...  | no  _
+  with eq ψ (reorder-∨ φ ψ)
+...  | yes p₀ = subst (sym p₀) (reorder-∨-lem Γ⊢φ ψ)
 ...  | no  _
      with conj-view ψ
-...     | other _  = lem-conjunct-∨ ψ Γ⊢φ
+...     | other _  = disj-lem ψ Γ⊢φ
 ...     | conj ψ₁ ψ₂
-        with eq (reorder-∧∨ φ ψ₁) ψ₁
+        with eq ψ₁ (reorder-∧∨ φ ψ₁)
 ...        | no  _  = Γ⊢φ
 ...        | yes p₁
-           with eq (reorder-∧∨ φ ψ₂) ψ₂
+           with eq ψ₂ (reorder-∧∨ φ ψ₂)
 ...           | yes p₂ =
                     ∧-intro
-                      (subst p₁ (thm-reorder-∧∨ Γ⊢φ ψ₁))
-                      (subst p₂ (thm-reorder-∧∨ Γ⊢φ ψ₂))
-...           | no  _  = Γ⊢φ
+                      (subst (sym p₁) (reorder-∧∨-lem Γ⊢φ ψ₁))
+                      (subst (sym p₂) (reorder-∧∨-lem Γ⊢φ ψ₂))
+...           | no  _  = Γ⊢φ  -- ■
