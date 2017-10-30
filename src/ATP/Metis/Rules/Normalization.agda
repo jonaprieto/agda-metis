@@ -9,6 +9,7 @@ module ATP.Metis.Rules.Normalization (n : ℕ) where
 
 ------------------------------------------------------------------------------
 
+open import ATP.Metis.Rules.Conjunct n
 open import ATP.Metis.Rules.Checking n
 open import ATP.Metis.Rules.Reordering n
   using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨)
@@ -65,10 +66,10 @@ simplify-∨ .(¬ ψ ∨ φ₂) | sdisj₅ .(¬ ψ) φ₂ | neg ψ
     with ⌊ (¬ ψ) ∈∨ φ₂ ⌋
 ... | true  = simplify-∨ φ₂
 ... | false
-    with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
+    with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
 ...     | true  = ⊤
 ...     | false
-        with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
+        with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
 ...     | true  = ¬ ψ
 ...     | false = ¬ ψ ∨ simplify-∨ φ₂
 simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
@@ -76,12 +77,12 @@ simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
 ... | true  = ⊤
 ... | false
     with ⌊ φ₁ ∈∨ φ₂ ⌋
-... | true  = ⊤
+... | true  = simplify-∨ φ₂
 ... | false
-    with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
-...     | true  = ⊥
+    with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
+...     | true  = ⊤
 ...     | false
-        with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
+        with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
 ...     | true  = φ₁
 ...     | false = φ₁ ∨ simplify-∨ φ₂
 
@@ -112,8 +113,8 @@ simplify-∧-cases (φ₁ ∧ φ₂) = sconj₅ _ _
 simplify-∧-cases  φ        = other _
 
 -- Def.
-_∈∧_ : (φ ψ : PropFormula) → Dec (ψ ≡ (disj φ ψ))
-φ ∈∧ ψ = eq ψ (disj φ ψ)
+_∈∧_ : (ψ φ : PropFormula) → Dec (ψ ≡ (disj φ ψ))
+ψ ∈∧ φ = eq ψ (disj φ ψ)
 
 -- Def.
 simplify-∧ : PropFormula → PropFormula
@@ -144,7 +145,7 @@ simplify-∧ .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂ | pos .φ₁
 ... | true  = ⊥
 ... | false
     with ⌊ φ₁ ∈∧ φ₂ ⌋
-... | true  = ⊥
+... | true  = simplify-∧ φ₂
 ... | false
     with ⌊ eq (simplify-∧ φ₂) ⊥ ⌋
 ...     | true  = ⊥
@@ -195,7 +196,7 @@ nnf₀ ⊕ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∨ (assoc-∨ (n
 nnf₀ ⊕ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊝ φ₁ ∨ nnf₀ ⊕ φ₂))
 nnf₀ ⊕ .(¬ φ)     | case₄ φ     = nnf₀ ⊝ φ
 nnf₀ ⊕ .(⊥)       | case₅ φ     = ⊥
-nnf₀ ⊕ .(⊤)       | case₆ φ     = ⊥
+nnf₀ ⊕ .(⊤)       | case₆ φ     = ⊤
 nnf₀ ⊕ φ          | other .φ    = φ
 nnf₀ ⊖ φ
   with nnf-cases φ
@@ -205,7 +206,7 @@ nnf₀ ⊖ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (n
 nnf₀ ⊖ .(¬ φ)     | case₄ φ     = nnf₀ ⊕ φ
 nnf₀ ⊖ .(⊥)       | case₅ φ     = ⊤
 nnf₀ ⊖ .(⊤)       | case₆ φ     = ⊥
-nnf₀ ⊖ φ          | other .φ    = φ
+nnf₀ ⊖ φ          | other .φ    = ¬ φ
 
 -- Lemma.
 postulate

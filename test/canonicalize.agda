@@ -3,7 +3,8 @@
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 9 public
-  hiding ( nnf; thm-nnf; cnf; dnf; thm-cnf; thm-dnf; dist-∨)
+  hiding ( thm-nnf; dnf; thm-cnf; thm-dnf; dist-∨)
+  renaming ( nnf to justNNF; cnf to justCNF )
 
 open import ATP.Metis.Rules.Canonicalize 9 public
 open import ATP.Metis.Rules.Normalization 9 public
@@ -57,10 +58,11 @@ outCaseNo2 : PropFormula
 outCaseNo2 = canonicalize caseNo2 ansNo2
 
 testNo2 : ⌊ eq outCaseNo2 ansNo2 ⌋ ≡ true
-testNo2 = {!!} -- refl
+testNo2 = refl
 
 ---------------------------------------------------------------------
 
+{-
 ---------------------------------------------------------------------
 -- Test Problem : 3
 -- Description  : bicond-09.agda
@@ -80,6 +82,8 @@ testNo3 : ⌊ eq outCaseNo3 ansNo3 ⌋ ≡ true
 testNo3 = {!refl!} -- refl
 
 ---------------------------------------------------------------------
+-}
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 4
@@ -100,6 +104,7 @@ testNo4 = refl
 
 ---------------------------------------------------------------------
 
+{-
 ---------------------------------------------------------------------
 -- Test Problem : 5
 -- Description  : bicond-11.agda
@@ -118,6 +123,8 @@ testNo5 : ⌊ eq outCaseNo5 ansNo5 ⌋ ≡ true
 testNo5 = {!!} -- refl
 
 ---------------------------------------------------------------------
+-}
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 6
@@ -138,6 +145,7 @@ testNo6 = refl
 
 ---------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------
 -- Test Problem : 7
 -- Description  : disj-14.agda
@@ -149,14 +157,19 @@ caseNo7 = ((p ∨ q) ⇒ (p ∧ q))
 ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
 
+
+example : PropFormula
+example = justNNF caseNo7
+
 outCaseNo7 : PropFormula
 outCaseNo7 = canonicalize caseNo7 ansNo7 -- canonicalize caseNo7 ansNo7
 -- (¬ Var zero ∨ Var (suc zero)) ∧ (¬ Var (suc zero) ∨ Var zero)
 
 testNo7 : ⌊ eq outCaseNo7 ansNo7 ⌋ ≡ true
-testNo7 = {!!} -- refl
+testNo7 = refl
 
 ---------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 8
@@ -174,9 +187,10 @@ outCaseNo8 = canonicalize caseNo8 ansNo8
 -- (¬ Var zero ∨ Var (suc zero)) ∧ Var (suc zero)
 
 testNo8 : ⌊ eq outCaseNo8 ansNo8 ⌋ ≡ true
-testNo8 = {!!} -- refl -- refl
+testNo8 = refl
 
 ---------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 9
@@ -198,13 +212,14 @@ testNo9 = refl
 
 ---------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------
 -- Test Problem : 10
 -- Description  : disj-15.agda
 ---------------------------------------------------------------------
 
 caseNo10 : PropFormula
-caseNo10 = ¬ (((¬ q) ∨ r) ∧ (p ∨ q))
+caseNo10 = ¬ (((p ⇒ q) ∧ r) ⇒ r)
 
 ansNo10 : PropFormula
 ansNo10 = ⊥
@@ -213,10 +228,11 @@ outCaseNo10 : PropFormula
 outCaseNo10 = canonicalize caseNo10 ansNo10
 
 testNo10 : ⌊ eq outCaseNo10 ansNo10 ⌋ ≡ true
-testNo10 = {!!} -- refl
+testNo10 = refl
 
 ---------------------------------------------------------------------
 
+{-
 ---------------------------------------------------------------------
 -- Test Problem : 11
 -- Description  : bicond-01.agda
@@ -494,6 +510,9 @@ testNo21 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
+-}
+
+
 ---------------------------------------------------------------------
 -- Test Problem : 22
 -- Description  : bicond-12.agda
@@ -513,6 +532,7 @@ testNo22 = refl
 
 ---------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------
 -- Test Problem : 23
 -- Description  : bicond-13.agda
@@ -524,12 +544,6 @@ caseNo23 = ¬ (((p ∨ (q ∧ r)) ∧ (¬ p)) ⇒ q)
 ansNo23 : PropFormula
 ansNo23 = ((¬ p) ∧ ((¬ q) ∧ (p ∨ (q ∧ r))))
 
--- cnfCase23    = cnf-dist (nnf caseNo23)
--- cnfOutCase23 = cnf-dist (nnf ansNo23)
-
--- check23 : ⌊ eq (reorder-∧∨ cnfCase23 cnfOutCase23) cnfOutCase23 ⌋ ≡ true
--- check23 = refl
-
 outCaseNo23 : PropFormula
 outCaseNo23 = canonicalize caseNo23 ansNo23
 
@@ -537,6 +551,7 @@ testNo23 : ⌊ eq outCaseNo23 ansNo23 ⌋ ≡ true
 testNo23 = refl
 
 ---------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 24
@@ -552,12 +567,6 @@ caseNo24 = ¬ (((p ∨ (q ∧ r)) ∧ ((p ∨ q) ∧ (¬ p))) ⇒ r)
 ansNo24 : PropFormula
 ansNo24 = ((¬ p) ∧ ((¬ r) ∧ ((p ∨ q) ∧ (p ∨ (q ∧ r)))))
 
--- cnfCase24    = cnf caseNo24
--- cnfOutCase24 = cnf ansNo24
-
--- check24 : ⌊ eq (reorder-∧∨ cnfCase24 cnfOutCase24) cnfOutCase24 ⌋ ≡ true
--- check24 = refl
-
 outCaseNo24 : PropFormula
 outCaseNo24 = canonicalize caseNo24 ansNo24
 
@@ -565,6 +574,7 @@ testNo24 : ⌊ eq outCaseNo24 ansNo24 ⌋ ≡ true
 testNo24 = refl
 
 ---------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 25
@@ -604,6 +614,7 @@ testNo26 = refl
 
 ---------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------
 -- Test Problem : 27
 -- Description  : disj-11.agda
@@ -623,6 +634,7 @@ testNo27 = refl
 
 ---------------------------------------------------------------------
 
+{-
 ---------------------------------------------------------------------
 -- Test Problem : 28
 -- Description  : prop-09.agda
@@ -663,6 +675,7 @@ outCaseNo29 : PropFormula
 outCaseNo29 = canonicalize caseNo29 ansNo29
 
 testNo29 : ⌊ eq outCaseNo29 ansNo29 ⌋ ≡ true
-testNo29 = refl
+testNo29 = {!!} -- refl
 
 ---------------------------------------------------------------------
+-}
