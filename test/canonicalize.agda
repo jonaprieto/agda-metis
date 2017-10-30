@@ -614,6 +614,7 @@ testNo26 = refl
 
 ---------------------------------------------------------------------
 
+
 ---------------------------------------------------------------------
 -- Test Problem : 27
 -- Description  : disj-11.agda
@@ -633,7 +634,7 @@ testNo27 = refl
 
 ---------------------------------------------------------------------
 
-{-
+
 ---------------------------------------------------------------------
 -- Test Problem : 28
 -- Description  : prop-09.agda
@@ -645,12 +646,6 @@ caseNo28 = ¬ (((p ∨ q) ∧ (((¬ p) ∨ q) ∧ (p ∨ (¬ q)))) ⇒ q)
 ansNo28 : PropFormula
 ansNo28 = ((¬ q) ∧ (((¬ p) ∨ q) ∧ (((¬ q) ∨ p) ∧ (p ∨ q))))
 
--- cnfCase28    = cnf caseNo28
--- cnfOutCase28 = cnf ansNo28
-
--- check28 : ⌊ eq (reorder-∧∨ cnfCase28 cnfOutCase28) cnfOutCase28 ⌋ ≡ true
--- check28 = refl
-
 outCaseNo28 : PropFormula
 outCaseNo28 = canonicalize caseNo28 ansNo28
 
@@ -658,6 +653,7 @@ testNo28 : ⌊ eq outCaseNo28 ansNo28 ⌋ ≡ true
 testNo28 = refl
 
 ---------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------
 -- Test Problem : 29
@@ -677,4 +673,3 @@ testNo29 : ⌊ eq outCaseNo29 ansNo29 ⌋ ≡ true
 testNo29 = {!!} -- refl
 
 ---------------------------------------------------------------------
--}
