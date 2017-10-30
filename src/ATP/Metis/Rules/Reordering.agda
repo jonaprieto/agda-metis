@@ -5,7 +5,7 @@
 
 open import Data.Nat
   using ( suc; zero; _+_ )
-  renaming ( ℕ to Nat; _⊔_ to max)
+  renaming ( ℕ to Nat )
 
 module ATP.Metis.Rules.Reordering ( n : Nat ) where
 
@@ -20,23 +20,14 @@ open import Data.PropFormula.Views n
   using    ( DisjView; disj-view; other; conj-view; conj)
   renaming ( disj to disjshape )
 
-open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
-open import Data.PropFormula.Theorems.Disjunction n
-  using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₂; resolve₇)
+open import Data.PropFormula.Theorems.Disjunction n using ( ∨-assoc₂ )
 
-open import Data.Bool                        using ( true; false )
-open import Function                         using ( _$_; id; _∘_ )
+open import Data.Bool                             using ( true; false )
+open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
-open import ATP.Metis.Rules.Conjunct n
-  using ( conjunct; conjunct-thm )
+open import ATP.Metis.Rules.Conjunct n using ( conjunct; conjunct-thm )
 
-open import Data.List.Base  using (_∷_; []; [_]; List; _∷ʳ_; _++_)
-
-------------------------------------------------------------------------------
-
-------------------------------------------------------------------------------
--- Reordering.
 ------------------------------------------------------------------------------
 
 -- Right associative functions.
