@@ -12,6 +12,14 @@ test:
 	$(AGDA) src/ATP/Metis.agda
 	$(AGDA) test/lazy-test.agda
 
+.PHONY : canonicalize
+canonicalize:
+	$(AGDA) test/canonicalize.agda
+
+.PHONY : resolve
+resolve:
+	$(AGDA) test/resolve.agda
+
 .PHONY : doc
 doc :
 	agda --html src/ATP.agda
