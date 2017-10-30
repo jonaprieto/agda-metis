@@ -4,7 +4,7 @@
 ------------------------------------------------------------------------------
 
 open import Data.Nat
-  using    (zero ; _+_)
+  using    (zero ; suc; _+_)
   renaming ( ℕ to Nat; _⊔_ to max)
 
 module ATP.Metis.Rules.Strip ( n : Nat ) where
