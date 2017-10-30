@@ -11,192 +11,294 @@ module ATP.Metis.Rules.Normalization (n : ℕ) where
 
 open import ATP.Metis.Rules.Checking n
 open import ATP.Metis.Rules.Reordering n
+  using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨)
 
 open import Data.Bool.Base
-  using ( Bool; true; false; if_then_else_; not)
-  renaming (_∧_ to _and_; _∨_ to _or_)
-
-open import Data.Fin  using ( Fin; #_ )
-open import Data.List using ( List; [_]; [];  _++_; _∷_ ; concatMap; map )
+  using ( Bool; true; false)
 
 open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.SyntaxExperiment n
-  renaming (right-assoc-∧ to rconj )
 open import Data.PropFormula.Views  n
-open import Data.PropFormula.NormalForms n
-  using ( dnf-dist; thm-dnf-dist; cnf-dist; thm-cnf-dist; isCNF; isDNF; isNNF)
-  using ( is∧ ; is∨)
+  renaming ( disj to disjshape )
 
-open import Relation.Nullary using (yes; no)
-open import Data.PropFormula.Theorems n
-
-open import Function using ( _∘_; _$_ )
-open import Relation.Binary.PropositionalEquality using ( _≡_; sym )
+open import Relation.Binary.PropositionalEquality using (_≡_; sym)
 
 ------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
--- A modified version of the negative normal form of the Agda-Prop module.
--- * We do not convert any biimplication.
-------------------------------------------------------------------------------
+data simplify-∨-Cases : PropFormula  → Set where
 
-data NPropFormula : Set where
-  Var         : Fin n → NPropFormula
-  ⊤           : NPropFormula
-  ⊥           : NPropFormula
-  _∧_ _∨_ _⊻_ : (φ ψ : NPropFormula) → NPropFormula
-  ¬_          : (φ : NPropFormula)   → NPropFormula
+  sdisj₁ : (φ : PropFormula)     → simplify-∨-Cases (⊥ ∨ φ)
+  sdisj₂ : (φ : PropFormula)     → simplify-∨-Cases (φ ∨ ⊥)
+  sdisj₃ : (φ : PropFormula)     → simplify-∨-Cases (⊤ ∨ φ)
+  sdisj₄ : (φ : PropFormula)     → simplify-∨-Cases (φ ∨ ⊤)
+  sdisj₅ : (φ₁ φ₂ : PropFormula) → simplify-∨-Cases (φ₁ ∨ φ₂)
+  other  : (φ : PropFormula)     → simplify-∨-Cases φ
 
-infix  11 ¬_
-infixl 8 _∧_ _∨_ _⊻_
+simplify-∨-cases : (φ : PropFormula) → simplify-∨-Cases φ
+simplify-∨-cases (⊥ ∨ φ)   = sdisj₁ _
+simplify-∨-cases (φ ∨ ⊥)   = sdisj₂ _
+simplify-∨-cases (⊤ ∨ φ)   = sdisj₃ _
+simplify-∨-cases (φ ∨ ⊤)   = sdisj₄ _
+simplify-∨-cases (φ₁ ∨ φ₂) = sdisj₅ _ _
+simplify-∨-cases  φ        = other _
+
+-- Def.
+_∈∨_ : (φ ψ : PropFormula) → Dec (ψ ≡ reorder-∨ φ ψ)
+φ ∈∨ ψ = eq ψ (reorder-∨ φ ψ)
+
+-- Def.
+simplify-∨ : PropFormula → PropFormula
+simplify-∨ φ
+  with simplify-∨-cases φ
+simplify-∨ .(⊥ ∨ φ) | sdisj₁ φ = simplify-∨ φ
+simplify-∨ .(φ ∨ ⊥) | sdisj₂ φ = simplify-∨ φ
+simplify-∨ .(⊤ ∨ φ) | sdisj₃ φ = ⊤
+simplify-∨ .(φ ∨ ⊤) | sdisj₄ φ = ⊤
+simplify-∨ φ        | other .φ  = φ
+simplify-∨ .(φ₁ ∨ φ₂)  | sdisj₅ φ₁ φ₂
+  with neg-view  φ₁
+simplify-∨ .(¬ ψ ∨ φ₂) | sdisj₅ .(¬ ψ) φ₂ | neg ψ
+  with ⌊ ψ ∈∨ φ₂ ⌋
+... | true  = ⊤
+... | false
+    with ⌊ (¬ ψ) ∈∨ φ₂ ⌋
+... | true  = simplify-∨ φ₂
+... | false
+    with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
+...     | true  = ⊤
+...     | false
+        with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
+...     | true  = ¬ ψ
+...     | false = ¬ ψ ∨ simplify-∨ φ₂
+simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
+  with ⌊ (¬ φ₁) ∈∨ φ₂ ⌋
+... | true  = ⊤
+... | false
+    with ⌊ φ₁ ∈∨ φ₂ ⌋
+... | true  = ⊤
+... | false
+    with ⌊ eq (simplify-∨ φ₂) ⊥ ⌋
+...     | true  = ⊥
+...     | false
+        with ⌊ eq (simplify-∨ φ₂) ⊤ ⌋
+...     | true  = φ₁
+...     | false = φ₁ ∨ simplify-∨ φ₂
+
+
+-- Lemma.
+postulate
+  simplify-∨-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ simplify-∨ φ
+
+
+data simplify-∧-Cases : PropFormula  → Set where
+
+  sconj₁ : (φ : PropFormula)     → simplify-∧-Cases (⊥ ∧ φ)
+  sconj₂ : (φ : PropFormula)     → simplify-∧-Cases (φ ∧ ⊥)
+  sconj₃ : (φ : PropFormula)     → simplify-∧-Cases (⊤ ∧ φ)
+  sconj₄ : (φ : PropFormula)     → simplify-∧-Cases (φ ∧ ⊤)
+  sconj₅ : (φ₁ φ₂ : PropFormula) → simplify-∧-Cases (φ₁ ∧ φ₂)
+  other  : (φ : PropFormula)     → simplify-∧-Cases φ
+
+simplify-∧-cases : (φ : PropFormula) → simplify-∧-Cases φ
+simplify-∧-cases (⊥ ∧ φ)   = sconj₁ _
+simplify-∧-cases (φ ∧ ⊥)   = sconj₂ _
+simplify-∧-cases (⊤ ∧ φ)   = sconj₃ _
+simplify-∧-cases (φ ∧ ⊤)   = sconj₄ _
+simplify-∧-cases (φ₁ ∧ φ₂) = sconj₅ _ _
+simplify-∧-cases  φ        = other _
+
+-- Def.
+_∈∧_ : (φ ψ : PropFormula) → Dec (ψ ≡ (disj φ ψ))
+φ ∈∧ ψ = eq ψ (disj φ ψ)
+
+-- Def.
+simplify-∧ : PropFormula → PropFormula
+simplify-∧ φ
+  with simplify-∧-cases φ
+simplify-∧ .(⊥ ∧ φ) | sconj₁ φ = ⊥
+simplify-∧ .(φ ∧ ⊥) | sconj₂ φ = ⊥
+simplify-∧ .(⊤ ∧ φ) | sconj₃ φ = simplify-∧ φ
+simplify-∧ .(φ ∧ ⊤) | sconj₄ φ = simplify-∧ φ
+simplify-∧ φ        | other .φ  = φ
+simplify-∧ .(φ₁ ∧ φ₂)  | sconj₅ φ₁ φ₂
+  with neg-view  φ₁
+simplify-∧ .(¬ ψ ∧ φ₂) | sconj₅ .(¬ ψ) φ₂ | neg ψ
+  with ⌊ ψ ∈∧ φ₂ ⌋
+... | true  = ⊥
+... | false
+    with ⌊ (¬ ψ) ∈∧ φ₂ ⌋
+... | true  = simplify-∧ φ₂
+... | false
+    with ⌊ eq (simplify-∧ φ₂) ⊥ ⌋
+...     | true  = ⊥
+...     | false
+        with ⌊ eq (simplify-∧ φ₂) ⊤ ⌋
+...     | true  = ¬ ψ
+...     | false = ¬ ψ ∧ simplify-∧ φ₂
+simplify-∧ .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂ | pos .φ₁
+  with ⌊ (¬ φ₁) ∈∧ φ₂ ⌋
+... | true  = ⊥
+... | false
+    with ⌊ φ₁ ∈∧ φ₂ ⌋
+... | true  = ⊥
+... | false
+    with ⌊ eq (simplify-∧ φ₂) ⊥ ⌋
+...     | true  = ⊥
+...     | false
+        with ⌊ eq (simplify-∧ φ₂) ⊤ ⌋
+...     | true  = φ₁
+...     | false = φ₁ ∧ simplify-∧ φ₂
+
+
+-- Lemma.
+postulate
+  simplify-∧-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ simplify-∧ φ
+
+----------------------------------------------------------------------
 
 data Polarity : Set where
   ⊕ : Polarity
   ⊝ : Polarity
 
-data nnfView : PropFormula  → Set where
-  conj   : (φ₁ φ₂ : PropFormula) → nnfView (φ₁ ∧ φ₂)
-  disj   : (φ₁ φ₂ : PropFormula) → nnfView (φ₁ ∨ φ₂)
-  impl   : (φ₁ φ₂ : PropFormula) → nnfView (φ₁ ⇒ φ₂)
-  biimpl : (φ₁ φ₂ : PropFormula) → nnfView (φ₁ ⇔ φ₂)
-  nneg   : (φ₁ : PropFormula)    → nnfView (¬ φ₁)
-  other  : (φ₁ : PropFormula)    → nnfView φ₁
 
-nnf-view : (φ : PropFormula) → nnfView φ
-nnf-view (φ₁ ∧ φ₂) = conj _ _
-nnf-view (φ₁ ∨ φ₂) = disj _ _
-nnf-view (φ₁ ⇒ φ₂) = impl _ _
-nnf-view (φ₁ ⇔ φ₂) = biimpl _ _
-nnf-view (¬ φ)     = nneg _
-nnf-view φ         = other _
+data nnf-Cases : PropFormula  → Set where
+
+  case₁ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ∧ φ₂)
+  case₂ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ∨ φ₂)
+  case₃ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ⇒ φ₂)
+  case₄ : (φ : PropFormula)     → nnf-Cases (¬ φ)
+  case₅ : (φ : PropFormula)     → nnf-Cases ⊥
+  case₆ : (φ : PropFormula)     → nnf-Cases ⊤
+  other : (φ : PropFormula)     → nnf-Cases φ
+
+nnf-cases : (φ : PropFormula) → nnf-Cases φ
+nnf-cases (φ₁ ∧ φ₂) = case₁ _ _
+nnf-cases (φ₁ ∨ φ₂) = case₂ _ _
+nnf-cases (φ₁ ⇒ φ₂) = case₃ _ _
+nnf-cases (¬ φ)     = case₄ _
+nnf-cases ⊥         = case₅ ⊥
+nnf-cases ⊤         = case₆ ⊤
+nnf-cases φ         = other _
 
 nnf₀ : Polarity → PropFormula → PropFormula
 nnf₀ ⊕ φ
-  with nnf-view φ
-nnf₀ ⊕ .(φ₁ ∧ φ₂) | conj φ₁ φ₂   = (nnf₀ ⊕ φ₁) ∧ (nnf₀ ⊕ φ₂)
-nnf₀ ⊕ .(φ₁ ∨ φ₂) | disj φ₁ φ₂   = (nnf₀ ⊕ φ₁) ∨ (nnf₀ ⊕ φ₂)
-nnf₀ ⊕ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂   = (nnf₀ ⊝ φ₁) ∨ (nnf₀ ⊕ φ₂)
-nnf₀ ⊕ .(φ₁ ⇔ φ₂) | biimpl φ₁ φ₂ = ((nnf₀ ⊝ φ₁) ∨ (nnf₀ ⊕ φ₂)) ∧ ((nnf₀ ⊝ φ₂) ∨ (nnf₀ ⊕ φ₁))
-nnf₀ ⊕ .(¬ φ)     | nneg φ       = nnf₀ ⊝ φ
-nnf₀ ⊕ φ          | other .φ     = φ
-nnf₀ ⊝ φ
-  with nnf-view φ
-nnf₀ ⊝ .(φ₁ ∧ φ₂) | conj φ₁ φ₂   = (nnf₀ ⊝ φ₁) ∨ (nnf₀ ⊝ φ₂)
-nnf₀ ⊝ .(φ₁ ∨ φ₂) | disj φ₁ φ₂   = (nnf₀ ⊝ φ₁) ∧ (nnf₀ ⊝ φ₂)
-nnf₀ ⊝ .(φ₁ ⇒ φ₂) | impl φ₁ φ₂   = (nnf₀ ⊝ φ₂) ∧ (nnf₀ ⊕ φ₁)
-nnf₀ ⊝ .(φ₁ ⇔ φ₂) | biimpl φ₁ φ₂ = ((nnf₀ ⊝ φ₂) ∧ (nnf₀ ⊕ φ₁)) ∨ ((nnf₀ ⊝ φ₁) ∧ (nnf₀ ⊕ φ₂))
-nnf₀ ⊝ .(¬ φ)     | nneg φ       = nnf₀ ⊕ φ
-nnf₀ ⊝ φ          | other .φ     = ¬ φ
+  with nnf-cases φ
+nnf₀ ⊕ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊕ φ₁ ∧ nnf₀ ⊕ φ₂))
+nnf₀ ⊕ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊕ φ₁ ∨ nnf₀ ⊕ φ₂))
+nnf₀ ⊕ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊝ φ₁ ∨ nnf₀ ⊕ φ₂))
+nnf₀ ⊕ .(¬ φ)     | case₄ φ     = nnf₀ ⊝ φ
+nnf₀ ⊕ .(⊥)       | case₅ φ     = ⊥
+nnf₀ ⊕ .(⊤)       | case₆ φ     = ⊥
+nnf₀ ⊕ φ          | other .φ    = φ
+nnf₀ ⊖ φ
+  with nnf-cases φ
+nnf₀ ⊖ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊝ φ₁ ∨ nnf₀ ⊝ φ₂))
+nnf₀ ⊖ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊝ φ₁ ∧ nnf₀ ⊝ φ₂))
+nnf₀ ⊖ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊝ φ₂ ∧ nnf₀ ⊕ φ₁))
+nnf₀ ⊖ .(¬ φ)     | case₄ φ     = nnf₀ ⊕ φ
+nnf₀ ⊖ .(⊥)       | case₅ φ     = ⊤
+nnf₀ ⊖ .(⊤)       | case₆ φ     = ⊥
+nnf₀ ⊖ φ          | other .φ    = φ
 
-polarity : PropFormula → Polarity
-polarity φ
-  with neg-view φ
-polarity .(¬ φ) | neg φ  = ⊝
-polarity φ      | pos .φ = ⊕
-
+-- Lemma.
 postulate
-  thm-nnf₀
+  nnf₀-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
-    → Γ ⊢ nnf₀ ⊕ φ
+    → (pol : Polarity)
+    → Γ ⊢ nnf₀ pol φ
 
 postulate
-  thm-from-nnf₀
+  nnf₀-lem-inv
     : ∀ {Γ} {φ}
-    → Γ ⊢ nnf₀ ⊕ φ
-    → Γ ⊢ ¬ φ
+    → (pol : Polarity)
+    → Γ ⊢ nnf₀ pol φ
+    → Γ ⊢ φ
 
+-- Def.
 nnf : PropFormula → PropFormula
 nnf φ = nnf₀ ⊕ φ
 
 postulate
-  thm-nnf
+  nnf-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
     → Γ ⊢ nnf φ
 
 postulate
-  thm-from-nnf
+  nnf-lem-inv
     : ∀ {Γ} {φ}
     → Γ ⊢ nnf φ
     → Γ ⊢ φ
 
-cnf-nnf : PropFormula → PropFormula
-cnf-nnf φ = rconj (cnf-dist φ)
-
-postulate
-  thm-cnf-nnf
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ cnf-nnf φ
-
-postulate
-  thm-from-cnf-nnf
-    : ∀ {Γ} {φ}
-    → Γ ⊢ cnf-nnf φ
-    → Γ ⊢ φ
-
-dnf-nnf : PropFormula → PropFormula
-dnf-nnf φ = rdisj (dnf-dist φ)
-
-postulate
-  thm-dnf-nnf
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ dnf-nnf φ
-
-postulate
-  thm-from-dnf-nnf
-    : ∀ {Γ} {φ}
-    → Γ ⊢ dnf-nnf φ
-    → Γ ⊢ φ
-
-canon-cnf : PropFormula → PropFormula → PropFormula
-canon-cnf φ ψ
-  with ⌊ eq (reorder-∧∨ (cnf-nnf φ) (cnf-nnf (nnf ψ))) (cnf-nnf (nnf ψ)) ⌋
-canon-cnf φ ψ | false = φ
-canon-cnf φ ψ | true  = ψ
-
-postulate
-  thm-canon-cnf
-    : ∀ {Γ} {φ}
-      → Γ ⊢ φ
-      → (ψ : PropFormula)
-      → Γ ⊢ canon-cnf φ ψ
-
-canon-dnf : PropFormula → PropFormula → PropFormula
-canon-dnf φ ψ
-  with ⌊ eq (reorder-∨ (dnf-nnf φ) (dnf-nnf (nnf ψ))) (dnf-nnf (nnf ψ)) ⌋
-canon-dnf φ ψ | false = φ
-canon-dnf φ ψ | true  = ψ
-
-postulate
-  thm-canon-dnf
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → (ψ : PropFormula)
-    → Γ ⊢ canon-dnf φ ψ
-
+------------------------------------------------------------------------------
+-- Conjunctive Normal Forms (CNF)
 ------------------------------------------------------------------------------
 
-const : PropFormula → (PropFormula → PropFormula)
-const φ = λ x → φ
-
-nform : PropFormula → PropFormula → PropFormula
-nform φ =
-  (
-    canon-cnf
-  ● (↑f nnf)
-  ● (↑f id)
-  ) φ
+-- Def.
+dist-∨ : PropFormula → PropFormula
+dist-∨ φ with c-view-aux φ
+dist-∨ .((φ₁ ∧ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = dist-∨ (φ₁ ∨ φ₃) ∧ dist-∨ (φ₂ ∨ φ₃)
+dist-∨ .(φ₁ ∨ (φ₂ ∧ φ₃)) | case₂ φ₁ φ₂ φ₃ = dist-∨ (φ₁ ∨ φ₂) ∧ dist-∨ (φ₁ ∨ φ₃)
+dist-∨ φ                 | other .φ       = φ
 
 postulate
-  thm-nform
+  -- Lemma.
+  dist-∨-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ φ
-    → (ψ : PropFormula)
-    → Γ ⊢ nform φ ψ
+    → Γ ⊢ dist-∨ φ
 
-------------------------------------------------------------------------------
+postulate
+  -- Lemma.
+  dist-∨-lem-inv
+    : ∀ {Γ} {φ}
+    → Γ ⊢ dist-∨ φ
+    → Γ ⊢ φ
+
+-- Def.
+dist : PropFormula → PropFormula
+dist φ with d-view φ
+dist .(φ ∧ ψ) | conj φ ψ      = dist φ ∧ dist ψ
+dist .(φ ∨ ψ) | disjshape φ ψ = dist-∨ ((dist φ) ∨ (dist ψ))
+dist φ        | other .φ      = φ
+
+postulate
+  -- Lemma.
+  dist-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ dist φ
+
+postulate
+  -- Lemma.
+  dist-lem-inv
+    : ∀ {Γ} {φ}
+    → Γ ⊢ dist φ
+    → Γ ⊢ φ
+
+-- Def.
+cnf : PropFormula → PropFormula
+cnf φ = dist (nnf φ)
+
+-- Lemma.
+cnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ cnf φ
+
+-- Proof.
+cnf-lem Γ⊢φ = dist-lem (nnf-lem Γ⊢φ)  -- ▩
+
+postulate
+  thm-inv-cnf
+    : ∀ {Γ} {φ}
+    → Γ ⊢ cnf φ
+    → Γ ⊢ φ
