@@ -3,13 +3,14 @@
 -- Conjunct inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using ( ℕ )
+open import Data.Nat
+  renaming ( ℕ to Nat )
 
-module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
+module ATP.Metis.Rules.Conjunct ( n : Nat ) where
 
 ------------------------------------------------------------------------------
 
-open import  ATP.Metis.Synonyms n
+open import ATP.Metis.Synonyms n
 
 open import Data.Bool.Base using ( false; true )
 
@@ -22,7 +23,7 @@ open import Relation.Binary.PropositionalEquality using ( sym )
 
 ------------------------------------------------------------------------------
 
-conjunct : PropFormula → PropFormula → PropFormula
+conjunct : Premise → Conclusion → PropFormula
 conjunct φ ψ
   with ⌊ eq φ ψ ⌋
 ... | true  = ψ
