@@ -1,6 +1,8 @@
 open import ATP.Metis 9 public
 open import Data.PropFormula  9 public
+  renaming (cnf to justCNF; thm-cnf to thm-justCNF )
 
+open import ATP.Metis.Rules.Normalization 9
 open import ATP.Metis.Rules.Reordering 9
 
 -- Variables.
@@ -48,13 +50,13 @@ subgoal₀ : PropFormula
 subgoal₀ = ((p ∧ (p ⇒ q)) ⇒ q)
 
 tt : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
-tt = thm-cnf (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
+tt = thm-justCNF (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))
 
 c1 : Γ , ¬ subgoal₀ ⊢ ¬ q
-c1 = thm-conjunct (¬ q) tt
+c1 = conjunct-thm (¬ q) tt
 
 c2 : Γ , ¬ subgoal₀ ⊢ (¬ p) ∨ q
-c2 = thm-conjunct (¬ p ∨ q) tt
+c2 = conjunct-thm (¬ p ∨ q) tt
 
 -- testing reorder-∨
 original : PropFormula
@@ -111,7 +113,7 @@ fmc2 = ((¬ p) ⇔ (¬ q))
 
 cnffmc2 = (p ∨ ¬ q) ∧ (q ∨ ¬ p)
 
-ctest0 : ⌊ eq (cnf fmc2) cnffmc2 ⌋ ≡ true
+ctest0 : ⌊ eq (justCNF fmc2) cnffmc2 ⌋ ≡ true
 ctest0 = refl
 
 
@@ -121,13 +123,13 @@ to1   = (r ∨ q) ∨ p
 ctest1 : ⌊ eq (reorder-∧∨ from1 to1) to1 ⌋ ≡ true
 ctest1 = refl
 
-ctest2 : ⌊ eq (reorder-∧∨ (cnf fmc2) fmc1) fmc1 ⌋ ≡ true
+ctest2 : ⌊ eq (reorder-∧∨ (justCNF fmc2) fmc1) fmc1 ⌋ ≡ true
 ctest2 = refl
 
 to5   = (¬ p) ∨ ((¬ q) ∨ r)
 from5 = (¬ p) ∨ (r ∨ ((¬ q) ∧ p))
 
-ctest3 : ⌊ eq (reorder-∧∨ (cnf from5) to5) to5 ⌋ ≡ true
+ctest3 : ⌊ eq (reorder-∧∨ (justCNF from5) to5) to5 ⌋ ≡ true
 ctest3 = refl
 
 

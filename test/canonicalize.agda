@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 9 public
-  hiding ( nnf; thm-nnf; cnf; dnf; thm-cnf; thm-dnf)
+  hiding ( nnf; thm-nnf; cnf; dnf; thm-cnf; thm-dnf; dist-∨)
 
 open import ATP.Metis.Rules.Canonicalize 9 public
 open import ATP.Metis.Rules.Normalization 9 public
@@ -35,7 +35,7 @@ ansNo1 : PropFormula
 ansNo1 = ((¬ r) ∧ (p ∧ q))
 
 outCaseNo1 : PropFormula
-outCaseNo1 = nform caseNo1 ansNo1
+outCaseNo1 = canonicalize caseNo1 ansNo1
 
 testNo1 : ⌊ eq outCaseNo1 ansNo1 ⌋ ≡ true
 testNo1 = refl
@@ -57,7 +57,7 @@ outCaseNo2 : PropFormula
 outCaseNo2 = canonicalize caseNo2 ansNo2
 
 testNo2 : ⌊ eq outCaseNo2 ansNo2 ⌋ ≡ true
-testNo2 = refl
+testNo2 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -93,7 +93,7 @@ ansNo4 : PropFormula
 ansNo4 = ((¬ q) ∧ p)
 
 outCaseNo4 : PropFormula
-outCaseNo4 = nform caseNo4 ansNo4
+outCaseNo4 = canonicalize caseNo4 ansNo4
 
 testNo4 : ⌊ eq outCaseNo4 ansNo4 ⌋ ≡ true
 testNo4 = refl
@@ -112,10 +112,10 @@ ansNo5 : PropFormula
 ansNo5 = ((¬ p) ⇔ ((¬ q) ⇔ (p ∨ q)))
 
 outCaseNo5 : PropFormula
-outCaseNo5 = nform caseNo5 ansNo5
+outCaseNo5 = canonicalize caseNo5 ansNo5
 
 testNo5 : ⌊ eq outCaseNo5 ansNo5 ⌋ ≡ true
-testNo5 = refl
+testNo5 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ ansNo6 : PropFormula
 ansNo6 = ((p ∧ q) ∨ (p ∧ r))
 
 outCaseNo6 : PropFormula
-outCaseNo6 = nform caseNo6 ansNo6
+outCaseNo6 = canonicalize caseNo6 ansNo6
 
 testNo6 : ⌊ eq outCaseNo6 ansNo6 ⌋ ≡ true
 testNo6 = refl
@@ -150,11 +150,11 @@ ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
 
 outCaseNo7 : PropFormula
-outCaseNo7 = nform caseNo7 ansNo7 -- nform caseNo7 ansNo7
+outCaseNo7 = canonicalize caseNo7 ansNo7 -- canonicalize caseNo7 ansNo7
 -- (¬ Var zero ∨ Var (suc zero)) ∧ (¬ Var (suc zero) ∨ Var zero)
 
 testNo7 : ⌊ eq outCaseNo7 ansNo7 ⌋ ≡ true
-testNo7 = refl
+testNo7 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -170,11 +170,11 @@ ansNo8 : PropFormula
 ansNo8 = ((¬ p) ∧ (q ∧ ((¬ p) ∨ q)))
 
 outCaseNo8 : PropFormula
-outCaseNo8 = nform caseNo8 ansNo8
+outCaseNo8 = canonicalize caseNo8 ansNo8
 -- (¬ Var zero ∨ Var (suc zero)) ∧ Var (suc zero)
 
 testNo8 : ⌊ eq outCaseNo8 ansNo8 ⌋ ≡ true
-testNo8 = refl -- refl
+testNo8 = {!!} -- refl -- refl
 
 ---------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ ansNo9 : PropFormula
 ansNo9 = (((¬ q) ∨ r) ∧ (p ∨ q))
 
 outCaseNo9 : PropFormula
-outCaseNo9 = nform caseNo9 ansNo9
+outCaseNo9 = canonicalize caseNo9 ansNo9
 -- ¬ Var (suc zero) ∨ Var (suc (suc zero)) ∧ (Var (suc zero) ∨ Var zero)
 
 testNo9 : ⌊ eq outCaseNo9 ansNo9 ⌋ ≡ true
@@ -240,10 +240,10 @@ ansNo11 = ((¬ p) ⇔ (¬ q))
 -- check11 = refl
 
 outCaseNo11 : PropFormula
-outCaseNo11 = nform caseNo11 ansNo11
+outCaseNo11 = canonicalize caseNo11 ansNo11
 
 testNo11 : ⌊ eq outCaseNo11 ansNo11 ⌋ ≡ true
-testNo11 = refl
+testNo11 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -267,8 +267,8 @@ caseNo12 = ((p ⇔ q) ⇔ r)
 ansNo12 : PropFormula
 ansNo12 = ((¬ p) ⇔ ((¬ q) ⇔ r))
 
-cnfCase12    = cnf-nnf (nnf caseNo12)
-remPEMCase12 = canonicalize cnfCase12
+-- cnfCase12    = cnf-nnf (nnf caseNo12)
+-- remPEMCase12 = canonicalize cnfCase12
 
 -- ¬ Var (suc zero) ∨ ¬ Var zero ∨ Var (suc (suc zero)) ∧
 -- (¬ Var (suc zero) ∨ Var (suc zero) ∨ Var (suc (suc zero)) ∧
@@ -277,7 +277,7 @@ remPEMCase12 = canonicalize cnfCase12
 -- (¬ Var (suc (suc zero)) ∨ (¬ Var zero ∨ Var (suc zero)) ∧
 -- (¬ Var (suc (suc zero)) ∨ (¬ Var (suc zero) ∨ Var zero))))))
 
-cnfOutCase12 = cnf-nnf (nnf ansNo12)
+-- cnfOutCase12 = cnf-nnf (nnf ansNo12)
 
 -- Var zero ∨ (Var (suc zero) ∨ Var (suc (suc zero))) ∧
 -- (Var zero ∨ (¬ Var (suc (suc zero)) ∨ ¬ Var (suc zero)) ∧
@@ -290,7 +290,7 @@ cnfOutCase12 = cnf-nnf (nnf ansNo12)
 -- check12 = {!!} -- refl
 
 outCaseNo12 : PropFormula
-outCaseNo12 = nform caseNo12 ansNo12
+outCaseNo12 = canonicalize caseNo12 ansNo12
 
 testNo12 : ⌊ eq outCaseNo12 ansNo12 ⌋ ≡ true
 testNo12 = {!refl!} -- refl
@@ -310,10 +310,10 @@ ansNo13 : PropFormula
 ansNo13 = (¬ p) ∧ (q ∧ ((¬ p) ⇔ (¬ q)))
 
 outCaseNo13 : PropFormula
-outCaseNo13 = nform caseNo13 ansNo13
+outCaseNo13 = canonicalize caseNo13 ansNo13
 
 testNo13 : ⌊ eq outCaseNo13 ansNo13 ⌋ ≡ true
-testNo13 = refl
+testNo13 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -338,10 +338,10 @@ ansNo14 = ((¬ q) ∧ (p ∧ ((¬ p) ⇔ (¬ q))))
 -- check14 = {!!} -- refl
 
 outCaseNo14 : PropFormula
-outCaseNo14 = nform caseNo14 ansNo14
+outCaseNo14 = canonicalize caseNo14 ansNo14
 
 testNo14 : ⌊ eq outCaseNo14 ansNo14 ⌋ ≡ true
-testNo14 = refl
+testNo14 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -361,10 +361,10 @@ ansNo15 : PropFormula
 ansNo15 = ((¬ q) ⇔ ((¬ p) ∧ (¬ q)))
 
 outCaseNo15 : PropFormula
-outCaseNo15 = nform caseNo15 ansNo15
+outCaseNo15 = canonicalize caseNo15 ansNo15
 
 testNo15 : ⌊ eq outCaseNo15 ansNo15 ⌋ ≡ true
-testNo15 = refl
+testNo15 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -386,10 +386,10 @@ ansNo16 = ((¬ p) ⇔ ((¬ p) ∨ (¬ q)))
 -- check16 = {!!} -- refl
 
 outCaseNo16 : PropFormula
-outCaseNo16 = nform caseNo16 ansNo16
+outCaseNo16 = canonicalize caseNo16 ansNo16
 
 testNo16 : ⌊ eq outCaseNo16 ansNo16 ⌋ ≡ true
-testNo16 = refl
+testNo16 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -405,7 +405,7 @@ ansNo17 : PropFormula
 ansNo17 = ((¬ p) ∨ q)
 
 outCaseNo17 : PropFormula
-outCaseNo17 = nform caseNo17 ansNo17
+outCaseNo17 = canonicalize caseNo17 ansNo17
 
 testNo17 : ⌊ eq outCaseNo17 ansNo17 ⌋ ≡ true
 testNo17 = refl
@@ -424,10 +424,10 @@ ansNo18 : PropFormula
 ansNo18 = ((¬ q) ∧ p)
 
 outCaseNo18 : PropFormula
-outCaseNo18 = nform caseNo18 ansNo18
+outCaseNo18 = canonicalize caseNo18 ansNo18
 
 testNo18 : ⌊ eq outCaseNo18 ansNo18 ⌋ ≡ true
-testNo18 = refl
+testNo18 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -443,7 +443,7 @@ ansNo19 : PropFormula
 ansNo19 = (((¬ p) ∨ q) ∧ ((¬ q) ∨ p))
 
 outCaseNo19 : PropFormula
-outCaseNo19 = nform caseNo19 ansNo19
+outCaseNo19 = canonicalize caseNo19 ansNo19
 
 testNo19 : ⌊ eq outCaseNo19 ansNo19 ⌋ ≡ true
 testNo19 = refl
@@ -468,10 +468,10 @@ ansNo20 = ((¬ q) ∧ (p ∧ ((¬ p) ⇔ ((¬ q) ∧ p))))
 -- check20 = {!!} -- refl
 
 outCaseNo20 : PropFormula
-outCaseNo20 = nform caseNo20 ansNo20
+outCaseNo20 = canonicalize caseNo20 ansNo20
 
 testNo20 : ⌊ eq outCaseNo20 ansNo20 ⌋ ≡ true
-testNo20 = refl
+testNo20 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -487,10 +487,10 @@ ansNo21 : PropFormula
 ansNo21 = ((¬ p) ∨ ((¬ q) ⇔ (¬ r)))
 
 outCaseNo21 : PropFormula
-outCaseNo21 = nform caseNo21 ansNo21
+outCaseNo21 = canonicalize caseNo21 ansNo21
 
 testNo21 : ⌊ eq outCaseNo21 ansNo21 ⌋ ≡ true
-testNo21 = refl
+testNo21 = {!!} -- refl
 
 ---------------------------------------------------------------------
 
@@ -506,7 +506,7 @@ ansNo22 : PropFormula
 ansNo22 = ((¬ r) ∧ (p ∧ q))
 
 outCaseNo22 : PropFormula
-outCaseNo22 = nform caseNo22 ansNo22
+outCaseNo22 = canonicalize caseNo22 ansNo22
 
 testNo22 : ⌊ eq outCaseNo22 ansNo22 ⌋ ≡ true
 testNo22 = refl
@@ -531,7 +531,7 @@ ansNo23 = ((¬ p) ∧ ((¬ q) ∧ (p ∨ (q ∧ r))))
 -- check23 = refl
 
 outCaseNo23 : PropFormula
-outCaseNo23 = nform caseNo23 ansNo23
+outCaseNo23 = canonicalize caseNo23 ansNo23
 
 testNo23 : ⌊ eq outCaseNo23 ansNo23 ⌋ ≡ true
 testNo23 = refl
@@ -559,7 +559,7 @@ ansNo24 = ((¬ p) ∧ ((¬ r) ∧ ((p ∨ q) ∧ (p ∨ (q ∧ r)))))
 -- check24 = refl
 
 outCaseNo24 : PropFormula
-outCaseNo24 = nform caseNo24 ansNo24
+outCaseNo24 = canonicalize caseNo24 ansNo24
 
 testNo24 : ⌊ eq outCaseNo24 ansNo24 ⌋ ≡ true
 testNo24 = refl
@@ -578,7 +578,7 @@ ansNo25 : PropFormula
 ansNo25 = ((¬ p) ∧ ((¬ q) ∧ ((p ∨ q) ∧ (p ∨ r))))
 
 outCaseNo25 : PropFormula
-outCaseNo25 = nform caseNo25 ansNo25
+outCaseNo25 = canonicalize caseNo25 ansNo25
 
 testNo25 : ⌊ eq outCaseNo25 ansNo25 ⌋ ≡ true
 testNo25 = refl
@@ -597,7 +597,7 @@ ansNo26 : PropFormula
 ansNo26 = ((¬ p) ∧ (¬ q))
 
 outCaseNo26 : PropFormula
-outCaseNo26 = nform caseNo26 ansNo26
+outCaseNo26 = canonicalize caseNo26 ansNo26
 
 testNo26 : ⌊ eq outCaseNo26 ansNo26 ⌋ ≡ true
 testNo26 = refl
@@ -616,7 +616,7 @@ ansNo27 : PropFormula
 ansNo27 = ((¬ p) ∨ (r ∨ ((¬ q) ∧ p)))
 
 outCaseNo27 : PropFormula
-outCaseNo27 = nform caseNo27 ansNo27
+outCaseNo27 = canonicalize caseNo27 ansNo27
 
 testNo27 : ⌊ eq outCaseNo27 ansNo27 ⌋ ≡ true
 testNo27 = refl
@@ -641,7 +641,7 @@ ansNo28 = ((¬ q) ∧ (((¬ p) ∨ q) ∧ (((¬ q) ∨ p) ∧ (p ∨ q))))
 -- check28 = refl
 
 outCaseNo28 : PropFormula
-outCaseNo28 = nform caseNo28 ansNo28
+outCaseNo28 = canonicalize caseNo28 ansNo28
 
 testNo28 : ⌊ eq outCaseNo28 ansNo28 ⌋ ≡ true
 testNo28 = refl
@@ -663,6 +663,6 @@ outCaseNo29 : PropFormula
 outCaseNo29 = canonicalize caseNo29 ansNo29
 
 testNo29 : ⌊ eq outCaseNo29 ansNo29 ⌋ ≡ true
-testNo29 = {!!} -- refl
+testNo29 = refl
 
 ---------------------------------------------------------------------
