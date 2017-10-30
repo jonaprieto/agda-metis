@@ -407,7 +407,7 @@ reorder-∧∨ φ ψ
 
 -- Lemma.
 reorder-∧∨-lem
-  : ∀ {Γ} {φ}
+  : ∀ {Γ} {φ : Premise}
   → Γ ⊢ φ
   → (ψ : Conclusion)
   → Γ ⊢ reorder-∧∨ φ ψ
