@@ -118,4 +118,5 @@ postulate
     → (ψ : Conclusion)
     → Γ ⊢ φ₁
     → Γ ⊢ φ₂
-    → Γ ⊢ simplify φ₁ φ₂ ψ
+    → Γ ⊢ ψ
+--    → Γ ⊢ simplify φ₁ φ₂ ψ
