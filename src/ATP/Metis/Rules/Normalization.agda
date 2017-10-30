@@ -42,6 +42,16 @@ open import Relation.Binary.PropositionalEquality using ( _≡_; sym )
 -- * We do not convert any biimplication.
 ------------------------------------------------------------------------------
 
+data NPropFormula : Set where
+  Var         : Fin n → NPropFormula
+  ⊤           : NPropFormula
+  ⊥           : NPropFormula
+  _∧_ _∨_ _⊻_ : (φ ψ : NPropFormula) → NPropFormula
+  ¬_          : (φ : NPropFormula)   → NPropFormula
+
+infix  11 ¬_
+infixl 8 _∧_ _∨_ _⊻_
+
 data Polarity : Set where
   ⊕ : Polarity
   ⊝ : Polarity

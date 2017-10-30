@@ -3,9 +3,11 @@
 -- Strip inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using ( ℕ ; zero ; suc; _+_) renaming (_⊔_ to max )
+open import Data.Nat
+  using (zero ; _+_)
+  renaming ( ℕ to Nat; _⊔_ to max ; suc to suc )
 
-module ATP.Metis.Rules.Strip ( n : ℕ ) where
+module ATP.Metis.Rules.Strip ( n : Nat ) where
 
 ------------------------------------------------------------------------------
 
@@ -32,169 +34,195 @@ open import Relation.Nullary                      renaming (¬_ to ¬₂)
 -- Splitting the goal.
 ------------------------------------------------------------------------------
 
-data ShuntView : PropFormula → Set where
-  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → ShuntView (φ₁ ⇒ (φ₂ ⇒ φ₃))
-  case₂ : (φ₁ φ₂ φ₃ : PropFormula) → ShuntView (φ₁ ⇒ (φ₂ ∧ φ₃))
-  other : (φ : PropFormula)        → ShuntView φ
+data uhCases : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⇒ (φ₂ ⇒ φ₃))
+  case₂ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⇒ (φ₂ ∧ φ₃))
+  other : (φ : PropFormula)        → uhCases φ
 
-unshunt-view : (φ : PropFormula) → ShuntView φ
-unshunt-view (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
-unshunt-view (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
-unshunt-view φ                = other _
+uh-cases : (φ : PropFormula) → uhCases φ
+uh-cases (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
+uh-cases (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
+uh-cases φ                = other _
 
-unshuntₙ : ℕ → PropFormula → PropFormula
-unshuntₙ zero φ  = φ
-unshuntₙ (suc n) φ with unshunt-view φ
-... | case₁ φ₁ φ₂ φ₃ = unshuntₙ n ((φ₁ ∧ φ₂) ⇒ φ₃)
-... | case₂ φ₁ φ₂ φ₃ = (unshuntₙ n (φ₁ ⇒ φ₂)) ∧ (unshuntₙ n (φ₁ ⇒ φ₃))
-... | other _        = φ
+-- Def.
+uh₁ : PropFormula → Nat → PropFormula
+uh₁ φ zero = φ
+uh₁ φ (suc n)
+  with uh-cases φ
+...  | case₁ φ₁ φ₂ φ₃ = uh₁ ((φ₁ ∧ φ₂) ⇒ φ₃) n
+...  | case₂ φ₁ φ₂ φ₃ = uh₁ (φ₁ ⇒ φ₂) n ∧ uh₁ (φ₁ ⇒ φ₃) n
+...  | other _        = φ
 
-lem-unshuntₙ
+-- Complexity measure of uh₁.
+uh-cm : PropFormula → Nat
+uh-cm φ
+  with uh-cases φ
+...  | case₁ _ _ φ₃  = uh-cm φ₃ + 3
+...  | case₂ _ φ₂ φ₃ = max (uh-cm φ₂) (uh-cm φ₃) + 2
+...  | other .φ      = 1
+
+-- Lemma.
+uh₁-lemma
   : ∀ {Γ} {φ}
-  → (n : ℕ)
-  → Γ ⊢ unshuntₙ n φ
+  → (n : Nat)
+  → Γ ⊢ uh₁ φ n
   → Γ ⊢ φ
 
-lem-unshuntₙ {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
-lem-unshuntₙ {_} {φ} (suc n) Γ⊢ushuntnφ with unshunt-view φ
-... | case₁ φ₁ φ₂ φ₃ =
-  ∧⇒-to-⇒⇒
-    (lem-unshuntₙ n
-      Γ⊢ushuntnφ)
-... | case₂ φ₁ φ₂ φ₃ =
-  ⇒∧⇒-to-⇒∧
-    (∧-intro
-      (lem-unshuntₙ n
-        (∧-proj₁ Γ⊢ushuntnφ))
-      (lem-unshuntₙ n
-        (∧-proj₂ Γ⊢ushuntnφ)))
-... | other _ = Γ⊢ushuntnφ
+-- Proof.
+uh₁-lemma {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
+uh₁-lemma {_} {φ} (suc n) Γ⊢ushuntnφ
+  with uh-cases φ
+...  | case₁ φ₁ φ₂ φ₃ =
+        ∧⇒-to-⇒⇒
+          (uh₁-lemma n
+            Γ⊢ushuntnφ)
+...  | case₂ φ₁ φ₂ φ₃ =
+        ⇒∧⇒-to-⇒∧
+          (∧-intro
+            (uh₁-lemma n
+              (∧-proj₁ Γ⊢ushuntnφ))
+            (uh₁-lemma n
+              (∧-proj₂ Γ⊢ushuntnφ)))
+...  | other _ = Γ⊢ushuntnφ -- ▩
 
-unshunt-complexity : PropFormula → ℕ
-unshunt-complexity φ with unshunt-view φ
-... | case₁ _ _ φ₃  = unshunt-complexity φ₃ + 2
-... | case₂ _ φ₂ φ₃ = 
-        max (unshunt-complexity φ₂) (unshunt-complexity φ₃) + 1
-... | other .φ      = 1
+-- Def.
+uh : PropFormula → PropFormula
+uh φ = uh₁ φ (uh-cm φ)
 
-unshunt : PropFormula → PropFormula
-unshunt φ = unshuntₙ (unshunt-complexity φ + 1) φ
 
-lem-unshunt
+-- Lemma.
+uh-lemma
   : ∀ {Γ} {φ}
-  → Γ ⊢ unshunt φ
+  → Γ ⊢ uh φ
   → Γ ⊢ φ
 
-lem-unshunt {_} {φ} = lem-unshuntₙ (unshunt-complexity φ + 1)
+-- Proof.
+uh-lemma {_} {φ} = uh₁-lemma (uh-cm φ) --  ▩
 
-data StripView : PropFormula → Set where
-  conj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∧ φ₂)
-  disj    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ∨ φ₂)
-  impl    : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇒ φ₂)
-  biimpl  : (φ₁ φ₂ : PropFormula) → StripView (φ₁ ⇔ φ₂)
-  nconj   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∧ φ₂))
-  ndisj   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ∨ φ₂))
-  nimpl   : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇒ φ₂))
-  nbiimpl : (φ₁ φ₂ : PropFormula) → StripView (¬ (φ₁ ⇔ φ₂))
-  nneg    : (φ₁ : PropFormula)    → StripView (¬ ¬ φ₁)
-  nbot    : StripView (¬ ⊥)
-  ntop    : StripView (¬ ⊤)
-  other   : (φ₁ : PropFormula)    → StripView φ₁
 
-split-view : (φ : PropFormula) → StripView φ
-split-view (φ₁ ∧ φ₂)     = conj _ _
-split-view (φ₁ ∨ φ₂)     = disj _ _
-split-view (φ₁ ⇒ φ₂)     = impl _ _
-split-view (φ₁ ⇔ φ₂)     = biimpl _ _
-split-view (¬ ⊤)         = ntop
-split-view (¬ ⊥)         = nbot
-split-view (¬ (φ₁ ∧ φ₂)) = nconj _ _
-split-view (¬ (φ₁ ∨ φ₂)) = ndisj _ _
-split-view (¬ (φ₁ ⇒ φ₂)) = nimpl _ _
-split-view (¬ (φ₁ ⇔ φ₂)) = nbiimpl _ _
-split-view (¬ (¬ φ₁))    = nneg _
-split-view φ₁            = other _
+data stripCases : PropFormula → Set where
+  conj    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ∧ φ₂)
+  disj    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ∨ φ₂)
+  impl    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ⇒ φ₂)
+  biimpl  : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ⇔ φ₂)
+  nconj   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ∧ φ₂))
+  ndisj   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ∨ φ₂))
+  nimpl   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ⇒ φ₂))
+  nbiimpl : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ⇔ φ₂))
+  nneg    : (φ : PropFormula)    → stripCases (¬ ¬ φ)
+  nbot    : stripCases (¬ ⊥)
+  ntop    : stripCases (¬ ⊤)
+  other   : (φ : PropFormula)    → stripCases φ
 
-splitₙ : ℕ → PropFormula → PropFormula
-splitₙ zero φ = φ
-splitₙ (suc n) φ
-  with split-view φ
-...  | conj φ₁ φ₂    = unshunt (splitₙ n φ₁) ∧
-                       unshunt (φ₁ ⇒ splitₙ n φ₂)
-...  | disj φ₁ φ₂    = unshunt (¬ φ₁ ⇒ (splitₙ n φ₂))
-...  | impl φ₁ φ₂    = unshunt (φ₁ ⇒ (splitₙ n φ₂))
-...  | biimpl φ₁ φ₂  = unshunt (φ₁ ⇒ (splitₙ n φ₂)) ∧
-                       unshunt (φ₂ ⇒ (splitₙ n φ₁))
-...  | nconj φ₁ φ₂   = unshunt (φ₁ ⇒ (splitₙ n (¬ φ₂)))
-...  | ndisj φ₁ φ₂   = unshunt (splitₙ n (¬ φ₁)) ∧
-                       unshunt (¬ φ₁ ⇒ splitₙ n (¬ φ₂))
-...  | nimpl φ₁ φ₂   = unshunt (splitₙ n φ₁) ∧
-                       unshunt (φ₁ ⇒ splitₙ n (¬ φ₂))
-...  | nbiimpl φ₁ φ₂ = unshunt (φ₁ ⇒ splitₙ n (¬ φ₂)) ∧
-                       unshunt ((¬ φ₂) ⇒ splitₙ n φ₁)
-...  | nneg φ₁       = unshunt (splitₙ n φ₁)
+strip-cases : (φ : PropFormula) → stripCases φ
+strip-cases (φ₁ ∧ φ₂)     = conj _ _
+strip-cases (φ₁ ∨ φ₂)     = disj _ _
+strip-cases (φ₁ ⇒ φ₂)     = impl _ _
+strip-cases (φ₁ ⇔ φ₂)     = biimpl _ _
+strip-cases (¬ ⊤)         = ntop
+strip-cases (¬ ⊥)         = nbot
+strip-cases (¬ (φ₁ ∧ φ₂)) = nconj _ _
+strip-cases (¬ (φ₁ ∨ φ₂)) = ndisj _ _
+strip-cases (¬ (φ₁ ⇒ φ₂)) = nimpl _ _
+strip-cases (¬ (φ₁ ⇔ φ₂)) = nbiimpl _ _
+strip-cases (¬ (¬ φ))     = nneg _
+strip-cases φ₁            = other _
+
+-- Def.
+strip₁ : PropFormula → Nat → PropFormula
+strip₁ φ (suc n)
+  with strip-cases φ
+...  | conj φ₁ φ₂    = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⇒ strip₁ φ₂ n)
+...  | disj φ₁ φ₂    = uh (¬ φ₁ ⇒ strip₁ φ₂ n)
+...  | impl φ₁ φ₂    = uh (φ₁ ⇒ strip₁ φ₂ n)
+...  | biimpl φ₁ φ₂  = uh (φ₁ ⇒ strip₁ φ₂ n) ∧ uh (φ₂ ⇒ strip₁ φ₁ n)
+...  | nconj φ₁ φ₂   = uh (φ₁ ⇒ strip₁ (¬ φ₂) n)
+...  | ndisj φ₁ φ₂   = uh (strip₁ (¬ φ₁) n) ∧ uh (¬ φ₁ ⇒ strip₁ (¬ φ₂) n)
+...  | nimpl φ₁ φ₂   = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⇒ strip₁ (¬ φ₂) n)
+...  | nbiimpl φ₁ φ₂ = uh (φ₁ ⇒ strip₁ (¬ φ₂) n) ∧ uh ((¬ φ₂) ⇒ strip₁ φ₁ n)
+...  | nneg φ₁       = uh (strip₁ φ₁ n)
 ...  | nbot          = ⊤
 ...  | ntop          = ⊥
 ...  | other .φ      = φ
+strip₁ φ _  = φ
 
-lem-splitₙ
+-- Strip complexity measure.
+strip-cm : PropFormula → Nat
+strip-cm φ with strip-cases φ
+... | conj φ₁ φ₂    = max (strip-cm φ₁) (strip-cm φ₂) + 1
+... | disj φ₁ φ₂    = strip-cm φ₂ + 1
+... | impl φ₁ φ₂    = strip-cm φ₂ + 1
+... | biimpl φ₁ φ₂  = max (strip-cm φ₁) (strip-cm φ₂) + 1
+... | nconj φ₁ φ₂   = strip-cm (¬ φ₂) + 1
+... | ndisj φ₁ φ₂   = max (strip-cm (¬ φ₁)) (strip-cm (¬ φ₂)) + 1
+... | nimpl φ₁ φ₂   = max (strip-cm φ₁) (strip-cm (¬ φ₂)) + 1
+... | nbiimpl φ₁ φ₂ = max (strip-cm (¬ φ₁)) (strip-cm (¬ φ₂)) + 1
+... | nneg φ₁       = strip-cm φ₁ + 1
+... | nbot          = 1
+... | ntop          = 1
+... | other .φ      = 1
+
+-- Lemma.
+strip₁-lemma
   : ∀ {Γ} {φ}
-  → (n : ℕ)
-  → Γ ⊢ splitₙ n φ
+  → (n : Nat)
+  → Γ ⊢ strip₁ φ n
   → Γ ⊢ φ
 
-lem-splitₙ {_} {_} zero Γ⊢splitₙ = Γ⊢splitₙ
-lem-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
-... | conj φ₁ φ₂ =
-  ∧-intro
-    helper
-    (lem-splitₙ n
-      (⇒-elim
-        (lem-unshunt (∧-proj₂ Γ⊢splitₙ))
-        helper ))
-  where
-    helper : Γ ⊢ φ₁
-    helper = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
-
-... | disj φ₁ φ₂ =
-  ⇒-elim
-    (⇒-intro
-      (∨-elim {Γ = Γ}
-        (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
-        (∨-intro₂ φ₁
-          (lem-splitₙ n
+-- Proof.
+strip₁-lemma {_} {_} zero    Γ⊢strip₁ = Γ⊢strip₁
+strip₁-lemma {Γ} {φ} (suc n) Γ⊢strip₁
+  with strip-cases φ
+...  | conj φ₁ φ₂ =
+        ∧-intro
+          helper
+          (strip₁-lemma n
             (⇒-elim
-              (lem-unshunt
-                (weaken (¬ φ₁) Γ⊢splitₙ))
-              (assume {Γ = Γ} (¬ φ₁)))))))
-    (PEM {Γ = Γ} {φ = φ₁})
+              (uh-lemma (∧-proj₂ Γ⊢strip₁))
+              helper ))
+        where
+          helper : Γ ⊢ φ₁
+          helper = strip₁-lemma n (uh-lemma (∧-proj₁ Γ⊢strip₁))
+
+...  | disj φ₁ φ₂ =
+        ⇒-elim
+          (⇒-intro
+            (∨-elim {Γ = Γ}
+              (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+              (∨-intro₂ φ₁
+                (strip₁-lemma n
+                  (⇒-elim
+                    (uh-lemma
+                      (weaken (¬ φ₁) Γ⊢strip₁))
+                    (assume {Γ = Γ} (¬ φ₁)))))))
+          (PEM {Γ = Γ} {φ = φ₁})
 
 ... | impl φ₁ φ₂ =
- ⇒-intro
-   (lem-splitₙ n
-     (⇒-elim
-       (weaken φ₁
-         (lem-unshunt Γ⊢splitₙ))
-         (assume {Γ = Γ} φ₁)))
+        ⇒-intro
+          (strip₁-lemma n
+            (⇒-elim
+              (weaken φ₁
+                (uh-lemma Γ⊢strip₁))
+                (assume {Γ = Γ} φ₁)))
 
 ... | biimpl φ₁ φ₂ =
-  ⇔-equiv₂ (∧-intro helper₁ helper₂)
-  where
-    helper₁ : Γ ⊢ φ₁ ⇒ φ₂
-    helper₁ = ⇒-intro
-         (lem-splitₙ n
-           (⇒-elim
-             (weaken φ₁
-               (lem-unshunt (∧-proj₁ Γ⊢splitₙ)))
-             (assume {Γ = Γ} φ₁)))
+        ⇔-equiv₂ (∧-intro helper₁ helper₂)
+        where
+          helper₁ : Γ ⊢ φ₁ ⇒ φ₂
+          helper₁ = ⇒-intro
+               (strip₁-lemma n
+                 (⇒-elim
+                   (weaken φ₁
+                     (uh-lemma (∧-proj₁ Γ⊢strip₁)))
+                   (assume {Γ = Γ} φ₁)))
 
-    helper₂ : Γ ⊢ φ₂ ⇒ φ₁
-    helper₂ = ⇒-intro
-          (lem-splitₙ n
-            (⇒-elim
-              (weaken φ₂
-                (lem-unshunt (∧-proj₂ Γ⊢splitₙ)))
-             (assume {Γ = Γ} φ₂)))
+          helper₂ : Γ ⊢ φ₂ ⇒ φ₁
+          helper₂ = ⇒-intro
+                (strip₁-lemma n
+                  (⇒-elim
+                    (weaken φ₂
+                      (uh-lemma (∧-proj₂ Γ⊢strip₁)))
+                   (assume {Γ = Γ} φ₂)))
 
 ... |  nconj φ₁ φ₂ =
   ¬∨¬-to-¬∧ (⇒-to-¬∨ helper)
@@ -202,23 +230,23 @@ lem-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       (⇒-intro
-        (lem-splitₙ n
+        (strip₁-lemma n
           (⇒-elim
             (weaken φ₁
-              (lem-unshunt Γ⊢splitₙ))
+              (uh-lemma Γ⊢strip₁))
           (assume {Γ = Γ} φ₁))))
 
 ... | ndisj φ₁ φ₂ =
   ¬∧¬-to-¬∨
     (∧-intro
       helper
-      (lem-splitₙ n
+      (strip₁-lemma n
         (⇒-elim
-          (lem-unshunt (∧-proj₂ Γ⊢splitₙ))
+          (uh-lemma (∧-proj₂ Γ⊢strip₁))
           helper)))
   where
     helper : Γ ⊢ ¬ φ₁
-    helper = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
+    helper = strip₁-lemma n (uh-lemma (∧-proj₁ Γ⊢strip₁))
 
 ... | nimpl φ₁ φ₂ =
   ¬-intro
@@ -232,14 +260,14 @@ lem-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
         (weaken (φ₁ ⇒ φ₂) Γ⊢φ₁)))
   where
     Γ⊢φ₁ : Γ ⊢ φ₁
-    Γ⊢φ₁ = lem-splitₙ n (lem-unshunt (∧-proj₁ Γ⊢splitₙ))
+    Γ⊢φ₁ = strip₁-lemma n (uh-lemma (∧-proj₁ Γ⊢strip₁))
 
     helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper =
       ⇒-intro
-        (lem-splitₙ n
+        (strip₁-lemma n
           (⇒-elim
-            (lem-unshunt (weaken φ₁ (∧-proj₂ Γ⊢splitₙ)))
+            (uh-lemma (weaken φ₁ (∧-proj₂ Γ⊢strip₁)))
             (assume {Γ = Γ} φ₁)))
 
 ... | nbiimpl φ₁ φ₂ = ⇒¬∧¬⇒-to-¬⇔ (∧-intro helper₁ helper₂)
@@ -247,58 +275,41 @@ lem-splitₙ {Γ} {φ} (suc n) Γ⊢splitₙ with split-view φ
     helper₁ : Γ ⊢ φ₁ ⇒ ¬ φ₂
     helper₁ =
       ⇒-intro
-        (lem-splitₙ n
+        (strip₁-lemma n
           (⇒-elim
-            (lem-unshunt (weaken φ₁ (∧-proj₁ Γ⊢splitₙ)))
+            (uh-lemma (weaken φ₁ (∧-proj₁ Γ⊢strip₁)))
             (assume {Γ = Γ} φ₁)))
 
     helper₂ : Γ ⊢ ¬ φ₂ ⇒ φ₁
     helper₂ =
       ⇒-intro
-        (lem-splitₙ n
+        (strip₁-lemma n
           (⇒-elim
-            (lem-unshunt (weaken (¬ φ₂) (∧-proj₂ Γ⊢splitₙ)))
+            (uh-lemma (weaken (¬ φ₂) (∧-proj₂ Γ⊢strip₁)))
             (assume {Γ = Γ} (¬ φ₂))))
 
-... | nneg φ₁  = ¬¬-equiv₂ (lem-splitₙ n (lem-unshunt Γ⊢splitₙ))
+... | nneg φ₁  = ¬¬-equiv₂ (strip₁-lemma n (uh-lemma Γ⊢strip₁))
 ... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
-... | ntop     = ⊥-elim (¬ ⊤) Γ⊢splitₙ
-... | other φ₁ = Γ⊢splitₙ
+... | ntop     = ⊥-elim (¬ ⊤) Γ⊢strip₁
+... | other φ₁ = Γ⊢strip₁  -- ▩
 
--- Split complexity measure.
-split-complexity : PropFormula → ℕ
-split-complexity φ with split-view φ
-... | conj φ₁ φ₂    = 
-        max (split-complexity φ₁) (split-complexity φ₂) + 1
-... | disj φ₁ φ₂    = split-complexity φ₂ + 1
-... | impl φ₁ φ₂    = split-complexity φ₂ + 1
-... | biimpl φ₁ φ₂  = 
-        max (split-complexity φ₁) (split-complexity φ₂) + 1
-... | nconj φ₁ φ₂   = split-complexity (¬ φ₂) + 1
-... | ndisj φ₁ φ₂   = 
-        max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
-... | nimpl φ₁ φ₂   = 
-        max (split-complexity φ₁) (split-complexity (¬ φ₂)) + 1
-... | nbiimpl φ₁ φ₂ = 
-        max (split-complexity (¬ φ₁)) (split-complexity (¬ φ₂)) + 1
-... | nneg φ₁       = split-complexity φ₁ + 1
-... | nbot          = 1
-... | ntop          = 1
-... | other .φ      = 1
+-- Def.
+strip : PropFormula → PropFormula
+strip φ = strip₁ φ (strip-cm φ)
 
-split : PropFormula → PropFormula
-split φ = splitₙ (split-complexity φ) φ
-
-lem-split
+-- Lemma.
+strip-lemma
   : ∀ {Γ} {φ}
-  → Γ ⊢ split φ
+  → Γ ⊢ strip φ
   → Γ ⊢ φ
-lem-split {_} {φ} = lem-splitₙ (split-complexity φ)
 
-thm-strip
+-- Proof.
+strip-lemma {_} {φ} = strip₁-lemma (strip-cm φ) -- ▩
+
+-- Theorem.
+strip-theorem
   : ∀ {Γ} {φ}
-  → Γ ⊢ split φ ⇒ φ
-thm-strip {Γ} {φ} = ⇒-intro (lem-split (assume {Γ = Γ} (split φ)))
+  → Γ ⊢ strip φ ⇒ φ
 
-strip_to_ : PropFormula → PropFormula → PropFormula
-strip φ to ψ = conjunct (split φ) ψ
+-- Proof.
+strip-theorem {Γ} {φ} = ⇒-intro (strip-lemma (assume {Γ = Γ} (strip φ))) -- ▩
