@@ -357,7 +357,7 @@ reorder-∧∨ φ ψ
 reorder-∧∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ reorder-∧∨ φ ψ
 
 -- Proof.
