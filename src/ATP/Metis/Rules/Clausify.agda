@@ -28,7 +28,7 @@ clausify φ ψ
 ... | false = reorder-∧∨ (cnf φ) ψ
 
 clausify-thm
-    : ∀ {Γ} {φ}
+    : ∀ {Γ} {φ : Premise}
     → (ψ : Conclusion)
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
