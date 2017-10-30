@@ -4,34 +4,21 @@
 ------------------------------------------------------------------------------
 
 open import Data.Nat
-  using (zero ; _+_)
+  using    (zero ; _+_)
   renaming ( ℕ to Nat; _⊔_ to max ; suc to suc )
 
 module ATP.Metis.Rules.Strip ( n : Nat ) where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Rules.Conjunct n using ( conjunct; thm-conjunct )
-
-open import Data.Bool
-  renaming ( _∧_ to _&&_; _∨_ to _||_ )
-  using    ( Bool; true; false; if_then_else_ )
-
-open import Data.List using ( List ; [] ; _∷_ ; _++_ ; [_] ; foldl )
-
 open import Data.PropFormula.Syntax   n
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views    n
 
-open import Function using ( _$_; id; _∘_ )
-
-open import Relation.Binary.PropositionalEquality using (refl; _≡_; _≢_)
-open import Relation.Nullary                      renaming (¬_ to ¬₂)
-
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
--- Splitting the goal.
+-- Stripping a goal.
 ------------------------------------------------------------------------------
 
 data uhCases : PropFormula → Set where
