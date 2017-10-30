@@ -65,7 +65,7 @@ canonicalize φ =
 postulate
   -- Theorem.
   canonicalize-thm
-    : ∀ {Γ} {φ}
+    : ∀ {Γ} {φ : Premise}
+    → (ψ : Conclusion)
     → Γ ⊢ φ
-    → (ψ : PropFormula)
     → Γ ⊢ canonicalize φ ψ
