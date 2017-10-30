@@ -13,8 +13,11 @@ open import Data.PropFormula.Syntax n
 
 ------------------------------------------------------------------------------
 
-Premise : Set
-Premise = PropFormula
-
 Conclusion : Set
 Conclusion = PropFormula
+
+Lit : Set
+Lit = PropFormula
+
+Premise : Set
+Premise = PropFormula
