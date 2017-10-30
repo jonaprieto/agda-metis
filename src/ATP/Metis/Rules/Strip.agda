@@ -11,6 +11,8 @@ module ATP.Metis.Rules.Strip ( n : Nat ) where
 
 ------------------------------------------------------------------------------
 
+open import ATP.Metis.Rules.Conjunct n using ( conjunct )
+
 open import Data.PropFormula.Syntax   n
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views    n
@@ -300,3 +302,7 @@ strip-thm
 
 -- Proof.
 strip-thm {Γ} {φ} = ⇒-intro (strip-lem (assume {Γ = Γ} (strip φ))) -- ▩
+
+-- Extra:
+strip_to_ : PropFormula → PropFormula → PropFormula
+strip φ to ψ = conjunct (strip φ) ψ
