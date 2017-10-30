@@ -23,6 +23,7 @@ open import Relation.Binary.PropositionalEquality using ( sym )
 
 ------------------------------------------------------------------------------
 
+-- Def.
 conjunct : Premise → Conclusion → PropFormula
 conjunct φ ψ
   with ⌊ eq φ ψ ⌋
@@ -38,12 +39,14 @@ conjunct φ ψ
 ...       | true   = ψ
 ...       | false  = φ
 
+-- Theorem.
 conjunct-thm
   : ∀ {Γ} {φ}
   → (ψ : Conclusion)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
 
+-- Proof.
 conjunct-thm {Γ} {φ} ψ Γ⊢φ
   with eq φ ψ
 ... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
@@ -56,4 +59,4 @@ conjunct-thm {Γ} {φ} ψ Γ⊢φ
 ...       | no _
           with eq ψ (conjunct φ₂ ψ)
 ...          | yes p₃ = subst (sym p₃) (conjunct-thm ψ (∧-proj₂ Γ⊢φ))
-...          | no _   = Γ⊢φ
+...          | no _   = Γ⊢φ  -- ▩
