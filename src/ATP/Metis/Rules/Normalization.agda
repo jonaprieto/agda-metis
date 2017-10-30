@@ -216,7 +216,7 @@ postulate
     → Γ ⊢ nnf₀ pol φ
 
 postulate
-  nnf₀-lem-inv
+  from-nnf₀-lem
     : ∀ {Γ} {φ}
     → (pol : Polarity)
     → Γ ⊢ nnf₀ pol φ
@@ -233,7 +233,7 @@ postulate
     → Γ ⊢ nnf φ
 
 postulate
-  nnf-lem-inv
+  from-nnf-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ nnf φ
     → Γ ⊢ φ
@@ -258,7 +258,7 @@ postulate
 
 postulate
   -- Lemma.
-  dist-∨-lem-inv
+  from-dist-∨-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ dist-∨ φ
     → Γ ⊢ φ
@@ -279,7 +279,7 @@ postulate
 
 postulate
   -- Lemma.
-  dist-lem-inv
+  from-dist-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ dist φ
     → Γ ⊢ φ
@@ -298,7 +298,7 @@ cnf-lem
 cnf-lem Γ⊢φ = dist-lem (nnf-lem Γ⊢φ)  -- ▩
 
 postulate
-  thm-inv-cnf
+  from-cnf-lem
     : ∀ {Γ} {φ}
     → Γ ⊢ cnf φ
     → Γ ⊢ φ
