@@ -33,7 +33,7 @@ clausify-thm
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
 
-clausify-thm {Γ} {φ} ψ Γ⊢φ
+clausify-thm {_} {φ} ψ Γ⊢φ
    with eq φ ψ
-... | yes p = subst p Γ⊢φ
-... | no _  = reorder-∧∨-lem (cnf-lem Γ⊢φ) ψ
+... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
+... | no _    = reorder-∧∨-lem (cnf-lem Γ⊢φ) ψ
