@@ -20,7 +20,7 @@ open import Data.PropFormula.Views n
   using    ( DisjView; disj-view; other; conj-view; conj)
   renaming ( disj to disjshape )
 
-open import Data.PropFormula.Theorems.Disjunction n using ( ∨-assoc₂ )
+open import Data.PropFormula.Theorems n using ( ∨-assoc₂; ∧-assoc₂ )
 
 open import Data.Bool                             using ( true; false )
 open import Function                              using ( _$_; id; _∘_ )
@@ -93,6 +93,67 @@ assoc-∨-lem
 
 -- Proof.
 assoc-∨-lem {_}{φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ -- ▩
+
+-- Conjunctions in a right-associative form.
+
+data assoc-∧-Cases : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → assoc-∧-Cases ((φ₁ ∧ φ₂) ∧ φ₃)
+  case₂ : (φ₁ φ₂ : PropFormula)    → assoc-∧-Cases (φ₁ ∧ φ₂)
+  other : (φ : PropFormula)        → assoc-∧-Cases φ
+
+assoc-∧-cases : (φ : PropFormula) → assoc-∧-Cases φ
+assoc-∧-cases ((φ₁ ∧ φ₂) ∧ φ₃) = case₁ _ _ _
+assoc-∧-cases (φ ∧ ψ)          = case₂ _ _
+assoc-∧-cases φ                = other _
+
+-- Def.
+assoc-∧₁ : PropFormula → Nat → PropFormula
+assoc-∧₁ φ (suc n)
+  with assoc-∧-cases φ
+... | case₁ φ₁ φ₂ φ₃ = assoc-∧₁ (φ₁ ∧ (φ₂ ∧ φ₃)) n
+... | case₂ φ₁ φ₂    = φ₁ ∧ assoc-∧₁ φ₂ n
+... | other .φ       = φ
+assoc-∧₁ φ _  = φ
+
+-- Complexity measure.
+assoc-∧-cm : PropFormula → Nat
+assoc-∧-cm φ
+  with assoc-∧-cases φ
+... | case₁ φ₁ φ₂ φ₃ = assoc-∧-cm φ₂ + assoc-∧-cm φ₃ + 2
+... | case₂ φ₁ φ₂    = assoc-∧-cm φ₂ + 2
+... | other .φ       = 1
+
+assoc-∧₁-lem
+  : ∀ {Γ} {φ}
+  → (n : Nat)
+  → Γ ⊢ φ
+  → Γ ⊢ assoc-∧₁ φ n
+
+assoc-∧₁-lem zero Γ⊢φ = Γ⊢φ
+assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢φ
+  with assoc-∧-cases φ
+... | case₁ φ₁ φ₂ φ₃ = assoc-∧₁-lem n (∧-assoc₂ Γ⊢φ)
+... | case₂ φ₁ φ₂ =
+      ∧-intro
+        (∧-proj₁ Γ⊢φ)
+        (assoc-∧₁-lem n (∧-proj₂ Γ⊢φ))
+... | other _ = Γ⊢φ
+
+
+-- Def.
+assoc-∧ : PropFormula → PropFormula
+assoc-∧ φ = assoc-∧₁ φ (assoc-∧-cm φ)
+
+-- Lemma.
+assoc-∧-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ assoc-∧ φ
+
+-- Proof.
+assoc-∧-lem {_}{φ} Γ⊢φ = assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢φ -- ▩
+
+----------------------------------------------------------------------
 
 -- Def.
 build-∨ : Premise → Conclusion → PropFormula
