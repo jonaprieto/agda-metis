@@ -9,37 +9,34 @@ module ATP.Metis.Rules.Resolve ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
+open import ATP.Metis.Synonyms n
+open import ATP.Metis.Rules.Reordering n
+
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
 open import Data.PropFormula.Properties n           using ( eq; subst )
-open import Data.PropFormula.NormalForms n          using ( cnf; thm-cnf )
-open import Data.PropFormula.Views n
-  using ( DisjView; disj-view; disj; other)
 
-open import Data.PropFormula.Theorems.Conjunction n using ( ∧-dmorgan₁ )
 open import Data.PropFormula.Theorems.Disjunction n
-  using ( ∨-comm; lem1; lem2; ∨-assoc₂; subst⊢∨₁; resolve₀)
+   using ( subst⊢∨₁; resolve₀ )
 
 open import Data.Bool                             using ( true; false )
-open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
-
-open import ATP.Metis.Rules.Reordering n
 
 ------------------------------------------------------------------------------
 
 -- Resolution using reorder-∨.
-data ResView : PropFormula → Set where
-  case₁ : (φ₁ φ₂ φ₃ φ₄ : PropFormula) → ResView ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))
-  other : (φ : PropFormula)           → ResView φ
+data resCases : PropFormula → Set where
+  case₁ : (φ₁ φ₂ φ₃ φ₄ : PropFormula) → resCases ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))
+  other : (φ : PropFormula)           → resCases φ
 
-res-view : (φ : PropFormula) → ResView φ
-res-view ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
-res-view φ                       = other _
+rsol-cases : (φ : PropFormula) → resCases φ
+rsol-cases ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
+rsol-cases φ                       = other _
 
+-- Def.
 rsol : PropFormula → PropFormula
 rsol φ
-  with res-view φ
+  with rsol-cases φ
 rsol φ                        | other .φ    = φ
 rsol .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ₄
   with ⌊ eq φ₃ (¬ φ₁) ⌋
@@ -49,15 +46,17 @@ rsol .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ�
 ...       | true  = φ₂
 ...       | false = φ₂ ∨ φ₄
 
-lem-rsol
+-- Lemma.
+rsol-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ rsol φ
 
-lem-rsol {Γ} {φ} Γ⊢φ
-  with res-view φ
-lem-rsol {Γ} {_} Γ⊢φ                        | other _     = Γ⊢φ
-lem-rsol {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
+-- Proof.
+rsol-lem {Γ} {φ} Γ⊢φ
+  with rsol-cases φ
+rsol-lem {Γ} {_} Γ⊢φ                        | other _     = Γ⊢φ
+rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
   with eq φ₃ (¬ φ₁)
 ...    | no  _ = Γ⊢φ
 ...    | yes p₁
@@ -83,30 +82,30 @@ lem-rsol {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
                 (∧-proj₂ Γ⊢φ))
 
 {-
-  The best scenario for resolve rule:
-
            φ₁                      ϕ₂
        ──────── reorder-∨     ────────── reorder-∨
         l ∨ goal               ¬ l ∨ goal
    ──────────────────────────────────────────  resolve φ₁ φ₂ l goal
                         goal
-
-  Why the best? because reorder-∨ could not build for example (l ∨ goal).
 -}
 
-resolve : PropFormula → PropFormula → PropFormula → PropFormula → PropFormula
+-- Def.
+resolve : Premise → Premise → Lit → Conclusion → PropFormula
 resolve φ₁ φ₂ l goal =
-  rsol $ (reorder-∨ φ₁ $ l ∨ goal) ∧ (reorder-∨ φ₂ $ ¬ l ∨ goal)
-thm-resolve
-  : ∀ {Γ} {φ₁ φ₂}
-  → (ψ : PropFormula)   -- goal
-  → (l : PropFormula)   -- literal
-  → Γ ⊢ φ₁              -- left side
-  → Γ ⊢ φ₂              -- right side
-  → Γ ⊢ resolve φ₁ φ₂ l ψ
+  rsol ((reorder-∨ φ₁ (l ∨ goal)) ∧ (reorder-∨ φ₂ (¬ l ∨ goal)))
 
-thm-resolve {Γ} {φ₁}{φ₂} ψ l Γ⊢φ₁ Γ⊢φ₂ =
-  lem-rsol
+-- Theorem.
+thm-resolve
+  : ∀ {Γ} {φ₁ φ₂ : Premise}
+  → (ψ : Conclusion)
+  → (ℓ : Lit)
+  → Γ ⊢ φ₁
+  → Γ ⊢ φ₂
+  → Γ ⊢ resolve φ₁ φ₂ ℓ ψ
+
+-- Proof.
+thm-resolve ψ ℓ Γ⊢φ₁ Γ⊢φ₂ =
+  rsol-lem
     (∧-intro
-      (thm-reorder-∨ Γ⊢φ₁ (l ∨ ψ))
-      (thm-reorder-∨ Γ⊢φ₂ (¬ l ∨ ψ)))
+      (reorder-∨-lem Γ⊢φ₁ (ℓ ∨ ψ))
+      (reorder-∨-lem Γ⊢φ₂ (¬ ℓ ∨ ψ)))  -- ▩
