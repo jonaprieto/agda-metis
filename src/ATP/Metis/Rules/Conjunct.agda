@@ -9,17 +9,16 @@ module ATP.Metis.Rules.Conjunct ( n : ℕ ) where
 
 ------------------------------------------------------------------------------
 
-open import Data.Bool.Base         using ( Bool; false; true )
-open import Data.List.Base         using (_∷_; []; [_]; List; _∷ʳ_; _++_)
+open import  ATP.Metis.Synonyms n
+
+open import Data.Bool.Base using ( false; true )
 
 open import Data.PropFormula.Dec n        using ( yes; no; ⌊_⌋ )
 open import Data.PropFormula.Properties n using ( eq; subst )
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.Views n
+open import Data.PropFormula.Views  n using ( conj-view; other; conj )
 
-open import Function using ( _$_; id )
-
-open import Relation.Binary.PropositionalEquality using ( refl )
+open import Relation.Binary.PropositionalEquality using ( sym )
 
 ------------------------------------------------------------------------------
 
@@ -31,30 +30,29 @@ conjunct φ ψ
     with conj-view φ
 ... | other _  =  φ
 ... | conj φ₁ φ₂
-    with ⌊ eq (conjunct φ₁ ψ) ψ ⌋
+    with ⌊ eq ψ (conjunct φ₁ ψ) ⌋
 ...    | true  = ψ
 ...    | false
-       with ⌊ eq (conjunct φ₂ ψ) ψ ⌋
+       with ⌊ eq ψ (conjunct φ₂ ψ)⌋
 ...       | true   = ψ
 ...       | false  = φ
 
-thm-conjunct
+conjunct-thm
   : ∀ {Γ} {φ}
-  → (ψ : PropFormula)
+  → (ψ : Conclusion)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
 
-thm-conjunct {Γ} {φ} ψ Γ⊢φ
+conjunct-thm {Γ} {φ} ψ Γ⊢φ
   with eq φ ψ
-... | yes p₁  = subst p₁ Γ⊢φ
+... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no _
     with conj-view φ
 ...    | other _  = Γ⊢φ
 ...    | conj φ₁ φ₂
-       with eq (conjunct φ₁ ψ) ψ
-...       | yes p₂  = subst p₂ (thm-conjunct ψ (∧-proj₁ Γ⊢φ))
+       with eq ψ (conjunct φ₁ ψ)
+...       | yes p₂  = subst (sym p₂) (conjunct-thm ψ (∧-proj₁ Γ⊢φ))
 ...       | no _
-          with eq (conjunct φ₂ ψ) ψ
-...          | yes p₃ = subst p₃ (thm-conjunct ψ (∧-proj₂ Γ⊢φ))
+          with eq ψ (conjunct φ₂ ψ)
+...          | yes p₃ = subst (sym p₃) (conjunct-thm ψ (∧-proj₂ Γ⊢φ))
 ...          | no _   = Γ⊢φ
-
