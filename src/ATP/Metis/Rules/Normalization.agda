@@ -166,7 +166,7 @@ postulate
 
 data Polarity : Set where
   ⊕ : Polarity
-  ⊝ : Polarity
+  ⊖ : Polarity
 
 
 data nnf-Cases : PropFormula  → Set where
@@ -193,16 +193,16 @@ nnf₀ ⊕ φ
   with nnf-cases φ
 nnf₀ ⊕ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊕ φ₁ ∧ nnf₀ ⊕ φ₂))
 nnf₀ ⊕ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊕ φ₁ ∨ nnf₀ ⊕ φ₂))
-nnf₀ ⊕ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊝ φ₁ ∨ nnf₀ ⊕ φ₂))
-nnf₀ ⊕ .(¬ φ)     | case₄ φ     = nnf₀ ⊝ φ
+nnf₀ ⊕ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊖ φ₁ ∨ nnf₀ ⊕ φ₂))
+nnf₀ ⊕ .(¬ φ)     | case₄ φ     = nnf₀ ⊖ φ
 nnf₀ ⊕ .(⊥)       | case₅ φ     = ⊥
 nnf₀ ⊕ .(⊤)       | case₆ φ     = ⊤
 nnf₀ ⊕ φ          | other .φ    = φ
 nnf₀ ⊖ φ
   with nnf-cases φ
-nnf₀ ⊖ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊝ φ₁ ∨ nnf₀ ⊝ φ₂))
-nnf₀ ⊖ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊝ φ₁ ∧ nnf₀ ⊝ φ₂))
-nnf₀ ⊖ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊝ φ₂ ∧ nnf₀ ⊕ φ₁))
+nnf₀ ⊖ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊖ φ₁ ∨ nnf₀ ⊖ φ₂))
+nnf₀ ⊖ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊖ φ₁ ∧ nnf₀ ⊖ φ₂))
+nnf₀ ⊖ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊖ φ₂ ∧ nnf₀ ⊕ φ₁))
 nnf₀ ⊖ .(¬ φ)     | case₄ φ     = nnf₀ ⊕ φ
 nnf₀ ⊖ .(⊥)       | case₅ φ     = ⊤
 nnf₀ ⊖ .(⊤)       | case₆ φ     = ⊥
