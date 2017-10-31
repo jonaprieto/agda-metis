@@ -67,9 +67,9 @@ canonicalize₀-lem {Γ} {φ} Γ⊢φ ψ
 -- Def.
 canonicalize : Premise → Conclusion → PropFormula
 canonicalize φ =
-  ( canonicalize₀
-  ● (↑f nnf)
-  ● (↑f id)
+  ( canonicalize₀  -- 3. Case cnf ψ ≡ reorder∧∨ (cnf φ) (cnf ψ)
+  ● (↑f nnf)       -- 2. Case ψ ≡ nnf φ
+  ● (↑f id)        -- 1. Case φ ≡ ψ
   ) φ
 
 -- Theorem.
