@@ -138,8 +138,8 @@ infixl 3 ↑f_
 id : PropFormula → PropFormula
 id x = x
 
-thm-id : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
-thm-id {Γ} {φ} Γ⊢φ = Γ⊢φ
+id-lem : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
+id-lem {Γ} {φ} Γ⊢φ = Γ⊢φ
 
 -- Then we can check for equality in each step of a chain of composition (●) of
 -- unary functions.

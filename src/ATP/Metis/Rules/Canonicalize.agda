@@ -12,7 +12,7 @@ module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
 open import ATP.Metis.Synonyms n
 open import ATP.Metis.Rules.Normalization n
 
-open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_; ↑f_; ↑t; id; thm-id)
+open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_; ↑f_; ↑t; id; id-lem)
 
 open import ATP.Metis.Rules.Reordering n
 open import ATP.Metis.Rules.Resolve n
@@ -42,17 +42,27 @@ canonicalize₀ φ ψ
 ...    | true  = ψ
 ...    | false = φ
 
-postulate
-  -- Lemma.
-  canonicalize₀-lem
-    : ∀ {Γ} {φ}
-      → Γ ⊢ φ
-      → (ψ : Conclusion)
-      → Γ ⊢ canonicalize₀ φ ψ
+-- Lemma.
+canonicalize₀-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → (ψ : Conclusion)
+  → Γ ⊢ canonicalize₀ φ ψ
 
--- Aux Def.
-const : PropFormula → (PropFormula → PropFormula)
-const φ = λ x → φ
+-- Proof.
+canonicalize₀-lem {Γ} {φ} Γ⊢φ ψ
+  with eq φ ψ
+...  | yes p₁ = subst p₁ Γ⊢φ
+...  | no _
+  with eq (cnf ψ) (reorder-∧∨ (cnf φ) (cnf ψ))
+...  | yes p₂ =
+       from-cnf-lem
+         (subst (sym p₂)
+         (reorder-∧∨-lem
+           (cnf-lem Γ⊢φ)
+           (cnf ψ)))
+...  | no _   = Γ⊢φ -- ■
+
 
 -- Def.
 canonicalize : Premise → Conclusion → PropFormula
@@ -62,10 +72,12 @@ canonicalize φ =
   ● (↑f id)
   ) φ
 
-postulate
-  -- Theorem.
-  canonicalize-thm
-    : ∀ {Γ} {φ : Premise}
-    → (ψ : Conclusion)
-    → Γ ⊢ φ
-    → Γ ⊢ canonicalize φ ψ
+-- Theorem.
+canonicalize-thm
+  : ∀ {Γ} {φ : Premise}
+  → (ψ : Conclusion)
+  → Γ ⊢ φ
+  → Γ ⊢ canonicalize φ ψ
+
+canonicalize-thm {Γ} {φ} ψ Γ⊢φ =
+  (canonicalize₀-lem ●⊢ (↑t nnf-lem) ●⊢ ↑t id-lem) Γ⊢φ ψ
