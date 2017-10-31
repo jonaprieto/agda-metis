@@ -89,12 +89,12 @@ simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
 
 
 -- Lemma.
-
 simplify-∨-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ simplify-∨ φ
 
+-- Proof.
 simplify-∨-lem {Γ} {φ} Γ⊢φ
   with simplify-∨-cases φ
 simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
@@ -103,8 +103,14 @@ simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
       (∨-elim {Γ = Γ}
         (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))
         (simplify-∨-lem (assume {Γ = Γ} φ))))
+  Γ⊢φ  
+simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ =
+  ⇒-elim
+    (⇒-intro
+    (∨-elim {Γ = Γ}
+      (simplify-∨-lem (assume {Γ = Γ} φ))
+      (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))))
     Γ⊢φ
-simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ = {!!}
 simplify-∨-lem {Γ} {.(⊤ ∨ φ)} Γ⊢φ | sdisj₃ φ = ⊤-intro
 simplify-∨-lem {Γ} {.(φ ∨ ⊤)} Γ⊢φ | sdisj₄ φ = ⊤-intro
 simplify-∨-lem {Γ} {.φ}       Γ⊢φ | other φ  = Γ⊢φ
@@ -253,7 +259,7 @@ simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂
 simplify-∧-lem {Γ} {.(¬ ψ ∧ φ₂)} Γ⊢φ | sconj₅ .(¬ ψ) φ₂ | neg ψ
   with ψ ∈∧ φ₂
 ... | yes p₁ =
-  ¬-elim (∧-proj₁ Γ⊢φ) (subst (sym p₁) (conjunct-thm ψ (∧-proj₂ Γ⊢φ))) 
+  ¬-elim (∧-proj₁ Γ⊢φ) (subst (sym p₁) (conjunct-thm ψ (∧-proj₂ Γ⊢φ)))
 ... | no _
     with (¬ ψ) ∈∧ φ₂
 ... | yes p₂ = simplify-∧-lem (∧-proj₂ Γ⊢φ)
