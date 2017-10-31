@@ -20,7 +20,7 @@ open import Data.Bool.Base
 open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
 open import Data.PropFormula.NormalForms n
-  using (cnf-dist; cnf-dist-lem; dist-∨; dist-∨-lem)
+  using (cnf-dist; cnf-dist-lem)
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Views  n
   renaming ( disj to disjshape )
