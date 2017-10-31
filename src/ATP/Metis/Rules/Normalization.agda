@@ -20,7 +20,7 @@ open import Data.Bool.Base
 open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
 open import Data.PropFormula.NormalForms n
-  using (cnf-dist; cnf-dist-lem)
+  using (cnf-dist; cnf-dist-lem; from-cnf-dist-lem )
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Views  n
   renaming ( disj to disjshape )
@@ -380,8 +380,11 @@ cnf-lem
 -- Proof.
 cnf-lem Γ⊢φ = cnf-dist-lem (nnf-lem Γ⊢φ)  -- ▩
 
-postulate
-  from-cnf-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ cnf φ
-    → Γ ⊢ φ
+-- Lemma.
+from-cnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ cnf φ
+  → Γ ⊢ φ
+
+-- Proof.
+from-cnf-lem {Γ} {φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
