@@ -81,6 +81,14 @@ assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
     Γ⊢φ
 ... | other _ = Γ⊢φ
 
+-- Lemma.
+postulate
+  from-assoc-∨₁-lem
+    : ∀ {Γ} {φ}
+    → (n : Nat)
+    → Γ ⊢ assoc-∨₁ φ n
+    → Γ ⊢ φ
+
 -- Def.
 assoc-∨ : PropFormula → PropFormula
 assoc-∨ φ = assoc-∨₁ φ (assoc-∨-cm φ)
@@ -93,6 +101,15 @@ assoc-∨-lem
 
 -- Proof.
 assoc-∨-lem {_}{φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ -- ▩
+
+
+-- Lemma.
+postulate
+  from-assoc-∨-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ assoc-∨ φ
+    → Γ ⊢ φ
+
 
 -- Conjunctions in a right-associative form.
 
@@ -139,6 +156,13 @@ assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢φ
         (assoc-∧₁-lem n (∧-proj₂ Γ⊢φ))
 ... | other _ = Γ⊢φ
 
+-- Lemma.
+postulate
+  from-assoc-∧₁-lem
+    : ∀ {Γ} {φ}
+    → (n : Nat)
+    → Γ ⊢ assoc-∧₁ φ n
+    → Γ ⊢ φ
 
 -- Def.
 assoc-∧ : PropFormula → PropFormula
@@ -152,6 +176,13 @@ assoc-∧-lem
 
 -- Proof.
 assoc-∧-lem {_}{φ} Γ⊢φ = assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢φ -- ▩
+
+
+postulate
+  from-assoc-∧
+    : ∀ {Γ} {φ}
+    → Γ ⊢ assoc-∧ φ
+    → Γ ⊢ φ
 
 ----------------------------------------------------------------------
 
@@ -193,6 +224,12 @@ build-∨-lem {_} {φ} Γ⊢φ ψ
 ...          | yes p₂ = ∨-intro₂ ψ₁ (subst (sym p₂) (build-∨-lem Γ⊢φ ψ₂))
 ...          | no  _  = Γ⊢φ -- ▩
 
+postulate
+  from-build-∨-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ build-∨ φ ψ
+    → Γ ⊢ φ
+
 -- Def.
 factor : PropFormula → PropFormula
 factor φ
@@ -226,6 +263,14 @@ factor-lem {Γ}{φ} Γ⊢φ
              Γ⊢φ
 ...     | no _ = Γ⊢φ  -- ▩
 
+-- Corollary.
+-- Lemma.
+postulate
+  from-factor-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ factor φ
+    → Γ ⊢ φ
+
 -- Def.
 sbuild-∨ : Premise → Conclusion → PropFormula
 sbuild-∨ φ ψ
@@ -255,6 +300,13 @@ sbuild-∨-lem {Γ} {φ} Γ⊢φ ψ
                   (sbuild-∨-lem (assume {Γ = Γ} φ₂) ψ))))
             Γ⊢φ)  -- ▩
 
+-- Lemma.
+postulate
+  from-sbuild-∨-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ sbuild-∨ φ ψ
+    → Γ ⊢ φ
+
 -- Def.
 reorder-∨ : Premise → Conclusion → PropFormula
 reorder-∨ φ ψ = sbuild-∨ (assoc-∨ φ) ψ
@@ -268,6 +320,12 @@ reorder-∨-lem
 
 -- Proof.
 reorder-∨-lem Γ⊢φ ψ = sbuild-∨-lem (assoc-∨-lem Γ⊢φ) ψ -- ▩
+
+postulate
+  from-reorder-∨-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ reorder-∨ φ ψ
+    → Γ ⊢ φ
 
 ------------------------------------------------------------------------------
 -- Reordering conjunctions.
@@ -313,6 +371,13 @@ reorder-∧-lem {Γ} {φ} Γ⊢φ ψ
                   ∧-intro
                     (subst (sym p₁) (reorder-∧-lem Γ⊢φ ψ₁))
                     (subst (sym p₂) (reorder-∧-lem Γ⊢φ ψ₂))  -- ▩
+
+-- Lemma.
+postulate
+  from-reorder-∧-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ reorder-∧ φ ψ
+    → Γ ⊢ φ
 
 -------------------------------------------------------------------------------
 -- Reordering a conjunction of disjunctions.
@@ -385,6 +450,11 @@ disj-lem {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | no _ | other .ψ | (conj �
 ... | yes p₅ = subst (sym p₅) (disj-lem ψ (∧-proj₂ Γ⊢φ))
 ... | no  _ = Γ⊢φ -- ■
 
+postulate
+  from-disj-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ disj φ ψ
+    → Γ ⊢ φ
 
 -- Def.
 reorder-∧∨ : Premise → Conclusion → PropFormula
@@ -432,3 +502,12 @@ reorder-∧∨-lem {Γ} {φ} Γ⊢φ ψ
                       (subst (sym p₁) (reorder-∧∨-lem Γ⊢φ ψ₁))
                       (subst (sym p₂) (reorder-∧∨-lem Γ⊢φ ψ₂))
 ...           | no  _  = Γ⊢φ  -- ■
+
+
+-- Lemma.
+postulate
+  from-reorder-∧∨-lem
+    : ∀ {Γ} {φ ψ}
+    → Γ ⊢ reorder-∧∨ φ ψ
+    → Γ ⊢ φ
+

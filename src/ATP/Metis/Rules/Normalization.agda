@@ -46,7 +46,8 @@ simplify-∨-cases  φ        = other _
 
 -- Def.
 _∈∨_ : (φ ψ : PropFormula) → Dec (ψ ≡ reorder-∨ φ ψ)
-φ ∈∨ ψ = eq ψ (reorder-∨ φ ψ)
+φ₁ ∈∨ φ = eq φ (reorder-∨ φ₁ φ)
+
 
 -- Def.
 simplify-∨ : PropFormula → PropFormula
@@ -88,12 +89,92 @@ simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
 
 
 -- Lemma.
-postulate
-  simplify-∨-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ simplify-∨ φ
 
+simplify-∨-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ simplify-∨ φ
+
+simplify-∨-lem {Γ} {φ} Γ⊢φ
+  with simplify-∨-cases φ
+simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))
+        (simplify-∨-lem (assume {Γ = Γ} φ))))
+    Γ⊢φ  -- simplify-∨-lem φ
+simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ = {!!}  -- simplify-∨-lem φ
+simplify-∨-lem {Γ} {.(⊤ ∨ φ)} Γ⊢φ | sdisj₃ φ = ⊤-intro
+simplify-∨-lem {Γ} {.(φ ∨ ⊤)} Γ⊢φ | sdisj₄ φ = ⊤-intro
+simplify-∨-lem {Γ} {.φ}       Γ⊢φ | other φ  = Γ⊢φ
+simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
+  with neg-view  φ₁
+simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
+  with ψ ∈∨ φ₂
+... | yes p₁ = ⊤-intro
+... | no _
+    with (¬ ψ) ∈∨ φ₂
+... | yes p₂ =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (simplify-∨-lem
+          (subst (sym p₂) (reorder-∨-lem (assume {Γ = Γ} (¬ ψ)) φ₂)))
+        (simplify-∨-lem (assume {Γ = Γ} φ₂))))
+    Γ⊢φ -- simplify-∨-lem φ₂
+... | no _
+    with eq (simplify-∨ φ₂) ⊤
+...     | yes p₃ = ⊤-intro
+...     | no _
+        with eq (simplify-∨ φ₂) ⊥
+...     | yes p₄ =
+            ⇒-elim
+                (⇒-intro
+                  (∨-elim {Γ = Γ}
+                    (assume {Γ = Γ} (¬ ψ))
+                    (⊥-elim (¬ ψ)
+                      (subst p₄ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
+                Γ⊢φ
+...     | no _ =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} (¬ ψ)))
+        (∨-intro₂ (¬ ψ) (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
+    Γ⊢φ
+simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos .φ₁
+  with (¬ φ₁) ∈∨ φ₂
+... | yes p₅ = ⊤-intro -- ⊤
+... | no _
+    with φ₁ ∈∨ φ₂
+... | yes p₆ =
+          ⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (simplify-∨-lem
+                  (subst (sym p₆) (reorder-∨-lem (assume {Γ = Γ} φ₁) φ₂)))
+                (simplify-∨-lem (assume {Γ = Γ} φ₂))))
+            Γ⊢φ
+... | no _
+    with eq (simplify-∨ φ₂) ⊤
+...     | yes p₇ = ⊤-intro
+...     | no _
+        with eq (simplify-∨ φ₂) ⊥
+...     | yes p₈ =
+          ⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (assume {Γ = Γ} φ₁)
+                (⊥-elim φ₁ (subst p₈ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
+            Γ⊢φ -- φ₁
+...     | no _ =
+          ⇒-elim
+            (⇒-intro
+            (∨-elim {Γ = Γ}
+               (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} φ₁))
+               (∨-intro₂ φ₁ (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
+            Γ⊢φ
 
 data simplify-∧-Cases : PropFormula  → Set where
 
