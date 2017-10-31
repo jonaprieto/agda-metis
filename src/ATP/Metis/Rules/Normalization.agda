@@ -19,6 +19,8 @@ open import Data.Bool.Base
 
 open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
+open import Data.PropFormula.NormalForms n
+  using (cnf-dist; cnf-dist-lem; dist-∨; dist-∨-lem)
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Views  n
   renaming ( disj to disjshape )
@@ -103,7 +105,7 @@ simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
       (∨-elim {Γ = Γ}
         (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))
         (simplify-∨-lem (assume {Γ = Γ} φ))))
-  Γ⊢φ  
+  Γ⊢φ
 simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ =
   ⇒-elim
     (⇒-intro
@@ -241,7 +243,6 @@ simplify-∧ .(φ₁ ∧ φ₂) | sconj₅ φ₁ φ₂ | pos .φ₁
 ...     | true  = φ₁
 ...     | false = φ₁ ∧ simplify-∧ φ₂
 
-
 -- Lemma.
 simplify-∧-lem
   : ∀ {Γ} {φ}
@@ -367,50 +368,8 @@ postulate
 ------------------------------------------------------------------------------
 
 -- Def.
-dist-∨ : PropFormula → PropFormula
-dist-∨ φ with c-view-aux φ
-dist-∨ .((φ₁ ∧ φ₂) ∨ φ₃) | case₁ φ₁ φ₂ φ₃ = dist-∨ (φ₁ ∨ φ₃) ∧ dist-∨ (φ₂ ∨ φ₃)
-dist-∨ .(φ₁ ∨ (φ₂ ∧ φ₃)) | case₂ φ₁ φ₂ φ₃ = dist-∨ (φ₁ ∨ φ₂) ∧ dist-∨ (φ₁ ∨ φ₃)
-dist-∨ φ                 | other .φ       = φ
-
-postulate
-  -- Lemma.
-  dist-∨-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ dist-∨ φ
-
-postulate
-  -- Lemma.
-  from-dist-∨-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ dist-∨ φ
-    → Γ ⊢ φ
-
--- Def.
-dist : PropFormula → PropFormula
-dist φ with d-view φ
-dist .(φ ∧ ψ) | conj φ ψ      = dist φ ∧ dist ψ
-dist .(φ ∨ ψ) | disjshape φ ψ = dist-∨ ((dist φ) ∨ (dist ψ))
-dist φ        | other .φ      = φ
-
-postulate
-  -- Lemma.
-  dist-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ φ
-    → Γ ⊢ dist φ
-
-postulate
-  -- Lemma.
-  from-dist-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ dist φ
-    → Γ ⊢ φ
-
--- Def.
 cnf : PropFormula → PropFormula
-cnf φ = dist (nnf φ)
+cnf φ = cnf-dist (nnf φ)
 
 -- Lemma.
 cnf-lem
@@ -419,7 +378,7 @@ cnf-lem
   → Γ ⊢ cnf φ
 
 -- Proof.
-cnf-lem Γ⊢φ = dist-lem (nnf-lem Γ⊢φ)  -- ▩
+cnf-lem Γ⊢φ = cnf-dist-lem (nnf-lem Γ⊢φ)  -- ▩
 
 postulate
   from-cnf-lem
