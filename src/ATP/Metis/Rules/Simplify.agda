@@ -202,11 +202,13 @@ data S-View : Premise → Premise → Conclusion → Set where
   swap   : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
 
 s-view : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-s-view φ₁ φ₂ ψ with simplify₀ φ₁ φ₂ ψ
-... | ⊥ = normal φ₁ φ₂ ψ
-... | _ with simplify₀ φ₂ φ₁ ψ
-...        | ⊥ = swap   φ₁ φ₂ ψ
-...        | _ = normal φ₁ φ₂ ψ
+s-view φ₁ φ₂ ψ
+  with ⌊ eq ψ (simplify₀ φ₁ φ₂ ψ)⌋
+... | true = normal φ₁ φ₂ ψ
+... | false
+    with ⌊ eq ψ (simplify₀ φ₂ φ₁ ψ) ⌋
+...    | true  = swap   φ₁ φ₂ ψ
+...    | false = normal φ₁ φ₂ ψ
 
 -- Def.
 simplify : Premise → Premise → Conclusion → PropFormula
