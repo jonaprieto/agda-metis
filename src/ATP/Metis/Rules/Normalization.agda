@@ -1,11 +1,12 @@
 ------------------------------------------------------------------------------
 -- Agda-Prop Library.
--- Normal Forms.
+-- Normalization functions.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (ℕ; suc; zero; _+_;_*_) renaming (_⊔_ to max )
+open import Data.Nat using (suc; zero; _+_;_*_)
+  renaming (_⊔_ to max; ℕ to Nat)
 
-module ATP.Metis.Rules.Normalization (n : ℕ) where
+module ATP.Metis.Rules.Normalization (n : Nat) where
 
 ------------------------------------------------------------------------------
 
@@ -13,6 +14,7 @@ open import ATP.Metis.Rules.Conjunct n
 open import ATP.Metis.Rules.Checking n
 open import ATP.Metis.Rules.Reordering n
   using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨)
+  using ( assoc-∧-lem; assoc-∨-lem)
 
 open import Data.Bool.Base
   using ( Bool; true; false)
@@ -22,6 +24,7 @@ open import Data.PropFormula.Properties n
 open import Data.PropFormula.NormalForms n
   using (cnf-dist; cnf-dist-lem; from-cnf-dist-lem )
 open import Data.PropFormula.Syntax n
+open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views  n
   renaming ( disj to disjshape )
 
@@ -49,7 +52,6 @@ simplify-∨-cases  φ        = other _
 -- Def.
 _∈∨_ : (φ ψ : PropFormula) → Dec (ψ ≡ reorder-∨ φ ψ)
 φ₁ ∈∨ φ = eq φ (reorder-∨ φ₁ φ)
-
 
 -- Def.
 simplify-∨ : PropFormula → PropFormula
@@ -183,6 +185,7 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
                (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} φ₁))
                (∨-intro₂ φ₁ (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
             Γ⊢φ
+--------------------------------------------------------------------------- ■
 
 data simplify-∧-Cases : PropFormula  → Set where
 
@@ -248,6 +251,8 @@ simplify-∧-lem
   : ∀ {Γ} {φ}
   → Γ ⊢ φ
   → Γ ⊢ simplify-∧ φ
+
+-- Proof.
 simplify-∧-lem {Γ} {φ} Γ⊢φ
   with simplify-∧-cases φ
 simplify-∧-lem {Γ} {.(⊥ ∧ φ)}   Γ⊢φ | sconj₁ φ = ∧-proj₁ Γ⊢φ
@@ -285,9 +290,10 @@ simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ | pos 
         with eq (simplify-∧ φ₂) ⊤
 ...     | yes p₈ = ∧-proj₁ Γ⊢φ
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (simplify-∧-lem (∧-proj₂ Γ⊢φ))
+--------------------------------------------------------------------------- ■
 
-----------------------------------------------------------------------
-
+{-
+-- Def.
 data Polarity : Set where
   ⊕ : Polarity
   ⊖ : Polarity
@@ -311,6 +317,7 @@ nnf-cases ⊥         = case₅ ⊥
 nnf-cases ⊤         = case₆ ⊤
 nnf-cases φ         = other _
 
+-- Def.
 nnf₀ : Polarity → PropFormula → PropFormula
 nnf₀ ⊕ φ
   with nnf-cases φ
@@ -361,6 +368,157 @@ postulate
     : ∀ {Γ} {φ}
     → Γ ⊢ nnf φ
     → Γ ⊢ φ
+-}
+
+-- Using bounded recursion.
+
+data nnfCases : PropFormula  → Set where
+  case₁  : (φ₁ φ₂ : PropFormula) → nnfCases (φ₁ ∧ φ₂)
+  case₂  : (φ₁ φ₂ : PropFormula) → nnfCases (φ₁ ∨ φ₂)
+  case₃  : (φ₁ φ₂ : PropFormula) → nnfCases (φ₁ ⇒ φ₂)
+  case₄  : (φ₁ φ₂ : PropFormula) → nnfCases (¬ (φ₁ ∧ φ₂))
+  case₅  : (φ₁ φ₂ : PropFormula) → nnfCases (¬ (φ₁ ∨ φ₂))
+  case₆  : (φ₁ : PropFormula)    → nnfCases (¬ ¬ φ₁)
+  case₇  : (φ₁ φ₂ : PropFormula) → nnfCases (¬ (φ₁ ⇒ φ₂))
+  case₈  : nnfCases (¬ ⊤)
+  case₉  : nnfCases (¬ ⊥)
+  other  : (φ₁ : PropFormula)    → nnfCases φ₁
+
+nnf-cases : (φ : PropFormula) → nnfCases φ
+nnf-cases (φ₁ ∧ φ₂)     = case₁ _ _
+nnf-cases (φ₁ ∨ φ₂)     = case₂ _ _
+nnf-cases (φ₁ ⇒ φ₂)     = case₃ _ _
+nnf-cases (¬ (φ₁ ∧ φ₂)) = case₄ _ _
+nnf-cases (¬ (φ₁ ∨ φ₂)) = case₅ _ _
+nnf-cases (¬ (φ₁ ⇒ φ₂)) = case₇ _ _
+nnf-cases (¬ (¬ φ))     = case₆ _
+nnf-cases (¬ ⊤)         = case₈
+nnf-cases (¬ ⊥)         = case₉
+nnf-cases φ             = other _
+
+-- Def.
+nnf₀ : PropFormula → Nat → PropFormula
+nnf₀ φ (suc n)
+  with nnf-cases φ
+...  | case₁ φ₁ φ₂  = simplify-∧ (assoc-∧ (nnf₀ φ₁ n ∧ nnf₀ φ₂ n))
+...  | case₂ φ₁ φ₂  = simplify-∨ (assoc-∨ (nnf₀ φ₁ n ∨ nnf₀ φ₂ n))
+...  | case₃ φ₁ φ₂  = simplify-∨ (assoc-∨ (nnf₀ ((¬ φ₁) ∨ φ₂) n))
+...  | case₄ φ₁ φ₂  = simplify-∨ (assoc-∨ (nnf₀ ((¬ φ₁) ∨ (¬ φ₂)) n))
+...  | case₅ φ₁ φ₂  = simplify-∧ (assoc-∧ (nnf₀ ((¬ φ₁) ∧ (¬ φ₂)) n))
+...  | case₆ φ₁     = nnf₀ φ₁ n
+...  | case₇ φ₁ φ₂  = simplify-∧ (assoc-∧ (nnf₀ ((¬ φ₂) ∧ φ₁) n))
+...  | case₈        = ⊥
+...  | case₉        = ⊤
+...  | other .φ     = φ
+nnf₀ φ  zero        = φ
+
+-- Lemma.
+nnf₀-lem
+  : ∀ {Γ} {φ}
+  → (n : Nat)
+  → Γ ⊢ φ
+  → Γ ⊢ nnf₀ φ n
+
+-- Proof.
+nnf₀-lem {Γ} {φ} (suc n) Γ⊢φ
+  with nnf-cases φ
+...  | case₁ φ₁ φ₂ =
+  simplify-∧-lem
+    (assoc-∧-lem
+      (∧-intro
+        (nnf₀-lem n (∧-proj₁ Γ⊢φ))
+        (nnf₀-lem n (∧-proj₂ Γ⊢φ))))
+...  | case₂ φ₁ φ₂ =
+  simplify-∨-lem
+    (assoc-∨-lem
+      (⇒-elim
+        (⇒-intro
+         (∨-elim {Γ = Γ}
+           (∨-intro₁
+             (nnf₀ φ₂ n)
+             (nnf₀-lem n (assume {Γ = Γ} φ₁)))
+           (∨-intro₂
+             (nnf₀ φ₁ n)
+             (nnf₀-lem n (assume {Γ = Γ} φ₂)))))
+          Γ⊢φ))
+...  | case₃ φ₁ φ₂   =
+  simplify-∨-lem
+    (assoc-∨-lem
+      (nnf₀-lem n (⇒-to-¬∨ Γ⊢φ)))
+...  | case₄ φ₁ φ₂  =
+  simplify-∨-lem
+    (assoc-∨-lem
+      (nnf₀-lem n (¬∧-to-¬∨¬ Γ⊢φ)))
+...  | case₅ φ₁ φ₂  =
+  simplify-∧-lem
+    (assoc-∧-lem
+      (nnf₀-lem n (¬∨-to-¬∧¬ Γ⊢φ)))
+...  | case₆ φ₁      = nnf₀-lem n (¬¬-equiv₁ Γ⊢φ)
+...  | case₇ φ₁ φ₂  =
+  simplify-∧-lem
+    (assoc-∧-lem
+      (nnf₀-lem n helper))
+ where
+
+   helper₂ : Γ ⊢ φ₂ ∨ ¬ φ₁ ⇒ (φ₁ ⇒ φ₂)
+   helper₂ = ⇒-intro (¬∨-to-⇒ (∨-comm (assume {Γ = Γ} (φ₂ ∨ ¬ φ₁))))
+
+   helper₁ : Γ ⊢ ¬ (φ₂ ∨ ¬ φ₁)
+   helper₁ = subst⊢¬ helper₂ Γ⊢φ
+
+   helper₀ : Γ ⊢ ¬ φ₂ ∧ (¬ ¬ φ₁)
+   helper₀ = ¬∨-to-¬∧¬ helper₁
+
+   helper  : Γ ⊢ ¬ φ₂ ∧ φ₁
+   helper = ∧-intro (∧-proj₁ helper₀) (¬¬-equiv₁ (∧-proj₂ helper₀))
+
+...  | case₈       = ¬-elim Γ⊢φ ⊤-intro
+...  | case₉       = ⊤-intro
+...  | other .φ   = Γ⊢φ
+nnf₀-lem zero Γ⊢φ = Γ⊢φ
+
+postulate
+  from-nnf₀-lem
+    : ∀ {Γ} {φ} {n}
+    → Γ ⊢ nnf₀ φ n
+    → Γ ⊢ φ
+
+-- Complexity measure.
+nnf-cm : PropFormula → Nat
+nnf-cm φ with nnf-cases φ
+... | case₁ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm φ₂ + 1
+... | case₂ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm φ₂ + 1
+... | case₃ φ₁ φ₂   = 2 * nnf-cm φ₁  + nnf-cm φ₂ + 1
+... | case₄ φ₁ φ₂   = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
+... | case₅ φ₁ φ₂   = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
+... | case₆ φ₁      = nnf-cm (¬ φ₁) + 1
+... | case₇ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm (¬ φ₂) + 3
+... | case₈         = 1
+... | case₉         = 1
+... | other .φ      = 1
+
+-- Def.
+nnf : PropFormula → PropFormula
+nnf φ = nnf₀ φ (nnf-cm φ)
+
+-- Lemma.
+nnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ nnf φ
+
+-- Proof.
+nnf-lem {_} {φ} Γ⊢φ = nnf₀-lem (nnf-cm φ) Γ⊢φ
+--------------------------------------------------------------------------- ■
+
+-- Lemma.
+from-nnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ nnf φ
+  → Γ ⊢ φ
+-- Proof.
+from-nnf-lem {Γ} {φ} Γ⊢nnf = from-nnf₀-lem {Γ = Γ} {n = nnf-cm φ} Γ⊢nnf
+--------------------------------------------------------------------------- ■
 
 ------------------------------------------------------------------------------
 -- Conjunctive Normal Forms (CNF)
@@ -377,7 +535,8 @@ cnf-lem
   → Γ ⊢ cnf φ
 
 -- Proof.
-cnf-lem Γ⊢φ = cnf-dist-lem (nnf-lem Γ⊢φ)  -- ▩
+cnf-lem Γ⊢φ = cnf-dist-lem (nnf-lem Γ⊢φ)
+--------------------------------------------------------------------------- ■
 
 -- Lemma.
 from-cnf-lem
@@ -387,3 +546,4 @@ from-cnf-lem
 
 -- Proof.
 from-cnf-lem {Γ} {φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
+--------------------------------------------------------------------------- ■
