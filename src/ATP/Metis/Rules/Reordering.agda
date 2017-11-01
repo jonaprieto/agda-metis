@@ -122,11 +122,15 @@ assoc-∨-lem {_}{φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ -- �
 
 
 -- Lemma.
-postulate
-  from-assoc-∨-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ assoc-∨ φ
-    → Γ ⊢ φ
+from-assoc-∨-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ assoc-∨ φ
+  → Γ ⊢ φ
+
+-- Proof.
+from-assoc-∨-lem {Γ} {φ} Γ⊢assocφ =
+  from-assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢assocφ -- ■
+
 
 
 -- Conjunctions in a right-associative form.
