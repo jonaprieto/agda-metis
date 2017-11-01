@@ -20,7 +20,7 @@ open import Data.PropFormula.Views n
   using    ( DisjView; disj-view; other; conj-view; conj)
   renaming ( disj to disjshape )
 
-open import Data.PropFormula.Theorems n using ( ∨-assoc₂; ∧-assoc₂ )
+open import Data.PropFormula.Theorems n -- using ( ∨-assoc₂; ∧-assoc₂)
 
 open import Data.Bool                             using ( true; false )
 open import Function                              using ( _$_; id; _∘_ )
@@ -59,12 +59,14 @@ assoc-∨-cm φ
 ... | case₂ φ₁ φ₂    = assoc-∨-cm φ₂ + 2
 ... | other .φ       = 1
 
+-- Lemma.
 assoc-∨₁-lem
   : ∀ {Γ} {φ}
   → (n : Nat)
   → Γ ⊢ φ
   → Γ ⊢ assoc-∨₁ φ n
 
+-- Proof.
 assoc-∨₁-lem zero Γ⊢φ = Γ⊢φ
 assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
   with assoc-∨-cases φ
@@ -82,12 +84,28 @@ assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
 ... | other _ = Γ⊢φ
 
 -- Lemma.
-postulate
-  from-assoc-∨₁-lem
-    : ∀ {Γ} {φ}
-    → (n : Nat)
-    → Γ ⊢ assoc-∨₁ φ n
-    → Γ ⊢ φ
+from-assoc-∨₁-lem
+  : ∀ {Γ} {φ}
+  → (n : Nat)
+  → Γ ⊢ assoc-∨₁ φ n
+  → Γ ⊢ φ
+
+-- Proof.
+from-assoc-∨₁-lem zero Γ⊢φ = Γ⊢φ
+from-assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢assocφ
+  with assoc-∨-cases φ
+... | case₁ φ₁ φ₂ φ₃ =
+  ∨-assoc₁ (from-assoc-∨₁-lem n Γ⊢assocφ)
+... | case₂ φ₁ φ₂    =
+  ⇒-elim
+    (⇒-intro
+      (∨-elim {Γ = Γ}
+        (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+        (∨-intro₂ φ₁ (from-assoc-∨₁-lem n
+          (assume {Γ = Γ} (assoc-∨₁ φ₂ n))))))
+    Γ⊢assocφ
+... | other _ = Γ⊢assocφ  -- ■
+
 
 -- Def.
 assoc-∨ : PropFormula → PropFormula
