@@ -15,6 +15,7 @@ open import ATP.Metis.Rules.Checking n
 open import ATP.Metis.Rules.Reordering n
   using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨)
   using ( assoc-∧-lem; assoc-∨-lem)
+  using ( from-assoc-∧-lem; from-assoc-∨-lem )
 
 open import Data.Bool.Base
   using ( Bool; true; false)
@@ -187,6 +188,12 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
             Γ⊢φ
 --------------------------------------------------------------------------- ■
 
+postulate
+  from-simplify-∨-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ simplify-∨ φ
+    → Γ ⊢ φ
+
 data simplify-∧-Cases : PropFormula  → Set where
 
   sconj₁ : (φ : PropFormula)     → simplify-∧-Cases (⊥ ∧ φ)
@@ -291,6 +298,12 @@ simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ | pos 
 ...     | yes p₈ = ∧-proj₁ Γ⊢φ
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (simplify-∧-lem (∧-proj₂ Γ⊢φ))
 --------------------------------------------------------------------------- ■
+
+postulate
+  from-simplify-∧-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ simplify-∧ φ
+    → Γ ⊢ φ
 
 {-
 -- Def.
@@ -476,12 +489,67 @@ nnf₀-lem {Γ} {φ} (suc n) Γ⊢φ
 ...  | case₉       = ⊤-intro
 ...  | other .φ   = Γ⊢φ
 nnf₀-lem zero Γ⊢φ = Γ⊢φ
+--------------------------------------------------------------------------- ■
 
-postulate
-  from-nnf₀-lem
-    : ∀ {Γ} {φ} {n}
-    → Γ ⊢ nnf₀ φ n
-    → Γ ⊢ φ
+-- Lemma.
+from-nnf₀-lem
+  : ∀ {Γ} {φ} {n}
+  → Γ ⊢ nnf₀ φ n
+  → Γ ⊢ φ
+
+-- Proof.
+from-nnf₀-lem {Γ} {φ} {(suc n)} Γ⊢φ
+  with nnf-cases φ
+...  | case₁ φ₁ φ₂ =
+  ∧-intro
+    (from-nnf₀-lem {n = n} (∧-proj₁ helper))
+    (from-nnf₀-lem {n = n} (∧-proj₂ helper))
+  where
+    helper : Γ ⊢ nnf₀ φ₁ n ∧ nnf₀ φ₂ n
+    helper = from-assoc-∧-lem (from-simplify-∧-lem Γ⊢φ)
+...  | case₂ φ₁ φ₂ =
+   ⇒-elim
+     (⇒-intro
+       (∨-elim {Γ = Γ}
+         (∨-intro₁ φ₂ (from-nnf₀-lem {n = n} (assume {Γ = Γ} (nnf₀ φ₁ n))))
+         (∨-intro₂ φ₁ (from-nnf₀-lem {n = n} (assume {Γ = Γ} (nnf₀ φ₂ n))))))
+     helper
+  where
+    helper : Γ ⊢ nnf₀ φ₁ n ∨ nnf₀ φ₂ n
+    helper = from-assoc-∨-lem (from-simplify-∨-lem Γ⊢φ)
+...  | case₃ φ₁ φ₂   =
+  ¬∨-to-⇒ (from-nnf₀-lem {n = n} helper)
+  where
+    helper : Γ ⊢ nnf₀ (¬ φ₁ ∨ φ₂) n
+    helper = from-assoc-∨-lem (from-simplify-∨-lem Γ⊢φ)
+...  | case₄ φ₁ φ₂  =
+  ¬∨¬-to-¬∧ (from-nnf₀-lem {n = n} helper)
+  where
+    helper : Γ ⊢ nnf₀ (¬ φ₁ ∨  ¬ φ₂) n
+    helper = from-assoc-∨-lem (from-simplify-∨-lem Γ⊢φ)
+...  | case₅ φ₁ φ₂  =
+  ¬∧¬-to-¬∨ (from-nnf₀-lem {n = n} helper)
+  where
+    helper : Γ ⊢ nnf₀ (¬ φ₁ ∧ ¬ φ₂) n
+    helper = from-assoc-∧-lem (from-simplify-∧-lem Γ⊢φ)
+...  | case₆ φ₁     = ¬¬-equiv₂ (from-nnf₀-lem {n = n} Γ⊢φ)
+...  | case₇ φ₁ φ₂  =
+       (¬-intro
+          (¬-elim
+            (weaken (φ₁ ⇒ φ₂) (∧-proj₁ helper₁))
+            (⇒-elim
+              (assume {Γ = Γ} (φ₁ ⇒ φ₂))
+              (weaken (φ₁ ⇒ φ₂) (∧-proj₂ helper₁)))))
+  where
+    helper₁ : Γ ⊢ (¬ φ₂ ∧ φ₁)
+    helper₁ =
+      from-nnf₀-lem {n = n} (from-assoc-∧-lem (from-simplify-∧-lem Γ⊢φ))
+
+...  | case₈       = ⊥-elim (¬ ⊤) Γ⊢φ
+...  | case₉       = ¬-intro (assume {Γ = Γ} ⊥)
+...  | other .φ   = Γ⊢φ
+from-nnf₀-lem {_} {_} {zero} Γ⊢φ = Γ⊢φ
+
 
 -- Complexity measure.
 nnf-cm : PropFormula → Nat
