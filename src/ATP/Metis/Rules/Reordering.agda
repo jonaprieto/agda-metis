@@ -208,12 +208,15 @@ assoc-∧-lem
 -- Proof.
 assoc-∧-lem {_}{φ} Γ⊢φ = assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢φ -- ▩
 
+-- Lemma.
+from-assoc-∧
+  : ∀ {Γ} {φ}
+  → Γ ⊢ assoc-∧ φ
+  → Γ ⊢ φ
 
-postulate
-  from-assoc-∧
-    : ∀ {Γ} {φ}
-    → Γ ⊢ assoc-∧ φ
-    → Γ ⊢ φ
+-- Proof.
+from-assoc-∧ {Γ} {φ} Γ⊢assoc∧φ =
+  from-assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢assoc∧φ -- ■
 
 ----------------------------------------------------------------------
 
