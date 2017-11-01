@@ -292,7 +292,6 @@ data Polarity : Set where
   ⊕ : Polarity
   ⊖ : Polarity
 
-
 data nnf-Cases : PropFormula  → Set where
 
   case₁ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ∧ φ₂)
