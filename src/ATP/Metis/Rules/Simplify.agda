@@ -194,7 +194,7 @@ simplify₀-lem {Γ} {φ₁} {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | o
   with eq (¬ φ₁) (canonicalize φ₂ (¬ φ₁))
 ... | yes p₁₂ =
     ¬-elim (subst (sym p₁₂) (canonicalize-thm (¬ φ₁) Γ⊢φ₂)) Γ⊢φ₁
-... | no _    = Γ⊢φ₁ -- φ₁
+... | no _    = Γ⊢φ₁
 
 
 data S-View : Premise → Premise → Conclusion → Set where

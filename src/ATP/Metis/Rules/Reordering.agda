@@ -131,8 +131,6 @@ from-assoc-∨-lem
 from-assoc-∨-lem {Γ} {φ} Γ⊢assocφ =
   from-assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢assocφ -- ■
 
-
-
 -- Conjunctions in a right-associative form.
 
 data assoc-∧-Cases : PropFormula → Set where
@@ -179,12 +177,23 @@ assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢φ
 ... | other _ = Γ⊢φ
 
 -- Lemma.
-postulate
-  from-assoc-∧₁-lem
-    : ∀ {Γ} {φ}
-    → (n : Nat)
-    → Γ ⊢ assoc-∧₁ φ n
-    → Γ ⊢ φ
+from-assoc-∧₁-lem
+  : ∀ {Γ} {φ}
+  → (n : Nat)
+  → Γ ⊢ assoc-∧₁ φ n
+  → Γ ⊢ φ
+
+-- Proof.
+from-assoc-∧₁-lem {Γ} {φ} zero Γ⊢assoc∧φ = Γ⊢assoc∧φ
+from-assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢assoc∧φ
+  with assoc-∧-cases φ
+... | case₁ φ₁ φ₂ φ₃ = ∧-assoc₁ (from-assoc-∧₁-lem n Γ⊢assoc∧φ)
+... | case₂ φ₁ φ₂ =
+  ∧-intro
+    (∧-proj₁ Γ⊢assoc∧φ)
+    (from-assoc-∧₁-lem n (∧-proj₂ Γ⊢assoc∧φ))
+... | other _ = Γ⊢assoc∧φ -- ■
+
 
 -- Def.
 assoc-∧ : PropFormula → PropFormula

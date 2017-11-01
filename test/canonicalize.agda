@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 9 public
-  hiding ( thm-nnf; dnf; thm-cnf; thm-dnf; dist-∨)
+  hiding ( nnf₀; nnf₀-lem; nnf-lem; from-nnf-lem; dnf; cnf-lem; dnf-lem; dist-∨)
   renaming ( nnf to justNNF; cnf to justCNF )
 
 open import ATP.Metis.Rules.Canonicalize 9 public
