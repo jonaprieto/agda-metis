@@ -188,11 +188,86 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
             Γ⊢φ
 --------------------------------------------------------------------------- ■
 
-postulate
-  from-simplify-∨-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ simplify-∨ φ
-    → Γ ⊢ φ
+-- Lemma.
+from-simplify-∨-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ simplify-∨ φ
+  → Γ ⊢ φ
+
+-- Proof.
+from-simplify-∨-lem {Γ} {φ} Γ⊢simplifyφ
+  with simplify-∨-cases φ
+from-simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢simplifyφ | sdisj₁ φ =
+  ∨-intro₂ ⊥ (from-simplify-∨-lem Γ⊢simplifyφ)
+from-simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢simplifyφ | sdisj₂ φ =
+  ∨-intro₁ ⊥ (from-simplify-∨-lem Γ⊢simplifyφ)
+from-simplify-∨-lem {Γ} {.(⊤ ∨ φ)} Γ⊢simplifyφ | sdisj₃ φ =
+  ∨-intro₁ φ Γ⊢simplifyφ
+from-simplify-∨-lem {Γ} {.(φ ∨ ⊤)} Γ⊢simplifyφ | sdisj₄ φ =
+  ∨-intro₂ φ Γ⊢simplifyφ
+from-simplify-∨-lem {Γ} {.φ}       Γ⊢simplifyφ | other φ  = Γ⊢simplifyφ
+from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ | sdisj₅ φ₁ φ₂
+  with neg-view  φ₁
+from-simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
+  with ψ ∈∨ φ₂
+... | yes p₁ =
+      ⇒-elim
+        (⇒-intro
+          (∨-elim {Γ = Γ}
+            (∨-intro₂ (¬ ψ)
+              (subst (sym p₁) (reorder-∨-lem (assume {Γ = Γ} ψ) φ₂)))
+            (∨-intro₁ φ₂ (assume {Γ = Γ} (¬ ψ)))))
+      (PEM {φ = ψ})
+... | no _
+    with (¬ ψ) ∈∨ φ₂
+... | yes p₂ =
+      ∨-intro₂ (¬ ψ) (from-simplify-∨-lem Γ⊢simplifyφ)
+... | no _
+    with eq (simplify-∨ φ₂) ⊤
+...     | yes p₃ =
+     ∨-intro₂ (¬ ψ) (from-simplify-∨-lem (subst (sym p₃) Γ⊢simplifyφ))
+...     | no _
+        with eq (simplify-∨ φ₂) ⊥
+...     | yes p₄ = ∨-intro₁ φ₂ Γ⊢simplifyφ
+...     | no _ =
+        ⇒-elim
+          (⇒-intro
+            (∨-elim {Γ = Γ}
+              (∨-intro₁ φ₂ (assume {Γ = Γ} (¬ ψ)))
+              (∨-intro₂ (¬ ψ)
+                (from-simplify-∨-lem (assume {Γ = Γ} (simplify-∨ φ₂))))))
+          Γ⊢simplifyφ
+from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ₁ φ₂ | pos .φ₁
+  with (¬ φ₁) ∈∨ φ₂
+... | yes p₅ =
+      ⇒-elim
+        (⇒-intro
+          (∨-elim {Γ = Γ}
+            (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+            (∨-intro₂ φ₁
+              (subst (sym p₅) (reorder-∨-lem (assume {Γ = Γ} (¬ φ₁)) φ₂)))))
+        (PEM {φ = φ₁})
+... | no _
+    with φ₁ ∈∨ φ₂
+... | yes p₆ = ∨-intro₂ φ₁ (from-simplify-∨-lem Γ⊢simplifyφ)
+... | no _
+    with eq (simplify-∨ φ₂) ⊤
+...     | yes p₇ =
+       ∨-intro₂ φ₁ (from-simplify-∨-lem (subst (sym p₇) Γ⊢simplifyφ))
+...     | no _
+        with eq (simplify-∨ φ₂) ⊥
+...     | yes p₈ = ∨-intro₁ φ₂ Γ⊢simplifyφ
+...     | no _ =
+          ⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+                (∨-intro₂ φ₁
+                  (from-simplify-∨-lem (assume {Γ = Γ} (simplify-∨ φ₂))))))
+              Γ⊢simplifyφ
+--------------------------------------------------------------------------- ■
+
+
 
 data simplify-∧-Cases : PropFormula  → Set where
 
