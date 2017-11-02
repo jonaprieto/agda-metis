@@ -2,8 +2,8 @@
 -- To test `simplify` inference rule.
 ---------------------------------------------------------------------
 
-open import Data.PropFormula 9 public
-open import ATP.Metis.Rules.Simplify 9 public
+open import Data.PropFormula 20 public
+open import ATP.Metis.Rules.Simplify 20  public
 open import Relation.Binary.PropositionalEquality
 
 -- Note: When the symbol `?` appears, it means
@@ -15,6 +15,14 @@ p = Var (# 0)
 q = Var (# 1)
 r = Var (# 2)
 
+p1 = Var (# 3)
+q1 = Var (# 4)
+a = Var (# 5)
+s = Var (# 6)
+g = Var (# 7)
+k = Var (# 8)
+lit = Var (# 9)
+clause = Var (# 10)
 ----------------------------------------------------------------------
 -- Test Problem : 1
 ----------------------------------------------------------------------
@@ -34,7 +42,7 @@ module Test1 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 3
@@ -58,7 +66,7 @@ module Test3 where
           out = simplify (simplify n1-0 n1-1 n1-3) n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 8
@@ -82,7 +90,7 @@ module Test8 where
           out = simplify (simplify n1-0 n1-1 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 
 ----------------------------------------------------------------------
@@ -113,28 +121,7 @@ module Test9 where
                 n2-4 n2-5)
 
   private test : ⌊ eq out n2-5 ⌋ ≡ true
-          test = ?
-
-----------------------------------------------------------------------
--- Test Problem : 10
-----------------------------------------------------------------------
-
-module Test10 where
-
-  private n0-0 : PropFormula
-          n0-0 =  ¬ p1
-
-  private n0-2 : PropFormula
-          n0-2 =  p1
-
-  private n0-3 : PropFormula
-          n0-3 =  ⊥
-
-  private out : PropFormula
-          out = simplify n0-0 n0-2 n0-3
-
-  private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 11
@@ -143,13 +130,13 @@ module Test10 where
 module Test11 where
 
   private n1-0 : PropFormula
-          n1-0 =  ¬ q2 ∧ p1
+          n1-0 =  ¬ q ∧ p
 
   private n1-2 : PropFormula
-          n1-2 =  q2
+          n1-2 =  q
 
   private n1-4 : PropFormula
-          n1-4 =  p1
+          n1-4 =  p
 
   private n1-5 : PropFormula
           n1-5 =  ⊥
@@ -158,7 +145,7 @@ module Test11 where
           out = simplify (simplify n1-0 n1-2 n1-5) n1-4 n1-5
 
   private test : ⌊ eq out n1-5 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 12
@@ -167,16 +154,16 @@ module Test11 where
 module Test12 where
 
   private n2-0 : PropFormula
-          n2-0 = ¬ r ∧ p1 ∧ q2
+          n2-0 = ¬ r ∧ p ∧ q
 
   private n2-2 : PropFormula
           n2-2 = r
 
   private n2-4 : PropFormula
-          n2-4 = p1
+          n2-4 = p
 
   private n2-5 : PropFormula
-          n2-5 = q2
+          n2-5 = q
 
   private n2-6 : PropFormula
           n2-6 = ⊥
@@ -190,7 +177,7 @@ module Test12 where
                 n2-5 n2-6
 
   private test : ⌊ eq out n2-6 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 13
@@ -211,7 +198,7 @@ module Test13 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 14
@@ -235,7 +222,7 @@ module Test14 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 15
@@ -265,7 +252,7 @@ module Test15 where
               n2-4 n2-5
 
   private test : ⌊ eq out n2-5 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 16
@@ -286,7 +273,7 @@ module Test16 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 17
@@ -307,7 +294,7 @@ module Test17 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 18
@@ -328,7 +315,7 @@ module Test18 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 19
@@ -349,7 +336,7 @@ module Test19 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 20
@@ -370,7 +357,7 @@ module Test20 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 21
@@ -394,7 +381,7 @@ module Test21 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 22
@@ -415,7 +402,7 @@ module Test22 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 23
@@ -436,7 +423,7 @@ module Test23 where
           out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 24
@@ -457,7 +444,7 @@ module Test24 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 25
@@ -478,7 +465,7 @@ module Test25 where
           out = simplify n0-2 n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 26
@@ -499,7 +486,7 @@ module Test26 where
           out = simplify n0-3 n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 27
@@ -520,7 +507,7 @@ module Test27 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 28
@@ -541,7 +528,7 @@ module Test28 where
           out = simplify n0-3 n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 29
@@ -562,7 +549,7 @@ module Test29 where
           out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 30
@@ -586,7 +573,7 @@ module Test30 where
           out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 31
@@ -607,7 +594,7 @@ module Test31 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 32
@@ -628,7 +615,7 @@ module Test32 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 33
@@ -649,7 +636,7 @@ module Test33 where
           out = simplify n0-3 n0-2 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 34
@@ -677,10 +664,10 @@ module Test34 where
             simplify
               (simplify
                 (simplify n0-1 n0-2 n0-6) n0-4 n0-6)
-              n0-5 n0-6)
+              n0-5 n0-6
 
-  private test : ⌊ eq outCaseNo n0-6 ⌋ ≡ true
-          test = ?
+  private test : ⌊ eq out n0-6 ⌋ ≡ true
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 35
@@ -705,10 +692,10 @@ module Test35 where
             simplify
               (simplify
                 (simplify n0-0 n0-2 n0-4) n0-3 n0-4)
-              n0-3 n0-4)
+              n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 36
@@ -729,7 +716,7 @@ module Test36 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 37
@@ -750,7 +737,7 @@ module Test37 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 38
@@ -771,7 +758,7 @@ module Test38 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 39
@@ -789,10 +776,10 @@ module Test39 where
           n1-3 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-0 n1-2
+          out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 40
@@ -813,7 +800,7 @@ module Test40 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 41
@@ -834,7 +821,7 @@ module Test41 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 42
@@ -855,7 +842,7 @@ module Test42 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 43
@@ -876,7 +863,7 @@ module Test43 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 44
@@ -897,7 +884,7 @@ module Test44 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 45
@@ -918,7 +905,7 @@ module Test45 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 46
@@ -939,7 +926,7 @@ module Test46 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 48
@@ -963,7 +950,7 @@ module Test48 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 49
@@ -984,7 +971,7 @@ module Test49 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 50
@@ -1005,7 +992,7 @@ module Test50 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 51
@@ -1026,7 +1013,7 @@ module Test51 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 52
@@ -1047,7 +1034,7 @@ module Test52 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 54
@@ -1068,7 +1055,7 @@ module Test54 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 55
@@ -1089,7 +1076,7 @@ module Test55 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 56
@@ -1113,7 +1100,7 @@ module Test56 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 57
@@ -1134,7 +1121,7 @@ module Test57 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 58
@@ -1155,7 +1142,7 @@ module Test58 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 60
@@ -1179,7 +1166,7 @@ module Test60 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 61
@@ -1200,7 +1187,7 @@ module Test61 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 62
@@ -1221,10 +1208,10 @@ module Test62 where
           n0-4 =  ⊥
 
   private out : PropFormula
-          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4)
+          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 63
@@ -1248,7 +1235,7 @@ module Test63 where
           out = simplify n1-1 n1-2 n1-3
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 67
@@ -1272,7 +1259,7 @@ module Test67 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 68
@@ -1293,10 +1280,10 @@ module Test68 where
           n0-4 =  ⊥
 
   private out : PropFormula
-          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4)
+          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 69
@@ -1320,7 +1307,7 @@ module Test69 where
           out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 70
@@ -1344,7 +1331,7 @@ module Test70 where
           out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 71
@@ -1365,10 +1352,10 @@ module Test71 where
           n1-4 =  ⊥
 
   private out : PropFormula
-          out = simplify (simplify n1-1 n1-2 n1-4 ) n1-3 n1-4)
+          out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 72
@@ -1384,9 +1371,6 @@ module Test72 where
 
   private n0-3 : PropFormula
           n0-3 =  ¬ r
-
-  private n0-2 : PropFormula
-          n0-2 =  ¬ p
 
   private n0-4 : PropFormula
           n0-4 =  q
@@ -1405,7 +1389,7 @@ module Test72 where
               n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 73
@@ -1419,17 +1403,14 @@ module Test73 where
   private n0-2 : PropFormula
           n0-2 =  ¬ p
 
-  private n0-2 : PropFormula
-          n0-2 =  ¬ p
-
   private n0-3 : PropFormula
           n0-3 =  ⊥
 
   private out : PropFormula
-          out = simplify (simplify n0-1 n0-2 n0-3) n0-2 n0-3)
+          out = simplify (simplify n0-1 n0-2 n0-3) n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 74
@@ -1450,7 +1431,7 @@ module Test74 where
           out = simplify n0-2 n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 75
@@ -1474,7 +1455,7 @@ module Test75 where
           out = simplify (simplify n0-1 n0-4 n0-5) n0-3 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 76
@@ -1498,7 +1479,7 @@ module Test76 where
           out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 77
@@ -1519,7 +1500,7 @@ module Test77 where
           out = simplify n1-2 n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 78
@@ -1550,7 +1531,7 @@ module Test78 where
               n1-3 n1-6
 
   private test : ⌊ eq out n1-6 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 {- -- Biconditional related problems.
 
@@ -1731,10 +1712,10 @@ module Test85 where
           n0-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-3
+          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 86
@@ -1752,10 +1733,10 @@ module Test86 where
           n1-4 =  q
 
   private out : PropFormula
-          out = simplify n1-3 n1-2
+          out = simplify n1-3 n1-2 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 87
@@ -1779,10 +1760,15 @@ module Test87 where
           n1-6 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-1 n1-2 n1-4 n1-5
+          out =
+            simplify
+              (simplify
+                (simplify  n1-1 n1-2 n1-6)
+                n1-4 n1-6)
+               n1-5 n1-6
 
   private test : ⌊ eq out n1-6 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 88
@@ -1803,10 +1789,10 @@ module Test88 where
           n2-4 = ⊥
 
   private out : PropFormula
-          out = simplify n2-1 n2-2 n2-3
+          out = simplify (simplify n2-1 n2-2 n2-4) n2-3 n2-4
 
   private test : ⌊ eq out n2-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 89
@@ -1827,10 +1813,10 @@ module Test89 where
           n3-4 = ⊥
 
   private out : PropFormula
-          out = simplify n3-1 n3-2 n3-3
+          out = simplify (simplify n3-1 n3-2 n3-4) n3-3 n3-4
 
   private test : ⌊ eq out n3-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 90
@@ -1851,10 +1837,10 @@ module Test90 where
           n0-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-3
+          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 91
@@ -1878,7 +1864,7 @@ module Test91 where
           out = simplify n1-1 n1-2 n1-3
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 92
@@ -1899,10 +1885,10 @@ module Test92 where
           n2-4 = ⊥
 
   private out : PropFormula
-          out = simplify n2-1 n2-2 n2-3
+          out = simplify (simplify n2-1 n2-2 n2-4) n2-3 n2-4
 
   private test : ⌊ eq out n2-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 93
@@ -1923,10 +1909,10 @@ module Test93 where
           n3-4 = ⊥
 
   private out : PropFormula
-          out = simplify n3-1 n3-2 n3-3
+          out = simplify (simplify n3-1 n3-2 n3-4) n3-3 n3-4
 
   private test : ⌊ eq out n3-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 94
@@ -1947,10 +1933,10 @@ module Test94 where
           n0-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-3
+          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 95
@@ -1971,10 +1957,10 @@ module Test95 where
           n1-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-1 n1-2 n1-3
+          out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 96
@@ -1998,10 +1984,15 @@ module Test96 where
           n0-5 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-3 n0-4
+          out =
+            simplify
+              (simplify
+                (simplify n0-1 n0-2 n0-5)
+                n0-3 n0-5)
+              n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 97
@@ -2022,10 +2013,10 @@ module Test97 where
           n1-6 =  q
 
   private out : PropFormula
-          out = simplify n1-5 n1-2 n1-3
+          out = simplify (simplify n1-5 n1-2 n1-6) n1-3 n1-6
 
   private test : ⌊ eq out n1-6 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 98
@@ -2052,10 +2043,17 @@ module Test98 where
           n1-7 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-1 n1-2 n1-3 n1-4 n1-6
+          out =
+            simplify
+              (simplify
+                (simplify
+                    (simplify n1-1 n1-2 n1-7)
+                    n1-3 n1-7)
+                n1-4 n1-7)
+              n1-6 n1-7
 
   private test : ⌊ eq out n1-7 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 99
@@ -2076,10 +2074,10 @@ module Test99 where
           n2-5 = q
 
   private out : PropFormula
-          out = simplify n2-2 n2-3 n2-4
+          out = simplify (simplify n2-2 n2-3 n2-5) n2-4 n2-5
 
   private test : ⌊ eq out n2-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 100
@@ -2100,10 +2098,10 @@ module Test100 where
           n2-7 = ¬ r
 
   private out : PropFormula
-          out = simplify n2-6 n2-3 n2-4
+          out = simplify (simplify n2-6 n2-3 n2-7) n2-4 n2-7
 
   private test : ⌊ eq out n2-7 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 101
@@ -2121,10 +2119,10 @@ module Test101 where
           n0-4 =  ¬ g
 
   private out : PropFormula
-          out = simplify n0-2 n0-3
+          out = simplify n0-2 n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 102
@@ -2141,38 +2139,35 @@ module Test102 where
   private n0-5 : PropFormula
           n0-5 =  ¬ k
 
-* n06 ⊥
+  private n0-6 : PropFormula
+          n0-6 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-4 n0-5
+          out = simplify (simplify n0-1 n0-4 n0-6) n0-5 n0-6
 
-  private test : ⌊ eq outCaseNo
+  private test : ⌊ eq out n0-6 ⌋ ≡ true
+          test = {!!}
+
 ----------------------------------------------------------------------
 -- Test Problem : 103
-----------------------------------------------------------------------  pri⌋ ≡ true
-        test = ?
-
+----------------------------------------------------------------------
 
 module Test103 where
 
-  private n0-2 : PropFormula
-          n0-2 =  ¬ p
-
   private n0-3 : PropFormula
           n0-3 =  ¬ q ∨ p
+
+  private n0-2 : PropFormula
+          n0-2 =  ¬ p
 
   private n0-4 : PropFormula
           n0-4 =  ¬ q
 
   private out : PropFormula
-          out = simplify n0-3 n0-2
+          out = simplify n0-3 n0-2 n0-4
 
-  private test : ⌊ eq out   private n0-5 : PropFormulan0-4 ⌋ ≡ true
-          test = ?
-
-          n0-5 =  ⊥
-
-
+  private test : ⌊ eq out n0-4 ⌋ ≡ true
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 104
@@ -2192,10 +2187,10 @@ module Test104 where
           n0-5 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-4
+          out = simplify (simplify n0-1 n0-2 n0-5) n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 105
@@ -2216,16 +2211,16 @@ module Test105 where
           n1-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-1 n1-2 n1-3
+          out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
-
+{-
 ----------------------------------------------------------------------
 -- Test Problem : 106
-
 ----------------------------------------------------------------------
+
 module Test106 where
 
   private n0-1 : PropFormula
@@ -2396,6 +2391,8 @@ module Test112 where
   private test : ⌊ eq out n5-5 ⌋ ≡ true
           test = ?
 
+-}
+
 ----------------------------------------------------------------------
 -- Test Problem : 113
 ----------------------------------------------------------------------
@@ -2412,10 +2409,10 @@ module Test113 where
           n0-4 =  ¬ lit
 
   private out : PropFormula
-          out = simplify n0-3 n0-2
+          out = simplify n0-3 n0-2 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
 ----------------------------------------------------------------------
 -- Test Problem : 114
@@ -2436,11 +2433,12 @@ module Test114 where
           n0-5 =  ⊥
 
   private out : PropFormula
-          out = simplify n0-1 n0-2 n0-4
+          out = simplify (simplify n0-1 n0-2 n0-5) n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
+{-
 ----------------------------------------------------------------------
 -- Test Problem : 115
 ----------------------------------------------------------------------
@@ -2465,6 +2463,8 @@ module Test115 where
   private test : ⌊ eq out n0-4 ⌋ ≡ true
           test = ?
 
+-}
+
 ----------------------------------------------------------------------
 -- Test Problem : 116
 ----------------------------------------------------------------------
@@ -2484,9 +2484,8 @@ module Test116 where
           n1-4 =  ⊥
 
   private out : PropFormula
-          out = simplify n1-1 n1-2 n1-3
+          out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = ?
+          test = {!!}
 
--}
