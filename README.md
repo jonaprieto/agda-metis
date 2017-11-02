@@ -1,6 +1,8 @@
 # Agda-Metis [![Build Status](https://travis-ci.org/jonaprieto/agda-metis.svg?branch=master)](https://travis-ci.org/jonaprieto/agda-metis) [![DOI](https://zenodo.org/badge/84973849.svg)](https://zenodo.org/badge/latestdoi/84973849)
 
-The *agda-metis* library is a formalization in [Agda][agda] to reconstruct the [Metis] inference rules for propositional logic.
+The *agda-metis* library is a formalization in [Agda][agda] to
+reconstruct syntactically the [Metis] inference rules for
+propositional logic.
 This library works jointly with [Agda-Prop][agda-prop].
 Both libraries are intended to support output from the
 [Athena][athena] tool.
