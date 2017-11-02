@@ -1,43 +1,47 @@
 # Agda-Metis [![Build Status](https://travis-ci.org/jonaprieto/agda-metis.svg?branch=master)](https://travis-ci.org/jonaprieto/agda-metis) [![DOI](https://zenodo.org/badge/84973849.svg)](https://zenodo.org/badge/latestdoi/84973849)
 
-This library aims to provide the necessary functions and theorems for [Athena][athena]
-to reconstruct proofs found by the automatic theorem prover
-, [Metis](https://github.com/gilith/metis).
+The *agda-metis* library is a formalization in [Agda][agda] to reconstruct the [Metis] inference rules for propositional logic.
+This library works jointly with [Agda-Prop][agda-prop].
+Both libraries are intended to support output from the
+[Athena][athena] tool.
 
-[athena]: http://github.com/jonaprieto/athena
+### Prerequisites
 
-### Requirements
-
-* [Agda](https://github.com/agda/agda) version 2.5.1+
-* [Agda Standard Library](https://github.com/agda/agda-stdlib/)
-* [Agda-Prop Library](http://github.com/jonaprieto/agda-prop/)
+* [agda] 2.5.3
+* [agda-prop]
 
 ### Installation
 
-Clone this repository:
+1. Clone this repository:
 
 ```
-$ git clone http://github.com/jonaprieto/agda-metis.git
+$ git clone https://github.com/jonaprieto/agda-metis.git
+$ cd agda-metis
 ```
 
-Add the path of this library to your library manager file, usually
-located in `~/.agda/libraries`. For instance, my file looks like:
+2. In order to test the installation of [agda-metis][agda-metis]
+you can run some test.
 
-```bash
-$ cat $HOME/.agda/libraries
-/home/jonaprieto/agda-stdlib/standard-library.agda-lib
-/home/jonaprieto/agda-prop/agda-prop.agda-lib
-/home/jonaprieto/agda-metis/agda-metis.agda-lib
+```
+$ make test
 ```
 
-Find more information about installing libraries in Agda
-[here](http://agda.readthedocs.io/en/latest/tools/package-system.html#installing-libraries).
-
+If some error raised about the installation of libraries, please take a look in the `.agda` file
+and the `AGDA_DIR` variable in your shell. See more information in the [documentation](http://agda.readthedocs.io/en/latest/tools/package-system.html#installing-libraries).
 
 ### References
 
-- Joe Leslie-Hurd. *Metis, an Automatic Theorem Prover.*
-  http://www.gilith.com/software/metis/index.html and https://github.com/gilith/metis.
+* Hurd, J. (2003). First-order Proof Tactics In Higher-order Logic Theorem Provers. Design and Application of Strategies/Tactics in Higher Order Logics, Number NASA/CP-2003-212448 in NASA Technical Reports, 56–68. Retrieved from http://www.gilith.com/research/papers
+* Böhme, S., & Weber, T. (2010). Fast LCF-Style Proof Reconstruction for Z3. In M. Kaufmann & L. C. Paulson (Eds.), Interactive Theorem Proving: First International Conference, ITP 2010, Edinburgh, UK, July 11-14, 2010. Proceedings (pp. 179–194). Berlin, Heidelberg: Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-14052-5_14
+* Kanso, K., & Setzer, A. (2016). A Light-weight Integration Of Automated And Interactive Theorem Proving. Mathematical Structures in Computer Science, 26(1), 129–153. https://doi.org/10.1017/S0960129514000140
 
-- Jonathan Prieto-Cubides and Alejandro Gomez-Londoño.
-  [*A proof tool for translating TSTP proofs to Agda code*](https://github.com/jonaprieto/tstp2agda/tree/deep)
+[haskell]: http://www.haskell.org
+[issue]: http://github.com/jonaprieto/athena/issues/new
+[tstp]:    http://www.cs.miami.edu/~tptp/TPTP/QuickGuide/
+[metis]:   http://github.com/gilith/metis
+[agda]:    http://github.com/agda/agda
+[agda-prop]: http://github.com/jonaprieto/agda-prop
+[agda-metis]: http://github.com/jonaprieto/agda-metis
+[agda-stdlib]: http://github.com/agda/agda-stdlib
+[problems]: http://github.com/jonaprieto/prop-pack
+[online-atps]: http://github.com/jonaprieto/online-atps
