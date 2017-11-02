@@ -423,7 +423,7 @@ module Test23 where
           out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 24
@@ -444,7 +444,7 @@ module Test24 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 25
@@ -465,7 +465,7 @@ module Test25 where
           out = simplify n0-2 n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 26
@@ -486,7 +486,7 @@ module Test26 where
           out = simplify n0-3 n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 27
@@ -507,7 +507,7 @@ module Test27 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 28
@@ -528,7 +528,7 @@ module Test28 where
           out = simplify n0-3 n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 29
@@ -549,7 +549,7 @@ module Test29 where
           out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 30
@@ -573,7 +573,7 @@ module Test30 where
           out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 31
@@ -594,7 +594,7 @@ module Test31 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 32
@@ -636,7 +636,7 @@ module Test33 where
           out = simplify n0-3 n0-2 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 34
@@ -667,7 +667,7 @@ module Test34 where
               n0-5 n0-6
 
   private test : ⌊ eq out n0-6 ⌋ ≡ true
-          test = {!!}
+          test = {!!} -- refl 
 
 ----------------------------------------------------------------------
 -- Test Problem : 35
@@ -695,7 +695,7 @@ module Test35 where
               n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 36
@@ -716,7 +716,7 @@ module Test36 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 37
@@ -737,7 +737,7 @@ module Test37 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 38
@@ -758,7 +758,7 @@ module Test38 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 39
@@ -779,7 +779,7 @@ module Test39 where
           out = simplify n1-0 n1-2 n1-3
 
   private test : ⌊ eq out n1-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 40
@@ -800,7 +800,7 @@ module Test40 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 41
@@ -821,7 +821,7 @@ module Test41 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 42
@@ -842,7 +842,7 @@ module Test42 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 43
@@ -863,7 +863,7 @@ module Test43 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 44
@@ -884,7 +884,7 @@ module Test44 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 45
@@ -905,7 +905,7 @@ module Test45 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 46
@@ -926,7 +926,7 @@ module Test46 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 48
@@ -971,7 +971,7 @@ module Test49 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 50
@@ -992,7 +992,7 @@ module Test50 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 51
@@ -1013,7 +1013,7 @@ module Test51 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 52
@@ -1034,7 +1034,7 @@ module Test52 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 54
@@ -1055,7 +1055,7 @@ module Test54 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 55
@@ -1076,7 +1076,7 @@ module Test55 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 56
@@ -1100,7 +1100,7 @@ module Test56 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 57
@@ -1121,7 +1121,7 @@ module Test57 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 58
@@ -1142,7 +1142,7 @@ module Test58 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 60
