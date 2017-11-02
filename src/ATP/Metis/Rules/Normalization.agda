@@ -374,11 +374,63 @@ simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ | pos 
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (simplify-∧-lem (∧-proj₂ Γ⊢φ))
 --------------------------------------------------------------------------- ■
 
-postulate
-  from-simplify-∧-lem
-    : ∀ {Γ} {φ}
-    → Γ ⊢ simplify-∧ φ
-    → Γ ⊢ φ
+-- Lemma.
+from-simplify-∧-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ simplify-∧ φ
+  → Γ ⊢ φ
+
+-- Proof.
+from-simplify-∧-lem {Γ} {φ} Γ⊢φ
+  with simplify-∧-cases φ
+from-simplify-∧-lem {Γ} {.(⊥ ∧ φ)}   Γ⊢φ | sconj₁ φ = ⊥-elim (⊥ ∧ φ) Γ⊢φ
+from-simplify-∧-lem {Γ} {.(φ ∧ ⊥)}   Γ⊢φ | sconj₂ φ = ⊥-elim (φ ∧ ⊥) Γ⊢φ
+from-simplify-∧-lem {Γ} {.(⊤ ∧ φ)}   Γ⊢φ | sconj₃ φ =
+  ∧-intro ⊤-intro (from-simplify-∧-lem Γ⊢φ)
+from-simplify-∧-lem {Γ} {.(φ ∧ ⊤)}   Γ⊢φ | sconj₄ φ =
+  ∧-intro (from-simplify-∧-lem Γ⊢φ) ⊤-intro
+from-simplify-∧-lem {Γ} {φ}          Γ⊢φ | other .φ = Γ⊢φ
+from-simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂
+  with neg-view  φ₁
+from-simplify-∧-lem {Γ} {.(¬ ψ ∧ φ₂)} Γ⊢φ | sconj₅ .(¬ ψ) φ₂ | neg ψ
+  with ψ ∈∧ φ₂
+... | yes p₁ = ⊥-elim (¬ ψ ∧ φ₂) Γ⊢φ
+... | no _
+    with (¬ ψ) ∈∧ φ₂
+... | yes p₂ =
+  ∧-intro
+    (subst (sym p₂)
+      (conjunct-thm {Γ = Γ} {φ = φ₂} (¬ ψ)
+        (from-simplify-∧-lem Γ⊢φ)))
+    (from-simplify-∧-lem Γ⊢φ)
+... | no _
+    with eq (simplify-∧ φ₂) ⊥
+...     | yes p₃ = ⊥-elim (¬ ψ ∧ φ₂) Γ⊢φ
+...     | no _
+        with eq (simplify-∧ φ₂) ⊤
+...     | yes p₄ = ∧-intro Γ⊢φ (from-simplify-∧-lem (subst (sym p₄) ⊤-intro))
+...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (from-simplify-∧-lem (∧-proj₂ Γ⊢φ))
+from-simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ | pos .φ₁
+  with (¬ φ₁) ∈∧ φ₂
+... | yes p₅ = ⊥-elim (φ₁ ∧ φ₂) Γ⊢φ
+... | no _
+    with φ₁ ∈∧ φ₂
+... | yes p₆ =
+  ∧-intro
+    (subst (sym p₆)
+      (conjunct-thm {Γ = Γ} {φ = φ₂} φ₁
+        (from-simplify-∧-lem Γ⊢φ)))
+    (from-simplify-∧-lem Γ⊢φ)
+... | no _
+    with eq (simplify-∧ φ₂) ⊥
+...     | yes p₇ = ⊥-elim (φ₁ ∧ φ₂) Γ⊢φ
+...     | no _
+        with eq (simplify-∧ φ₂) ⊤
+...     | yes p₈ = ∧-intro Γ⊢φ (from-simplify-∧-lem (subst (sym p₈) ⊤-intro))
+...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (from-simplify-∧-lem (∧-proj₂ Γ⊢φ))
+--------------------------------------------------------------------------- ■
+
+
 
 {-
 -- Def.
