@@ -1166,7 +1166,7 @@ module Test60 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 61
