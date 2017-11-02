@@ -42,6 +42,7 @@ simplify-cases ⊥         = case₃
 simplify-cases ⊤         = case₄
 simplify-cases φ         = other _
 
+-- Def.
 simplify₀ : Premise → Premise → Conclusion → PropFormula
 simplify₀ φ₁ φ₂ ψ
   with ⌊ eq φ₁ ψ ⌋
@@ -87,10 +88,7 @@ simplify₀ φ₁ φ₂ ψ | false | false | other .φ₁
 ... | true  = ⊥
 ... | false = φ₁
 
----------------------------------------------------------------------
-
--- postulate
-
+-- Lemma.
 simplify₀-lem
   : ∀ {Γ} {φ₁ φ₂ : Premise}
     → Γ ⊢ φ₁
@@ -98,6 +96,7 @@ simplify₀-lem
     → (ψ : Conclusion)
     → Γ ⊢ simplify₀ φ₁ φ₂ ψ
 
+-- Proof.
 simplify₀-lem {Γ} {φ₁}  {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ
   with eq φ₁ ψ
 ... | yes p₁ = subst p₁ Γ⊢φ₁
@@ -195,7 +194,7 @@ simplify₀-lem {Γ} {φ₁} {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | o
 ... | yes p₁₂ =
     ¬-elim (subst (sym p₁₂) (canonicalize-thm (¬ φ₁) Γ⊢φ₂)) Γ⊢φ₁
 ... | no _    = Γ⊢φ₁
-
+--------------------------------------------------------------------------- ■
 
 data S-View : Premise → Premise → Conclusion → Set where
   normal : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
@@ -216,7 +215,6 @@ simplify φ₁ φ₂ ψ with s-view φ₁ φ₂ ψ
 simplify φ₁ φ₂ ψ | normal .φ₁ .φ₂ .ψ = simplify₀ φ₁ φ₂ ψ
 simplify φ₁ φ₂ ψ | swap   .φ₁ .φ₂ .ψ = simplify₀ φ₂ φ₁ ψ
 
-
 -- Theorem.
 simplify-thm
   : ∀ {Γ} {φ₁ φ₂ : Premise}
@@ -225,7 +223,9 @@ simplify-thm
   → Γ ⊢ φ₂
   → Γ ⊢ simplify φ₁ φ₂ ψ
 
+-- Proof.
 simplify-thm {Γ} {φ₁} {φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
   with s-view φ₁ φ₂ ψ
 ... | normal .φ₁ .φ₂ .ψ = simplify₀-lem Γ⊢φ₁ Γ⊢φ₂ ψ
 ... | swap   .φ₁ .φ₂ .ψ = simplify₀-lem Γ⊢φ₂ Γ⊢φ₁ ψ
+--------------------------------------------------------------------------- ■

@@ -21,19 +21,23 @@ open import Data.Bool using ( true; false )
 
 ------------------------------------------------------------------------------
 
+-- Def.
 clausify : Premise → Conclusion → PropFormula
 clausify φ ψ
    with ⌊ eq φ ψ ⌋
 ... | true  = ψ
 ... | false = reorder-∧∨ (cnf φ) ψ
 
+-- Theorem.
 clausify-thm
     : ∀ {Γ} {φ : Premise}
     → (ψ : Conclusion)
     → Γ ⊢ φ
     → Γ ⊢ clausify φ ψ
 
+-- Proof.
 clausify-thm {_} {φ} ψ Γ⊢φ
    with eq φ ψ
 ... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no _    = reorder-∧∨-lem (cnf-lem Γ⊢φ) ψ
+--------------------------------------------------------------------------- ■

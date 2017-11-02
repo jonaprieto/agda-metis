@@ -61,8 +61,8 @@ canonicalize₀-lem {Γ} {φ} Γ⊢φ ψ
          (reorder-∧∨-lem
            (cnf-lem Γ⊢φ)
            (cnf ψ)))
-...  | no _   = Γ⊢φ -- ■
-
+...  | no _   = Γ⊢φ
+--------------------------------------------------------------------------- ■
 
 -- Def.
 canonicalize : Premise → Conclusion → PropFormula
@@ -79,5 +79,7 @@ canonicalize-thm
   → Γ ⊢ φ
   → Γ ⊢ canonicalize φ ψ
 
+-- Proof.
 canonicalize-thm {Γ} {φ} ψ Γ⊢φ =
   (canonicalize₀-lem ●⊢ (↑t nnf-lem) ●⊢ ↑t id-lem) Γ⊢φ ψ
+--------------------------------------------------------------------------- ■

@@ -92,7 +92,6 @@ simplify-∨ .(φ₁ ∨ φ₂) | sdisj₅ φ₁ φ₂ | pos .φ₁
 ...     | true  = φ₁
 ...     | false = φ₁ ∨ simplify-∨ φ₂
 
-
 -- Lemma.
 simplify-∨-lem
   : ∀ {Γ} {φ}
@@ -267,8 +266,6 @@ from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ�
               Γ⊢simplifyφ
 --------------------------------------------------------------------------- ■
 
-
-
 data simplify-∧-Cases : PropFormula  → Set where
 
   sconj₁ : (φ : PropFormula)     → simplify-∧-Cases (⊥ ∧ φ)
@@ -429,8 +426,6 @@ from-simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ |
 ...     | yes p₈ = ∧-intro Γ⊢φ (from-simplify-∧-lem (subst (sym p₈) ⊤-intro))
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (from-simplify-∧-lem (∧-proj₂ Γ⊢φ))
 --------------------------------------------------------------------------- ■
-
-
 
 {-
 -- Def.
@@ -676,6 +671,7 @@ from-nnf₀-lem {Γ} {φ} {(suc n)} Γ⊢φ
 ...  | case₉       = ¬-intro (assume {Γ = Γ} ⊥)
 ...  | other .φ   = Γ⊢φ
 from-nnf₀-lem {_} {_} {zero} Γ⊢φ = Γ⊢φ
+--------------------------------------------------------------------------- ■
 
 
 -- Complexity measure.

@@ -72,12 +72,12 @@ uh₁-lem {_} {φ} (suc n) Γ⊢ushuntnφ
               (∧-proj₁ Γ⊢ushuntnφ))
             (uh₁-lem n
               (∧-proj₂ Γ⊢ushuntnφ)))
-...  | other _ = Γ⊢ushuntnφ -- ▩
+...  | other _ = Γ⊢ushuntnφ
+--------------------------------------------------------------------------- ■
 
 -- Def.
 uh : PropFormula → PropFormula
 uh φ = uh₁ φ (uh-cm φ)
-
 
 -- Lemma.
 uh-lem
@@ -86,8 +86,8 @@ uh-lem
   → Γ ⊢ φ
 
 -- Proof.
-uh-lem {_} {φ} = uh₁-lem (uh-cm φ) --  ▩
-
+uh-lem {_} {φ} = uh₁-lem (uh-cm φ)
+--------------------------------------------------------------------------- ■
 
 data stripCases : PropFormula → Set where
   conj    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ∧ φ₂)
@@ -135,7 +135,7 @@ strip₁ φ (suc n)
 ...  | other .φ      = φ
 strip₁ φ _  = φ
 
--- Strip complexity measure.
+-- Complexity measure.
 strip-cm : PropFormula → Nat
 strip-cm φ with strip-cases φ
 ... | conj φ₁ φ₂    = max (strip-cm φ₁) (strip-cm φ₂) + 1
@@ -280,7 +280,8 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
 ... | nneg φ₁  = ¬¬-equiv₂ (strip₁-lem n (uh-lem Γ⊢strip₁))
 ... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢strip₁
-... | other φ₁ = Γ⊢strip₁  -- ▩
+... | other φ₁ = Γ⊢strip₁
+--------------------------------------------------------------------------- ■
 
 -- Def.
 strip : PropFormula → PropFormula
@@ -293,7 +294,8 @@ strip-lem
   → Γ ⊢ φ
 
 -- Proof.
-strip-lem {_} {φ} = strip₁-lem (strip-cm φ) -- ▩
+strip-lem {_} {φ} = strip₁-lem (strip-cm φ)
+--------------------------------------------------------------------------- ■
 
 -- Theorem.
 strip-thm
@@ -301,7 +303,8 @@ strip-thm
   → Γ ⊢ strip φ ⇒ φ
 
 -- Proof.
-strip-thm {Γ} {φ} = ⇒-intro (strip-lem (assume {Γ = Γ} (strip φ))) -- ▩
+strip-thm {Γ} {φ} = ⇒-intro (strip-lem (assume {Γ = Γ} (strip φ)))
+--------------------------------------------------------------------------- ■
 
 -- Extra:
 strip_to_ : PropFormula → PropFormula → PropFormula
