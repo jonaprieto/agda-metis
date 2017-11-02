@@ -46,4 +46,4 @@ and the `AGDA_DIR` variable in your shell. See more information in the [document
 [agda-metis]: http://github.com/jonaprieto/agda-metis
 [agda-stdlib]: http://github.com/agda/agda-stdlib
 [problems]: http://github.com/jonaprieto/prop-pack
-[online-atps]: http://github.com/jonaprieto/online-atps
+[athena]: http://github.com/jonaprieto/athena
