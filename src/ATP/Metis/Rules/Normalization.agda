@@ -24,6 +24,7 @@ open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
 open import Data.PropFormula.NormalForms n
   using (cnf-dist; cnf-dist-lem; from-cnf-dist-lem )
+  using (dnf-dist; dnf-dist-lem; from-dnf-dist-lem)
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views  n
@@ -656,4 +657,32 @@ from-cnf-lem
 
 -- Proof.
 from-cnf-lem {Γ} {φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
+--------------------------------------------------------------------------- ■
+
+------------------------------------------------------------------------------
+-- Disjunctive Normal Form (DNF)
+------------------------------------------------------------------------------
+
+-- Def.
+dnf : PropFormula → PropFormula
+dnf φ = dnf-dist (nnf φ)
+
+-- Lemma.
+dnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ φ
+  → Γ ⊢ dnf φ
+
+-- Proof.
+dnf-lem Γ⊢φ = dnf-dist-lem (nnf-lem Γ⊢φ)
+--------------------------------------------------------------------------- ■
+
+-- Lemma.
+from-dnf-lem
+  : ∀ {Γ} {φ}
+  → Γ ⊢ dnf φ
+  → Γ ⊢ φ
+
+-- Proof.
+from-dnf-lem {Γ} {φ} Γ⊢dnfφ = from-nnf-lem (from-dnf-dist-lem  Γ⊢dnfφ)
 --------------------------------------------------------------------------- ■
