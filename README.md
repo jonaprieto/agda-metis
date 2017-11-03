@@ -22,7 +22,7 @@ $ cd agda-metis
 ```
 
 2. In order to test the installation of [agda-metis][agda-metis]
-you can run some test.
+you can run some tests.
 
 ```
 $ make test
