@@ -5,3 +5,4 @@ depend:
 include:
   src/
   test/
+  test/simplify

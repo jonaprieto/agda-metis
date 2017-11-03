@@ -91,10 +91,10 @@ simplify₀ φ₁ φ₂ ψ | false | false | other .φ₁
 -- Lemma.
 simplify₀-lem
   : ∀ {Γ} {φ₁ φ₂ : Premise}
-    → Γ ⊢ φ₁
-    → Γ ⊢ φ₂
-    → (ψ : Conclusion)
-    → Γ ⊢ simplify₀ φ₁ φ₂ ψ
+  → Γ ⊢ φ₁
+  → Γ ⊢ φ₂
+  → (ψ : Conclusion)
+  → Γ ⊢ simplify₀ φ₁ φ₂ ψ
 
 -- Proof.
 simplify₀-lem {Γ} {φ₁}  {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ
@@ -196,23 +196,40 @@ simplify₀-lem {Γ} {φ₁} {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | o
 ... | no _    = Γ⊢φ₁
 --------------------------------------------------------------------------- ■
 
+
+
 data S-View : Premise → Premise → Conclusion → Set where
-  normal : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  swap   : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  case₁ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  case₂ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  case₃ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  case₄ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  swap  : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
 
 s-view : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
 s-view φ₁ φ₂ ψ
   with ⌊ eq ψ (simplify₀ φ₁ φ₂ ψ)⌋
-... | true = normal φ₁ φ₂ ψ
+... | true = case₁ φ₁ φ₂ ψ
+... | false
+  with ⌊ eq ψ (simplify₀ (nnf φ₁) φ₂ ψ)⌋
+... | true = case₂ φ₁ φ₂ ψ
+... | false
+  with ⌊ eq ψ (simplify₀ (dnf φ₁) φ₂ ψ)⌋
+... | true = case₃ φ₁ φ₂ ψ
+... | false
+  with ⌊ eq ψ (simplify₀ (cnf φ₁) φ₂ ψ)⌋
+... | true = case₄ φ₁ φ₂ ψ
 ... | false
     with ⌊ eq ψ (simplify₀ φ₂ φ₁ ψ) ⌋
 ...    | true  = swap   φ₁ φ₂ ψ
-...    | false = normal φ₁ φ₂ ψ
+...    | false = case₁ φ₁ φ₂ ψ
 
 -- Def.
 simplify : Premise → Premise → Conclusion → PropFormula
 simplify φ₁ φ₂ ψ with s-view φ₁ φ₂ ψ
-simplify φ₁ φ₂ ψ | normal .φ₁ .φ₂ .ψ = simplify₀ φ₁ φ₂ ψ
+simplify φ₁ φ₂ ψ | case₁ .φ₁ .φ₂ .ψ  = simplify₀ φ₁ φ₂ ψ
+simplify φ₁ φ₂ ψ | case₂ .φ₁ .φ₂ .ψ  = simplify₀ (nnf φ₁) φ₂ ψ
+simplify φ₁ φ₂ ψ | case₃ .φ₁ .φ₂ .ψ  = simplify₀ (dnf φ₁) φ₂ ψ
+simplify φ₁ φ₂ ψ | case₄ .φ₁ .φ₂ .ψ  = simplify₀ (cnf φ₁) φ₂ ψ
 simplify φ₁ φ₂ ψ | swap   .φ₁ .φ₂ .ψ = simplify₀ φ₂ φ₁ ψ
 
 -- Theorem.
@@ -226,6 +243,9 @@ simplify-thm
 -- Proof.
 simplify-thm {Γ} {φ₁} {φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
   with s-view φ₁ φ₂ ψ
-... | normal .φ₁ .φ₂ .ψ = simplify₀-lem Γ⊢φ₁ Γ⊢φ₂ ψ
+... | case₁ .φ₁ .φ₂ .ψ  = simplify₀-lem Γ⊢φ₁ Γ⊢φ₂ ψ
+... | case₂ .φ₁ .φ₂ .ψ  = simplify₀-lem (nnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
+... | case₃ .φ₁ .φ₂ .ψ  = simplify₀-lem (dnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
+... | case₄ .φ₁ .φ₂ .ψ  = simplify₀-lem (cnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
 ... | swap   .φ₁ .φ₂ .ψ = simplify₀-lem Γ⊢φ₂ Γ⊢φ₁ ψ
 --------------------------------------------------------------------------- ■

@@ -667,7 +667,7 @@ module Test34 where
               n0-5 n0-6
 
   private test : ⌊ eq out n0-6 ⌋ ≡ true
-          test = {!!} -- refl 
+          test = {!!} -- refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 35
@@ -1816,8 +1816,9 @@ module Test89 where
           out = simplify (simplify n3-1 n3-2 n3-4) n3-3 n3-4
 
   private test : ⌊ eq out n3-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
+{-
 ----------------------------------------------------------------------
 -- Test Problem : 90
 ----------------------------------------------------------------------
@@ -1865,6 +1866,7 @@ module Test91 where
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
           test = {!!}
+-}
 
 ----------------------------------------------------------------------
 -- Test Problem : 92
@@ -1888,7 +1890,7 @@ module Test92 where
           out = simplify (simplify n2-1 n2-2 n2-4) n2-3 n2-4
 
   private test : ⌊ eq out n2-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 93
@@ -1915,40 +1917,16 @@ module Test93 where
           test = {!!}
 
 ----------------------------------------------------------------------
--- Test Problem : 94
-----------------------------------------------------------------------
-
-module Test94 where
-
-  private n0-1 : PropFormula
-          n0-1 =  ¬ p ∨ q
-
-  private n0-2 : PropFormula
-          n0-2 =  p
-
-  private n0-3 : PropFormula
-          n0-3 =  ¬ q
-
-  private n0-4 : PropFormula
-          n0-4 =  ⊥
-
-  private out : PropFormula
-          out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
-
-  private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
-
-----------------------------------------------------------------------
 -- Test Problem : 95
 ----------------------------------------------------------------------
 
 module Test95 where
 
   private n1-1 : PropFormula
-          n1-1 =  ¬ p ∨ q
+          n1-1 =  p ∨ q
 
   private n1-2 : PropFormula
-          n1-2 =  p
+          n1-2 =  ¬ p
 
   private n1-3 : PropFormula
           n1-3 =  ¬ q
