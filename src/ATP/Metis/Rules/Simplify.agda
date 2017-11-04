@@ -197,13 +197,12 @@ simplify₀-lem {Γ} {φ₁} {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | o
 --------------------------------------------------------------------------- ■
 
 
-
 data S-View : Premise → Premise → Conclusion → Set where
   case₁ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
   case₂ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
   case₃ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
   case₄ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  swap  : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
+  nothing  : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
 
 s-view : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
 s-view φ₁ φ₂ ψ
@@ -218,10 +217,7 @@ s-view φ₁ φ₂ ψ
 ... | false
   with ⌊ eq ψ (simplify₀ (cnf φ₁) φ₂ ψ)⌋
 ... | true = case₄ φ₁ φ₂ ψ
-... | false
-    with ⌊ eq ψ (simplify₀ φ₂ φ₁ ψ) ⌋
-...    | true  = swap   φ₁ φ₂ ψ
-...    | false = case₁ φ₁ φ₂ ψ
+... | false = nothing φ₁ φ₂ ψ
 
 -- Def.
 simplify : Premise → Premise → Conclusion → PropFormula
@@ -230,7 +226,7 @@ simplify φ₁ φ₂ ψ | case₁ .φ₁ .φ₂ .ψ  = simplify₀ φ₁ φ₂ �
 simplify φ₁ φ₂ ψ | case₂ .φ₁ .φ₂ .ψ  = simplify₀ (nnf φ₁) φ₂ ψ
 simplify φ₁ φ₂ ψ | case₃ .φ₁ .φ₂ .ψ  = simplify₀ (dnf φ₁) φ₂ ψ
 simplify φ₁ φ₂ ψ | case₄ .φ₁ .φ₂ .ψ  = simplify₀ (cnf φ₁) φ₂ ψ
-simplify φ₁ φ₂ ψ | swap   .φ₁ .φ₂ .ψ = simplify₀ φ₂ φ₁ ψ
+simplify φ₁ φ₂ ψ | nothing .φ₁ .φ₂ .ψ = φ₁
 
 -- Theorem.
 simplify-thm
@@ -247,5 +243,5 @@ simplify-thm {Γ} {φ₁} {φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
 ... | case₂ .φ₁ .φ₂ .ψ  = simplify₀-lem (nnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
 ... | case₃ .φ₁ .φ₂ .ψ  = simplify₀-lem (dnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
 ... | case₄ .φ₁ .φ₂ .ψ  = simplify₀-lem (cnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
-... | swap   .φ₁ .φ₂ .ψ = simplify₀-lem Γ⊢φ₂ Γ⊢φ₁ ψ
+... | nothing .φ₁ .φ₂ .ψ = Γ⊢φ₁
 --------------------------------------------------------------------------- ■

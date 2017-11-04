@@ -360,30 +360,6 @@ module Test20 where
           test = refl
 
 ----------------------------------------------------------------------
--- Test Problem : 21
-----------------------------------------------------------------------
-
-module Test21 where
-
-  private n1-0 : PropFormula
-          n1-0 =  ¬ r ∧ p ∧ (¬ p ∨ ¬ q)
-
-  private n1-2 : PropFormula
-          n1-2 =  q ∨ r
-
-  private n1-3 : PropFormula
-          n1-3 =  p
-
-  private n1-4 : PropFormula
-          n1-4 =  ⊥
-
-  private out : PropFormula
-          out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
-
-  private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
-
-----------------------------------------------------------------------
 -- Test Problem : 22
 ----------------------------------------------------------------------
 
@@ -402,7 +378,7 @@ module Test22 where
           out = simplify n0-0 n0-2 n0-3
 
   private test : ⌊ eq out n0-3 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 23
@@ -615,7 +591,7 @@ module Test32 where
           out = simplify n0-0 n0-1 n0-2
 
   private test : ⌊ eq out n0-2 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 33
