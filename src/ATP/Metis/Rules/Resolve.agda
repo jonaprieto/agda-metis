@@ -27,10 +27,12 @@ open import Relation.Binary.PropositionalEquality using ( sym )
 -- Resolution using reorder-∨.
 data resCases : PropFormula → Set where
   case₁ : (φ₁ φ₂ φ₃ φ₄ : PropFormula) → resCases ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))
+--  case₂ : (φ₁ φ₂ φ₃ : PropFormula)    → resCases ((φ₁ ∨ φ₂) ∧ φ₃)
   other : (φ : PropFormula)           → resCases φ
 
 rsol-cases : (φ : PropFormula) → resCases φ
 rsol-cases ((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) = case₁ _ _ _ _
+-- rsol-cases ((φ₁ ∨ φ₂) ∧ φ₃)        = case₂ _ _ _
 rsol-cases φ                       = other _
 
 -- Def.
@@ -45,13 +47,18 @@ rsol .((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄)) | case₁ φ₁ φ₂ φ₃ φ�
        with ⌊ eq φ₄ φ₂ ⌋
 ...       | true  = φ₂
 ...       | false = φ₂ ∨ φ₄
+-- rsol .((φ₁ ∨ φ₂) ∧ φ₃) | case₂ φ₁ φ₂ φ₃
+--  with ⌊ eq φ₃ (¬ φ₁) ⌋
+-- ... | x = {!!}
 
--- Lemma.
-rsol-lem
-  : ∀ {Γ} {φ}
-  → Γ ⊢ φ
-  → Γ ⊢ rsol φ
+postulate
+  -- Lemma.
+  rsol-lem
+    : ∀ {Γ} {φ}
+    → Γ ⊢ φ
+    → Γ ⊢ rsol φ
 
+{-
 -- Proof.
 rsol-lem {Γ} {φ} Γ⊢φ
   with rsol-cases φ
@@ -81,6 +88,7 @@ rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
                 (⇒-intro (subst p₁ (assume {Γ = Γ} φ₃)))
                 (∧-proj₂ Γ⊢φ))
 --------------------------------------------------------------------------- ■
+-}
 
 {-
            φ₁                      ϕ₂

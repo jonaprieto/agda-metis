@@ -2,8 +2,18 @@
 -- To test `simplify` inference rule.
 ---------------------------------------------------------------------
 
+open import ATP.Metis.Synonyms 20
 open import Data.PropFormula 20 public
-open import ATP.Metis.Rules.Simplify 20  public
+open import Data.PropFormula.Views 20 public
+open import Data.PropFormula.NormalForms 20
+  using (isCNF; isDNF; isNNF )
+  renaming (nnf to justNNF )
+
+open import ATP.Metis.Rules 20  public
+open import ATP.Metis.Rules.Normalization 20 public
+open import ATP.Metis.Rules.Reordering 20 public
+  hiding ( disj )
+
 open import Relation.Binary.PropositionalEquality
 
 -- Note: When the symbol `?` appears, it means
@@ -28,18 +38,23 @@ clause = Var (# 10)
 -- Test Problem : 21
 --------------------------------------------------------------------
 
-n1-0 : PropFormula
-n1-0 =  ¬ r ∧ p ∧ (¬ p ∨ ¬ q)
+{-
+with ⌊ eq (nnf (¬ φ₁)) (conjunct φ₂ (nnf (¬ φ₁))) ⌋
+... | true  = ⊥
+... | false
+with ⌊ eq (¬ φ₁) (canonicalize φ₂ (¬ φ₁)) ⌋
+... | true  = ⊥
+... | false = φ₁
+-}
 
-n1-2 : PropFormula
-n1-2 =  q ∨ r -- ¬r ∧ ¬ q
 
-n1-4 : PropFormula
-n1-4 =  ⊥
+f1 = dnf (¬ r ∧ p ∧ (¬ q ∨ ¬ s))
+dnff1 =  (¬ r ∧ (p ∧ ¬ q)) ∨ (¬ r ∧ (p ∧ ¬ s))
+
+f2 = q ∧ s
 
 out : PropFormula
-out = simplify n1-0 n1-2 n1-4
+out = sdisj f1 f2
 
-test : ⌊ eq out n1-4 ⌋ ≡ true
-test = refl
-
+test : ⌊ eq out ⊥ ⌋ ≡ true
+test = {!!} -- refl
