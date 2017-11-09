@@ -41,7 +41,7 @@ conjunct φ ψ
 
 -- Theorem.
 conjunct-thm
-  : ∀ {Γ} {φ}
+  : ∀ {Γ} {φ : Premise}
   → (ψ : Conclusion)
   → Γ ⊢ φ
   → Γ ⊢ conjunct φ ψ
