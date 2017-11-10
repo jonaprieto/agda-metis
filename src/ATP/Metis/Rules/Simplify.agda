@@ -36,40 +36,45 @@ open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 
 ------------------------------------------------------------------------------
 
+-- The rm-∨ function intends to be obtain *the resolvent* in the
+-- the modus tollendo pones theorem.
+-- For example,
+--
+--     (¬ ℓ ∨ ψ)   ℓ        (ℓ ∨ ψ)   ¬ ℓ
+--     ─────────────   or  ──────────────.
+--         ¬ ψ                   ¬ ψ
 rm-∨ :  PropFormula → Lit → PropFormula
 rm-∨ φ ℓ
   with literal-view ℓ
 ... | no _
-  with conj-view ℓ
-...    | conj ψ₁ ψ₂ = rm-∨ (rm-∨ φ ψ₁) ψ₂
-...    | other _    = φ
+  with conj-view ℓ  -- if it's a conjunction, we can still do something.
+...  | conj ψ₁ ψ₂ = rm-∨ (rm-∨ φ ψ₁) ψ₂
+...  | other _    = φ
 rm-∨ φ ℓ | yes _
   with disj-view φ
 ... | other _
-    with literal-view φ
-...      | no _ = φ
-...      | yes _
-         with ⌊ eq φ (nnf (¬ ℓ)) ⌋
-...         | false = φ
-...         | true  = ⊥
+    with ⌊ eq φ (nnf (¬ ℓ)) ⌋
+...    | false = φ
+...    | true  = ⊥
 rm-∨ φ ℓ | yes _ | disj φ₁ φ₂
-         with ⌊ eq (rm-∨ φ₁ ℓ) ⊥ ⌋
-...        | true  = rm-∨ φ₂ ℓ
-...        | false
-           with ⌊ eq (rm-∨ φ₂ ℓ) ⊥ ⌋
-...        | true  = rm-∨ φ₁ ℓ
-...        | false = rm-∨ φ₁ ℓ ∨ rm-∨ φ₂ ℓ
-
+  with ⌊ eq (rm-∨ φ₁ ℓ) ⊥ ⌋
+...  | true  = rm-∨ φ₂ ℓ
+...  | false
+     with ⌊ eq (rm-∨ φ₂ ℓ) ⊥ ⌋
+...     | true  = rm-∨ φ₁ ℓ
+...     | false = rm-∨ φ₁ ℓ ∨ rm-∨ φ₂ ℓ
 
 sdisj : PropFormula → PropFormula → PropFormula
 sdisj φ ψ
+  with isDNF φ
+... | false = φ
+... | true
   with literal-view ψ
 ... | no  _
   with conj-view ψ
 ... | conj ψ₁ ψ₂ = sdisj (sdisj φ ψ₁) ψ₂
 ... | other _    = φ
--- now, we extract the positive literal to use resolution.
-sdisj φ ψ | yes _
+sdisj φ ψ | true | yes _
   with neg-view ψ
 ... | neg ℓ = resolve φ ψ ℓ (rm-∨ φ ψ)
 ... | pos ℓ = resolve ψ φ ℓ (rm-∨ φ ψ)
@@ -86,13 +91,14 @@ simplify-cases : (φ : PropFormula) → simplifyCases φ
 simplify-cases (γ₁ ∧ γ₂) = case₁ _ _
 simplify-cases (γ₁ ∨ γ₂) = case₂ _ _
 simplify-cases ⊥         = case₃
-simplify-cases ⊤         = case₄
 simplify-cases φ         = other _
 
 -- Def.
 simplify₀ : Premise → Premise → Conclusion → PropFormula
-simplify₀ φ₁ φ₂ ψ
-  with ⌊ eq φ₁ ψ ⌋
+simplify₀ φ₁ φ₂ ψ = {!!}
+
+{-
+with ⌊ eq φ₁ ψ ⌋
 ... | true = ψ
 ... | false
   with ⌊ eq φ₂ ψ ⌋
@@ -100,28 +106,8 @@ simplify₀ φ₁ φ₂ ψ
 ...   | false
   with simplify-cases φ₁
 simplify₀ .⊥ φ₂ ψ | false | false | case₃ = ψ
-simplify₀ .⊤ φ₂ ψ | false | false | case₄ = φ₂
-simplify₀ .(γ₁ ∧ γ₂) φ₂ ψ | false | false | case₁ γ₁ γ₂ = (γ₁ ∧ γ₂)
-simplify₀ .(γ₁ ∨ γ₂) φ₂ ψ | false | false | case₂ γ₁ γ₂
-  with ⌊ eq γ₁ (nnf (¬ φ₂)) ⌋
-...   | true = γ₂
-...   | false
-  with ⌊ eq γ₂ (nnf (¬ φ₂)) ⌋
-...   | true = γ₁
-...   | false
-  with ⌊ eq (nnf (¬ (γ₁ ∨ γ₂))) (conjunct φ₂ (nnf (¬ (γ₁ ∨ γ₂)))) ⌋
-... | true  = ψ
-... | false
-  with ⌊ eq (¬ (γ₁ ∨ γ₂)) (canonicalize φ₂ (¬ (γ₁ ∨ γ₂))) ⌋
-... | true  = ψ
-... | false = γ₁ ∨ γ₂
-simplify₀ φ₁ φ₂ ψ | false | false | other .φ₁
-  with ⌊ eq (nnf (¬ φ₁)) (conjunct φ₂ (nnf (¬ φ₁))) ⌋
-... | true  = ⊥
-... | false
-  with ⌊ eq (¬ φ₁) (canonicalize φ₂ (¬ φ₁)) ⌋
-... | true  = ⊥
-... | false = φ₁
+-}
+
 
 -- Lemma.
 postulate
