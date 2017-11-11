@@ -1,9 +1,10 @@
 ---------------------------------------------------------------------
--- To test `canonicalize` inference rule.
+-- Testing `canonicalize` inference rule.
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 9 public
-  hiding ( nnf₀; nnf₀-lem; nnf-lem; from-nnf-lem; dnf; cnf-lem; dnf-lem; dist-∨)
+open import Data.PropFormula.NormalForms 9
+--  hiding ( nnf-lem; from-nnf-lem; dnf; cnf-lem; dnf-lem; dist-∨)
   renaming ( nnf to justNNF; cnf to justCNF )
 
 open import ATP.Metis.Rules.Canonicalize 9 public
@@ -13,6 +14,8 @@ open import ATP.Metis.Rules.Reordering 9 public
 open import ATP.Metis.Rules.Resolve 9 public
 
 open import Relation.Binary.PropositionalEquality
+
+----------------------------------------------------------------------------
 
 -- Note: When the symbol `?` appears, it means
 --       we can not proved yet.

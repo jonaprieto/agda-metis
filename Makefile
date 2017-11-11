@@ -9,8 +9,11 @@ clean:
 
 .PHONY : test
 test:
-	$(AGDA) src/ATP/Metis.agda
-	$(AGDA) test/lazy-test.agda
+	$(AGDA) --safe src/ATP/Metis.agda
+	$(AGDA) --safe test/lazy-test.agda
+	$(AGDA) --safe test/resolve.agda
+	$(AGDA) --safe test/canonicalize.agda
+	$(AGDA) --safe test/simplify.agda
 
 .PHONY : canonicalize
 canonicalize:
