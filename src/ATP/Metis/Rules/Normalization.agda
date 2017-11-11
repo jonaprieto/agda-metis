@@ -13,24 +13,24 @@ module ATP.Metis.Rules.Normalization (n : Nat) where
 open import ATP.Metis.Rules.Conjunct n
 open import ATP.Metis.Rules.Checking n
 open import ATP.Metis.Rules.Reordering n
-  using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨)
-  using ( assoc-∧-lem; assoc-∨-lem)
+  using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨ )
+  using ( assoc-∧-lem; assoc-∨-lem )
   using ( from-assoc-∧-lem; from-assoc-∨-lem )
 
 open import Data.Bool.Base
-  using ( Bool; true; false)
+  using ( Bool; true; false )
 
 open import Data.PropFormula.Dec n
 open import Data.PropFormula.Properties n
 open import Data.PropFormula.NormalForms n
-  using (cnf-dist; cnf-dist-lem; from-cnf-dist-lem )
-  using (dnf-dist; dnf-dist-lem; from-dnf-dist-lem)
+  using ( cnf-dist; cnf-dist-lem; from-cnf-dist-lem )
+  using ( dnf-dist; dnf-dist-lem; from-dnf-dist-lem )
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Theorems n
 open import Data.PropFormula.Views  n
   renaming ( disj to disjshape )
 
-open import Relation.Binary.PropositionalEquality using (_≡_; sym)
+open import Relation.Binary.PropositionalEquality using ( _≡_; sym )
 
 ------------------------------------------------------------------------------
 
@@ -140,13 +140,13 @@ simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | 
 ...     | no _
         with eq (simplify-∨ φ₂) ⊥
 ...     | yes p₄ =
-            ⇒-elim
-                (⇒-intro
-                  (∨-elim {Γ = Γ}
-                    (assume {Γ = Γ} (¬ ψ))
-                    (⊥-elim (¬ ψ)
-                      (subst p₄ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
-                Γ⊢φ
+          ⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (assume {Γ = Γ} (¬ ψ))
+                (⊥-elim (¬ ψ)
+                  (subst p₄ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
+            Γ⊢φ
 ...     | no _ =
   ⇒-elim
     (⇒-intro
@@ -186,7 +186,7 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
                (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} φ₁))
                (∨-intro₂ φ₁ (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
             Γ⊢φ
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-simplify-∨-lem
@@ -265,7 +265,7 @@ from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ�
                 (∨-intro₂ φ₁
                   (from-simplify-∨-lem (assume {Γ = Γ} (simplify-∨ φ₂))))))
               Γ⊢simplifyφ
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 data simplify-∧-Cases : PropFormula  → Set where
 
@@ -370,7 +370,7 @@ simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ | pos 
         with eq (simplify-∧ φ₂) ⊤
 ...     | yes p₈ = ∧-proj₁ Γ⊢φ
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (simplify-∧-lem (∧-proj₂ Γ⊢φ))
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-simplify-∧-lem
@@ -426,7 +426,7 @@ from-simplify-∧-lem {Γ} {.(φ₁ ∧ φ₂)} Γ⊢φ | sconj₅ φ₁ φ₂ |
         with eq (simplify-∧ φ₂) ⊤
 ...     | yes p₈ = ∧-intro Γ⊢φ (from-simplify-∧-lem (subst (sym p₈) ⊤-intro))
 ...     | no _   = ∧-intro (∧-proj₁ Γ⊢φ) (from-simplify-∧-lem (∧-proj₂ Γ⊢φ))
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 data nnfCases : PropFormula  → Set where
   case₁  : (φ₁ φ₂ : PropFormula) → nnfCases (φ₁ ∧ φ₂)
@@ -532,7 +532,7 @@ nnf₁-lem {Γ} {φ} (suc n) Γ⊢φ
 ...  | case₉       = ⊤-intro
 ...  | other .φ   = Γ⊢φ
 nnf₁-lem zero Γ⊢φ = Γ⊢φ
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-nnf₁-lem
@@ -592,7 +592,7 @@ from-nnf₁-lem {Γ} {φ} {(suc n)} Γ⊢φ
 ...  | case₉       = ¬-intro (assume {Γ = Γ} ⊥)
 ...  | other .φ   = Γ⊢φ
 from-nnf₁-lem {_} {_} {zero} Γ⊢φ = Γ⊢φ
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Complexity measure.
 nnf-cm : PropFormula → Nat
@@ -620,7 +620,7 @@ nnf-lem
 
 -- Proof.
 nnf-lem {_} {φ} Γ⊢φ = nnf₁-lem (nnf-cm φ) Γ⊢φ
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-nnf-lem
@@ -629,7 +629,7 @@ from-nnf-lem
   → Γ ⊢ φ
 -- Proof.
 from-nnf-lem {Γ} {φ} Γ⊢nnf = from-nnf₁-lem {Γ = Γ} {n = nnf-cm φ} Γ⊢nnf
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 ------------------------------------------------------------------------------
 -- Conjunctive Normal Form (CNF)
@@ -647,7 +647,7 @@ cnf-lem
 
 -- Proof.
 cnf-lem Γ⊢φ = cnf-dist-lem (nnf-lem Γ⊢φ)
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-cnf-lem
@@ -657,7 +657,7 @@ from-cnf-lem
 
 -- Proof.
 from-cnf-lem {Γ} {φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 ------------------------------------------------------------------------------
 -- Disjunctive Normal Form (DNF)
@@ -675,7 +675,7 @@ dnf-lem
 
 -- Proof.
 dnf-lem Γ⊢φ = dnf-dist-lem (nnf-lem Γ⊢φ)
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
 
 -- Lemma.
 from-dnf-lem
@@ -685,4 +685,4 @@ from-dnf-lem
 
 -- Proof.
 from-dnf-lem {Γ} {φ} Γ⊢dnfφ = from-nnf-lem (from-dnf-dist-lem  Γ⊢dnfφ)
---------------------------------------------------------------------------- ■
+--------------------------------------------------------------------------- ∎
