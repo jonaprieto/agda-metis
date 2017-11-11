@@ -15,14 +15,15 @@ p = Var (# 0)
 q = Var (# 1)
 r = Var (# 2)
 
-p1 = Var (# 3)
-q1 = Var (# 4)
-a = Var (# 5)
-s = Var (# 6)
-g = Var (# 7)
-k = Var (# 8)
+p1  = Var (# 3)
+q1  = Var (# 4)
+a   = Var (# 5)
+s   = Var (# 6)
+g   = Var (# 7)
+k   = Var (# 8)
 lit = Var (# 9)
 clause = Var (# 10)
+
 ----------------------------------------------------------------------
 -- Test Problem : 1
 ----------------------------------------------------------------------
@@ -643,7 +644,7 @@ module Test34 where
               n0-5 n0-6
 
   private test : ⌊ eq out n0-6 ⌋ ≡ true
-          test = {!!} -- refl
+          test = refl -- refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 35
@@ -926,7 +927,7 @@ module Test48 where
           out = simplify (simplify n1-0 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 49
@@ -1365,7 +1366,7 @@ module Test72 where
               n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 73
@@ -1455,7 +1456,7 @@ module Test76 where
           out = simplify (simplify n0-1 n0-2 n0-4) n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 77
@@ -1507,7 +1508,7 @@ module Test78 where
               n1-3 n1-6
 
   private test : ⌊ eq out n1-6 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 {- -- Biconditional related problems.
 
@@ -1768,7 +1769,7 @@ module Test88 where
           out = simplify (simplify n2-1 n2-2 n2-4) n2-3 n2-4
 
   private test : ⌊ eq out n2-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 89
@@ -1890,7 +1891,7 @@ module Test93 where
           out = simplify (simplify n3-1 n3-2 n3-4) n3-3 n3-4
 
   private test : ⌊ eq out n3-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 95
@@ -1914,7 +1915,7 @@ module Test95 where
           out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 96
@@ -1946,7 +1947,7 @@ module Test96 where
               n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 97
@@ -1970,7 +1971,7 @@ module Test97 where
           out = simplify (simplify n1-5 n1-2 n1-6) n1-3 n1-6
 
   private test : ⌊ eq out n1-6 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 98
@@ -2007,7 +2008,7 @@ module Test98 where
               n1-6 n1-7
 
   private test : ⌊ eq out n1-7 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 99
@@ -2031,7 +2032,7 @@ module Test99 where
           out = simplify (simplify n2-2 n2-3 n2-5) n2-4 n2-5
 
   private test : ⌊ eq out n2-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 100
@@ -2055,7 +2056,7 @@ module Test100 where
           out = simplify (simplify n2-6 n2-3 n2-7) n2-4 n2-7
 
   private test : ⌊ eq out n2-7 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 101
@@ -2076,7 +2077,7 @@ module Test101 where
           out = simplify n0-2 n0-3 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 102
@@ -2100,7 +2101,7 @@ module Test102 where
           out = simplify (simplify n0-1 n0-4 n0-6) n0-5 n0-6
 
   private test : ⌊ eq out n0-6 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 103
@@ -2121,7 +2122,7 @@ module Test103 where
           out = simplify n0-3 n0-2 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 104
@@ -2144,7 +2145,7 @@ module Test104 where
           out = simplify (simplify n0-1 n0-2 n0-5) n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 105
@@ -2168,7 +2169,7 @@ module Test105 where
           out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 {-
 ----------------------------------------------------------------------
@@ -2366,7 +2367,7 @@ module Test113 where
           out = simplify n0-3 n0-2 n0-4
 
   private test : ⌊ eq out n0-4 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 ----------------------------------------------------------------------
 -- Test Problem : 114
@@ -2390,7 +2391,7 @@ module Test114 where
           out = simplify (simplify n0-1 n0-2 n0-5) n0-4 n0-5
 
   private test : ⌊ eq out n0-5 ⌋ ≡ true
-          test = {!!}
+          test = refl
 
 {-
 ----------------------------------------------------------------------
@@ -2441,5 +2442,4 @@ module Test116 where
           out = simplify (simplify n1-1 n1-2 n1-4) n1-3 n1-4
 
   private test : ⌊ eq out n1-4 ⌋ ≡ true
-          test = {!!}
-
+          test = refl

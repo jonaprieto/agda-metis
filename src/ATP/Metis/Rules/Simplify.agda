@@ -36,238 +36,112 @@ open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 
 ------------------------------------------------------------------------------
 
--- The rm-∨ function intends to be obtain *the resolvent* in the
--- the modus tollendo pones theorem.
--- For example,
---
---     (¬ ℓ ∨ ψ)   ℓ        (ℓ ∨ ψ)   ¬ ℓ
---     ─────────────   or  ──────────────.
---         ¬ ψ                   ¬ ψ
-rm-∨ :  PropFormula → Lit → PropFormula
-rm-∨ φ ℓ
-  with literal-view ℓ
-... | no _
-  with conj-view ℓ  -- if it's a conjunction, we can still do something.
-...  | conj ψ₁ ψ₂ = rm-∨ (rm-∨ φ ψ₁) ψ₂
-...  | other _    = φ
-rm-∨ φ ℓ | yes _
-  with disj-view φ
-... | other _
-    with ⌊ eq φ (nnf (¬ ℓ)) ⌋
-...    | false = φ
-...    | true  = ⊥
-rm-∨ φ ℓ | yes _ | disj φ₁ φ₂
-  with ⌊ eq (rm-∨ φ₁ ℓ) ⊥ ⌋
-...  | true  = rm-∨ φ₂ ℓ
-...  | false
-     with ⌊ eq (rm-∨ φ₂ ℓ) ⊥ ⌋
-...     | true  = rm-∨ φ₁ ℓ
-...     | false = rm-∨ φ₁ ℓ ∨ rm-∨ φ₂ ℓ
+data reduceCases : PropFormula → Set where
+  case-conj : (φ₁ φ₂ : PropFormula) → reduceCases (φ₁ ∧ φ₂)
+  case-disj : (φ₁ φ₂ : PropFormula) → reduceCases (φ₁ ∨ φ₂)
+  case-lit  : (φ : PropFormula)     → reduceCases φ
+  other     : (φ : PropFormula)     → reduceCases φ
 
-sdisj : PropFormula → PropFormula → PropFormula
-sdisj φ ψ
-  with isDNF φ
-... | false = φ
-... | true
-  with literal-view ψ
-... | no  _
-  with conj-view ψ
-... | conj ψ₁ ψ₂ = sdisj (sdisj φ ψ₁) ψ₂
-... | other _    = φ
-sdisj φ ψ | true | yes _
-  with neg-view ψ
-... | neg ℓ = resolve φ ψ ℓ (rm-∨ φ ψ)
-... | pos ℓ = resolve ψ φ ℓ (rm-∨ φ ψ)
-
-
-data simplifyCases : PropFormula → Set where
-  case₁ : (γ₁ γ₂ : PropFormula) → simplifyCases (γ₁ ∧ γ₂)
-  case₂ : (γ₁ γ₂ : PropFormula) → simplifyCases (γ₁ ∨ γ₂)
-  case₃ : simplifyCases ⊥
-  case₄ : simplifyCases ⊤
-  other : (φ : PropFormula)     → simplifyCases φ
-
-simplify-cases : (φ : PropFormula) → simplifyCases φ
-simplify-cases (γ₁ ∧ γ₂) = case₁ _ _
-simplify-cases (γ₁ ∨ γ₂) = case₂ _ _
-simplify-cases ⊥         = case₃
-simplify-cases φ         = other _
+reduce-cases : (φ : PropFormula) → reduceCases φ
+reduce-cases (Var _)   = case-lit _
+reduce-cases ⊤         = case-lit _
+reduce-cases ⊥         = case-lit _
+reduce-cases (¬ Var _) = case-lit _
+reduce-cases (¬ ⊤)     = case-lit _
+reduce-cases (¬ ⊥)     = case-lit _
+reduce-cases (x ∧ x₁)  = case-conj _ _
+reduce-cases (x ∨ x₁)  = case-disj _ _
+reduce-cases φ         = other _
 
 -- Def.
-simplify₀ : Premise → Premise → Conclusion → PropFormula
-simplify₀ φ₁ φ₂ ψ = {!!}
-
-{-
-with ⌊ eq φ₁ ψ ⌋
-... | true = ψ
-... | false
-  with ⌊ eq φ₂ ψ ⌋
-...   | true = ψ
-...   | false
-  with simplify-cases φ₁
-simplify₀ .⊥ φ₂ ψ | false | false | case₃ = ψ
--}
-
+reduce-ℓ : PropFormula → Lit → PropFormula
+reduce-ℓ φ ℓ
+  with reduce-cases φ
+...  | case-conj φ₁ φ₂ = simplify-∧ (reduce-ℓ φ₁ ℓ ∧ reduce-ℓ φ₂ ℓ)
+...  | case-disj φ₁ φ₂ = simplify-∨ (reduce-ℓ φ₁ ℓ ∨ reduce-ℓ φ₂ ℓ)
+...  | case-lit .φ
+     with eq ℓ (nnf (¬ φ))
+...     | yes _ = ⊥
+...     | no  _ = φ
+reduce-ℓ φ ℓ | other .φ = φ
 
 -- Lemma.
-postulate
-  simplify₀-lem
-    : ∀ {Γ} {φ₁ φ₂ : Premise}
-    → Γ ⊢ φ₁
-    → Γ ⊢ φ₂
-    → (ψ : Conclusion)
-    → Γ ⊢ simplify₀ φ₁ φ₂ ψ
+reduce-ℓ-lem
+  : ∀ {Γ} {φ ℓ}
+  → Γ ⊢ φ
+  → Γ ⊢ ℓ
+  → Γ ⊢ reduce-ℓ φ ℓ
 
-{-
 -- Proof.
-simplify₀-lem {Γ} {φ₁}  {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ
-  with eq φ₁ ψ
-... | yes p₁ = subst p₁ Γ⊢φ₁
-... | no _
-  with eq φ₂ ψ
-... | yes p₂ = subst p₂ Γ⊢φ₂
-... | no _
-  with simplify-cases φ₁
-simplify₀-lem {Γ} {.⊥} {φ₂} Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | case₃ = ⊥-elim ψ Γ⊢φ₁
-simplify₀-lem {Γ} {.⊤} {φ₂} Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | case₄ = Γ⊢φ₂
-simplify₀-lem {Γ} {.(γ₁ ⇒ γ₂)} {φ₂} Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | case₁ γ₁ γ₂
-  with eq γ₁ φ₂
-...   | yes p₃  = ⇒-elim Γ⊢φ₁ (subst (sym p₃) Γ⊢φ₂)
-...   | no _
-  with eq γ₂ (nnf (¬ φ₂))
-...   | yes p₄ =
-         nnf-lem
-           (¬-intro
-             (¬-elim
-               (from-nnf-lem
-                 (subst p₄
-                   (⇒-elim
-                     (weaken γ₁ Γ⊢φ₁)
-                     (assume {Γ = Γ} γ₁))))
-               (weaken γ₁ Γ⊢φ₂)))
-...   | no _
-  with eq (nnf (¬ (γ₁ ⇒ γ₂))) (conjunct φ₂ (nnf (¬ (γ₁ ⇒ γ₂))))
-... | yes p₅ =
-       ⊥-elim ψ ( ¬-elim
-           (from-nnf-lem
-              (subst (sym p₅) (conjunct-thm (nnf (¬ (γ₁ ⇒ γ₂))) Γ⊢φ₂)))
-            Γ⊢φ₁)
-... | no _
-  with eq (¬ (γ₁ ⇒ γ₂)) (canonicalize φ₂ (¬ (γ₁ ⇒ γ₂)))
-... | yes p₆  =
-      ⊥-elim ψ
-        (¬-elim
-          (subst (sym p₆) (canonicalize-thm (¬ (γ₁ ⇒ γ₂)) Γ⊢φ₂))
-          Γ⊢φ₁)
-... | no _ = Γ⊢φ₁
-simplify₀-lem {Γ} {.(γ₁ ∨ γ₂)} {φ₂} Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | case₂ γ₁ γ₂
-  with eq γ₁ (nnf (¬ φ₂))
-...   | yes p₇   =
-        ⇒-elim
-          (⇒-intro
-            (∨-elim {Γ = Γ}
-              (⊥-elim γ₂
-                (¬-elim
-                  (from-nnf-lem
-                    (subst p₇ (assume {Γ = Γ} γ₁)))
-                  (weaken γ₁ Γ⊢φ₂)))
-              (assume {Γ = Γ} γ₂)))
-           Γ⊢φ₁
-
-...   | no _
-  with eq γ₂ (nnf (¬ φ₂))
-...   | yes p₈ =
-        ⇒-elim
-          (⇒-intro
-            (∨-elim {Γ = Γ}
-              (assume {Γ = Γ} γ₁)
-              (⊥-elim γ₁
-                (¬-elim
-                  (from-nnf-lem (subst p₈ (assume {Γ = Γ} γ₂)))
-                  (weaken γ₂ Γ⊢φ₂)))))
-          Γ⊢φ₁
-...   | no _
-  with eq (nnf (¬ (γ₁ ∨ γ₂))) (conjunct φ₂ (nnf (¬ (γ₁ ∨ γ₂))))
-... | yes p₉ =
-        ⊥-elim ψ
-          (¬-elim
-            (from-nnf-lem
-              (subst
-                (sym p₉) (conjunct-thm (nnf (¬ (γ₁ ∨ γ₂))) Γ⊢φ₂)))
-              Γ⊢φ₁)
-... | no _
-  with eq (¬ (γ₁ ∨ γ₂)) (canonicalize φ₂ (¬ (γ₁ ∨ γ₂)))
-... | yes p₁₀ =
-        ⊥-elim ψ
-          (¬-elim
-            (subst (sym p₁₀) (canonicalize-thm (¬ (γ₁ ∨ γ₂)) Γ⊢φ₂))
-            Γ⊢φ₁)
-... | no _ = Γ⊢φ₁
-
-simplify₀-lem {Γ} {φ₁} {φ₂}  Γ⊢φ₁ Γ⊢φ₂ ψ | no _ | no _ | other .φ₁
-  with eq (nnf (¬ φ₁)) (conjunct φ₂ (nnf (¬ φ₁)))
-... | yes p₁₁ =
-  ¬-elim
-    (from-nnf-lem
-      (subst (sym p₁₁)
-         (conjunct-thm (nnf (¬ φ₁)) Γ⊢φ₂)))
-    Γ⊢φ₁
-... | no _
-  with eq (¬ φ₁) (canonicalize φ₂ (¬ φ₁))
-... | yes p₁₂ =
-    ¬-elim (subst (sym p₁₂) (canonicalize-thm (¬ φ₁) Γ⊢φ₂)) Γ⊢φ₁
-... | no _    = Γ⊢φ₁
---------------------------------------------------------------------------- ■
--}
-
-data S-View : Premise → Premise → Conclusion → Set where
-  case₁ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  case₂ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  case₃ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  case₄ : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-  nothing  : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-
-s-view : (φ₁ φ₂ ψ : PropFormula) → S-View φ₁ φ₂ ψ
-s-view φ₁ φ₂ ψ
-  with ⌊ eq ψ (simplify₀ φ₁ φ₂ ψ)⌋
-... | true = case₁ φ₁ φ₂ ψ
-... | false
-  with ⌊ eq ψ (simplify₀ (nnf φ₁) φ₂ ψ)⌋
-... | true = case₂ φ₁ φ₂ ψ
-... | false
-  with ⌊ eq ψ (simplify₀ (dnf φ₁) φ₂ ψ)⌋
-... | true = case₃ φ₁ φ₂ ψ
-... | false
-  with ⌊ eq ψ (simplify₀ (cnf φ₁) φ₂ ψ)⌋
-... | true  = case₄ φ₁ φ₂ ψ
-... | false = nothing φ₁ φ₂ ψ
+reduce-ℓ-lem {Γ}{φ}{ℓ} Γ⊢φ Γ⊢ℓ
+  with reduce-cases φ
+...  | case-conj φ₁ φ₂ =
+  simplify-∧-lem
+    (∧-intro
+      (reduce-ℓ-lem (∧-proj₁ Γ⊢φ) Γ⊢ℓ)
+      (reduce-ℓ-lem (∧-proj₂ Γ⊢φ) Γ⊢ℓ))
+...  | case-disj φ₁ φ₂ =
+  simplify-∨-lem
+    (⇒-elim
+      (⇒-intro
+        (∨-elim {Γ = Γ}
+          (∨-intro₁ (reduce-ℓ φ₂ ℓ)
+            (reduce-ℓ-lem (assume {Γ = Γ} φ₁) (weaken φ₁ Γ⊢ℓ)))
+          (∨-intro₂ (reduce-ℓ φ₁ ℓ)
+            (reduce-ℓ-lem (assume {Γ = Γ} φ₂) (weaken φ₂ Γ⊢ℓ)))))
+      Γ⊢φ)
+...  | case-lit .φ
+     with eq ℓ (nnf (¬ φ))
+...     | yes p₁ = ¬-elim (from-nnf-lem (subst p₁ Γ⊢ℓ)) Γ⊢φ
+...     | no  _  = Γ⊢φ
+reduce-ℓ-lem Γ⊢φ _ | other _ = Γ⊢φ
+---------------------------------------------------------------------------- ∎
 
 -- Def.
 simplify : Premise → Premise → Conclusion → PropFormula
-simplify φ₁ φ₂ ψ with s-view φ₁ φ₂ ψ
-simplify φ₁ φ₂ ψ | case₁ .φ₁ .φ₂ .ψ  = simplify₀ φ₁ φ₂ ψ
-simplify φ₁ φ₂ ψ | case₂ .φ₁ .φ₂ .ψ  = simplify₀ (nnf φ₁) φ₂ ψ
-simplify φ₁ φ₂ ψ | case₃ .φ₁ .φ₂ .ψ  = simplify₀ (dnf φ₁) φ₂ ψ
-simplify φ₁ φ₂ ψ | case₄ .φ₁ .φ₂ .ψ  = simplify₀ (cnf φ₁) φ₂ ψ
-simplify φ₁ φ₂ ψ | nothing .φ₁ .φ₂ .ψ = φ₁
+simplify φ₁ φ₂ ψ
+  with eq φ₁ ψ
+... | yes _ = ψ
+... | no  _
+  with eq φ₂ ψ
+...   | yes _ = ψ
+simplify φ₁ φ₂ ψ | no _ | no _
+ with reduce-cases φ₂
+... | case-conj φ₂₁ φ₂₂ = simplify (simplify φ₁ φ₂₁ ψ) φ₂₂ ψ
+... | case-disj φ₂₁ φ₂₂ = simplify-∨ (simplify φ₁ φ₂₁ ψ ∨ simplify φ₁ φ₂₂ ψ)
+... | case-lit ℓ        = reduce-ℓ φ₁ ℓ
+... | other _           = φ₁
 
-postulate
 -- Theorem.
-  simplify-thm
-    : ∀ {Γ} {φ₁ φ₂ : Premise}
-    → (ψ : Conclusion)
-    → Γ ⊢ φ₁
-    → Γ ⊢ φ₂
-    → Γ ⊢ simplify φ₁ φ₂ ψ
+simplify-thm
+  : ∀ {Γ} {φ₁ φ₂ : Premise}
+  → (ψ : Conclusion)
+  → Γ ⊢ φ₁
+  → Γ ⊢ φ₂
+  → Γ ⊢ simplify φ₁ φ₂ ψ
 
-{-
 -- Proof.
-simplify-thm {Γ} {φ₁} {φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
-  with s-view φ₁ φ₂ ψ
-... | case₁ .φ₁ .φ₂ .ψ  = simplify₀-lem Γ⊢φ₁ Γ⊢φ₂ ψ
-... | case₂ .φ₁ .φ₂ .ψ  = simplify₀-lem (nnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
-... | case₃ .φ₁ .φ₂ .ψ  = simplify₀-lem (dnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
-... | case₄ .φ₁ .φ₂ .ψ  = simplify₀-lem (cnf-lem Γ⊢φ₁) Γ⊢φ₂ ψ
-... | nothing .φ₁ .φ₂ .ψ = Γ⊢φ₁
---------------------------------------------------------------------------- ■
--}
+simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
+  with eq φ₁ ψ
+...  | yes φ₁≡ψ = subst φ₁≡ψ Γ⊢φ₁
+...  | no  _
+  with eq φ₂ ψ
+...  | yes φ₂≡ψ = subst φ₂≡ψ Γ⊢φ₂
+simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _
+  with reduce-cases φ₂
+... | case-conj φ₂₁ φ₂₂ =
+        simplify-thm ψ
+          (simplify-thm  ψ Γ⊢φ₁ (∧-proj₁ Γ⊢φ₂)) (∧-proj₂ Γ⊢φ₂)
+... | case-disj φ₂₁ φ₂₂ =
+        simplify-∨-lem
+          (⇒-elim
+            (⇒-intro
+              (∨-elim {Γ = Γ}
+                (∨-intro₁ (simplify φ₁ φ₂₂ ψ )
+                  (simplify-thm ψ (weaken φ₂₁ Γ⊢φ₁) (assume {Γ = Γ} φ₂₁)))
+                (∨-intro₂ (simplify φ₁ φ₂₁ ψ)
+                  (simplify-thm ψ (weaken φ₂₂ Γ⊢φ₁) (assume {Γ = Γ} φ₂₂)))))
+            Γ⊢φ₂)
+... | case-lit ℓ        = reduce-ℓ-lem Γ⊢φ₁ Γ⊢φ₂
+... | other _           = Γ⊢φ₁
+---------------------------------------------------------------------------- ∎

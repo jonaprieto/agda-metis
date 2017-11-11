@@ -30,7 +30,7 @@ clause = Var (# 10)
 ----------------------------------------------------------------------
 
 n0-0 : PropFormula
-n0-0 =  nnf (dnf (¬ r ∧ (¬ q ∨ r)))
+n0-0 =  (¬ r ∧ (¬ q ∨ r))
 
 n0-1 : PropFormula
 n0-1 =  q
@@ -42,4 +42,4 @@ out : PropFormula
 out = simplify n0-0 n0-1 n0-2
 
 test : ⌊ eq out n0-2 ⌋ ≡ true
-test = ? -- refl
+test = {!!} -- refl

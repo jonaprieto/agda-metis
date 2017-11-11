@@ -38,23 +38,13 @@ clause = Var (# 10)
 -- Test Problem : 21
 --------------------------------------------------------------------
 
-{-
-with ⌊ eq (nnf (¬ φ₁)) (conjunct φ₂ (nnf (¬ φ₁))) ⌋
-... | true  = ⊥
-... | false
-with ⌊ eq (¬ φ₁) (canonicalize φ₂ (¬ φ₁)) ⌋
-... | true  = ⊥
-... | false = φ₁
--}
 
+f1 = p ∧ q ∧ s
 
-f1 = dnf (¬ r ∧ p ∧ (¬ q ∨ ¬ s))
-dnff1 =  (¬ r ∧ (p ∧ ¬ q)) ∨ (¬ r ∧ (p ∧ ¬ s))
-
-f2 = q ∧ s
+f2 = ¬ p ∨ ¬ q
 
 out : PropFormula
-out = sdisj f1 f2
+out = simplify f1 f2 ⊥
 
 test : ⌊ eq out ⊥ ⌋ ≡ true
 test = {!!} -- refl

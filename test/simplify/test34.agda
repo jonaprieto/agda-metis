@@ -53,4 +53,4 @@ module Test34 where
               n0-5 n0-6
 
   private test : ⌊ eq out n0-6 ⌋ ≡ true
-          test = refl 
+          test = refl
