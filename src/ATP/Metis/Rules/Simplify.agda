@@ -103,9 +103,15 @@ simplify φ₁ φ₂ ψ
   with eq φ₁ ψ
 ... | yes _ = ψ
 ... | no  _
+  with eq φ₁ ⊥
+... | yes _ = ψ
+... | no  _
   with eq φ₂ ψ
-...   | yes _ = ψ
-simplify φ₁ φ₂ ψ | no _ | no _
+... | yes _ = ψ
+... | no _
+  with eq φ₂ ⊥
+... | yes _ = ψ
+simplify φ₁ φ₂ ψ | no _ | no _ | no _ | no _
  with reduce-cases φ₂
 ... | case-conj φ₂₁ φ₂₂ = simplify (simplify φ₁ φ₂₁ ψ) φ₂₂ ψ
 ... | case-disj φ₂₁ φ₂₂ = simplify-∨ (simplify φ₁ φ₂₁ ψ ∨ simplify φ₁ φ₂₂ ψ)
@@ -125,9 +131,15 @@ simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
   with eq φ₁ ψ
 ...  | yes φ₁≡ψ = subst φ₁≡ψ Γ⊢φ₁
 ...  | no  _
+  with eq φ₁ ⊥
+... | yes φ₁≡⊥ = ⊥-elim ψ (subst φ₁≡⊥ Γ⊢φ₁)
+... | no  _
   with eq φ₂ ψ
 ...  | yes φ₂≡ψ = subst φ₂≡ψ Γ⊢φ₂
-simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _
+...  | no _
+  with eq φ₂ ⊥
+...  | yes φ₂≡⊥ = ⊥-elim ψ (subst φ₂≡⊥ Γ⊢φ₂)
+simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _ | no _ | no _
   with reduce-cases φ₂
 ... | case-conj φ₂₁ φ₂₂ =
         simplify-thm ψ
