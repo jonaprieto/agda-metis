@@ -82,8 +82,8 @@ reduce-ℓ-lem {Γ}{φ}{ℓ} Γ⊢φ Γ⊢ℓ
       (reduce-ℓ-lem (∧-proj₂ Γ⊢φ) Γ⊢ℓ))
 ...  | case-disj φ₁ φ₂ =
   simplify-∨-lem
-    (⇒-elim
-      (⇒-intro
+    (⊃-elim
+      (⊃-intro
         (∨-elim {Γ = Γ}
           (∨-intro₁ (reduce-ℓ φ₂ ℓ)
             (reduce-ℓ-lem (assume {Γ = Γ} φ₁) (weaken φ₁ Γ⊢ℓ)))
@@ -146,8 +146,8 @@ simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _ | no _ | 
           (simplify-thm  ψ Γ⊢φ₁ (∧-proj₁ Γ⊢φ₂)) (∧-proj₂ Γ⊢φ₂)
 ... | case-disj φ₂₁ φ₂₂ =
         simplify-∨-lem
-          (⇒-elim
-            (⇒-intro
+          (⊃-elim
+            (⊃-intro
               (∨-elim {Γ = Γ}
                 (∨-intro₁ (simplify φ₁ φ₂₂ ψ )
                   (simplify-thm ψ (weaken φ₂₁ Γ⊢φ₁) (assume {Γ = Γ} φ₂₁)))

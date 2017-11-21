@@ -33,7 +33,7 @@ r = Var (# 2)
 --------------- ------------------------------------------------------
 
 caseNo1 : PropFormula
-caseNo1 = ¬ ((p ∧ q) ⇒ r)
+caseNo1 = ¬ ((p ∧ q) ⊃ r)
 
 ansNo1 : PropFormula
 ansNo1 = ((¬ r) ∧ (p ∧ q))
@@ -52,7 +52,7 @@ testNo1 = refl
 ---------------------------------------------------------------------
 
 caseNo2 : PropFormula
-caseNo2 = ¬ ((p ∧ q) ⇒ p)
+caseNo2 = ¬ ((p ∧ q) ⊃ p)
 
 ansNo2 : PropFormula
 ansNo2 = ⊥
@@ -72,7 +72,7 @@ testNo2 = refl
 ---------------------------------------------------------------------
 
 caseNo3 : PropFormula
-caseNo3 = ¬ ((((p ∧ q) ∧ (p ⇒ q)) ⇒ p))
+caseNo3 = ¬ ((((p ∧ q) ∧ (p ⊃ q)) ⊃ p))
 
 ansNo3 : PropFormula
 ansNo3 = ⊥
@@ -94,7 +94,7 @@ testNo3 = {!refl!} -- refl
 ---------------------------------------------------------------------
 
 caseNo4 : PropFormula
-caseNo4 = ¬ (p ⇒ q)
+caseNo4 = ¬ (p ⊃ q)
 
 ansNo4 : PropFormula
 ansNo4 = ((¬ q) ∧ p)
@@ -155,7 +155,7 @@ testNo6 = refl
 ---------------------------------------------------------------------
 
 caseNo7 : PropFormula
-caseNo7 = ((p ∨ q) ⇒ (p ∧ q))
+caseNo7 = ((p ∨ q) ⊃ (p ∧ q))
 
 ansNo7 : PropFormula
 ansNo7 = (((¬ p) ∧ (¬ q)) ∨ (p ∧ q))
@@ -180,7 +180,7 @@ testNo7 = refl
 ---------------------------------------------------------------------
 
 caseNo8 : PropFormula
-caseNo8 = ¬ (((p ⇒ q) ∧ q) ⇒ p)
+caseNo8 = ¬ (((p ⊃ q) ∧ q) ⊃ p)
 
 ansNo8 : PropFormula
 ansNo8 = ((¬ p) ∧ (q ∧ ((¬ p) ∨ q)))
@@ -201,7 +201,7 @@ testNo8 = refl
 ---------------------------------------------------------------------
 
 caseNo9 : PropFormula
-caseNo9 = ((q ⇒ r) ∧ (q ∨ p))
+caseNo9 = ((q ⊃ r) ∧ (q ∨ p))
 
 ansNo9 : PropFormula
 ansNo9 = (((¬ q) ∨ r) ∧ (p ∨ q))
@@ -222,7 +222,7 @@ testNo9 = refl
 ---------------------------------------------------------------------
 
 caseNo10 : PropFormula
-caseNo10 = ¬ (((p ⇒ q) ∧ r) ⇒ r)
+caseNo10 = ¬ (((p ⊃ q) ∧ r) ⊃ r)
 
 ansNo10 : PropFormula
 ansNo10 = ⊥
@@ -323,7 +323,7 @@ testNo12 = {!refl!} -- refl
 ---------------------------------------------------------------------
 
 caseNo13 : PropFormula
-caseNo13 = ¬ (((p ⇔ q) ∧ q) ⇒ p)
+caseNo13 = ¬ (((p ⇔ q) ∧ q) ⊃ p)
 
 ansNo13 : PropFormula
 ansNo13 = (¬ p) ∧ (q ∧ ((¬ p) ⇔ (¬ q)))
@@ -345,7 +345,7 @@ testNo13 = {!!} -- refl
 ---------------------------------------------------------------------
 
 caseNo14 : PropFormula
-caseNo14 = ¬ (((p ⇔ q) ∧ p) ⇒ q)
+caseNo14 = ¬ (((p ⇔ q) ∧ p) ⊃ q)
 
 ansNo14 : PropFormula
 ansNo14 = ((¬ q) ∧ (p ∧ ((¬ p) ⇔ (¬ q))))
@@ -418,7 +418,7 @@ testNo16 = {!!} -- refl
 ---------------------------------------------------------------------
 
 caseNo17 : PropFormula
-caseNo17 = (p ⇒ q)
+caseNo17 = (p ⊃ q)
 
 ansNo17 : PropFormula
 ansNo17 = ((¬ p) ∨ q)
@@ -437,7 +437,7 @@ testNo17 = refl
 ---------------------------------------------------------------------
 
 caseNo18 : PropFormula
-caseNo18 = ¬ ((p ∧ p) ⇒ q)
+caseNo18 = ¬ ((p ∧ p) ⊃ q)
 
 ansNo18 : PropFormula
 ansNo18 = ((¬ q) ∧ p)
@@ -456,7 +456,7 @@ testNo18 = {!!} -- refl
 ---------------------------------------------------------------------
 
 caseNo19 : PropFormula
-caseNo19 = ((p ⇒ q) ∧ (q ⇒ p))
+caseNo19 = ((p ⊃ q) ∧ (q ⊃ p))
 
 ansNo19 : PropFormula
 ansNo19 = (((¬ p) ∨ q) ∧ ((¬ q) ∨ p))
@@ -475,7 +475,7 @@ testNo19 = refl
 ---------------------------------------------------------------------
 
 caseNo20 : PropFormula
-caseNo20 = ¬ ((((p ⇒ q) ⇔ p) ∧ p) ⇒ q)
+caseNo20 = ¬ ((((p ⊃ q) ⇔ p) ∧ p) ⊃ q)
 
 ansNo20 : PropFormula
 ansNo20 = ((¬ q) ∧ (p ∧ ((¬ p) ⇔ ((¬ q) ∧ p))))
@@ -500,7 +500,7 @@ testNo20 = {!!} -- refl
 ---------------------------------------------------------------------
 
 caseNo21 : PropFormula
-caseNo21 = (p ⇒ (q ⇔ r))
+caseNo21 = (p ⊃ (q ⇔ r))
 
 ansNo21 : PropFormula
 ansNo21 = ((¬ p) ∨ ((¬ q) ⇔ (¬ r)))
@@ -522,7 +522,7 @@ testNo21 = {!!} -- refl
 ---------------------------------------------------------------------
 
 caseNo22 : PropFormula
-caseNo22 = ¬ (((p ∧ q) ∧ p) ⇒ r)
+caseNo22 = ¬ (((p ∧ q) ∧ p) ⊃ r)
 
 ansNo22 : PropFormula
 ansNo22 = ((¬ r) ∧ (p ∧ q))
@@ -542,7 +542,7 @@ testNo22 = refl
 ---------------------------------------------------------------------
 
 caseNo23 : PropFormula
-caseNo23 = ¬ (((p ∨ (q ∧ r)) ∧ (¬ p)) ⇒ q)
+caseNo23 = ¬ (((p ∨ (q ∧ r)) ∧ (¬ p)) ⊃ q)
 
 ansNo23 : PropFormula
 ansNo23 = ((¬ p) ∧ ((¬ q) ∧ (p ∨ (q ∧ r))))
@@ -565,7 +565,7 @@ testNo23 = refl
 ---------------------------------------------------------------------
 
 caseNo24 : PropFormula
-caseNo24 = ¬ (((p ∨ (q ∧ r)) ∧ ((p ∨ q) ∧ (¬ p))) ⇒ r)
+caseNo24 = ¬ (((p ∨ (q ∧ r)) ∧ ((p ∨ q) ∧ (¬ p))) ⊃ r)
 
 ansNo24 : PropFormula
 ansNo24 = ((¬ p) ∧ ((¬ r) ∧ ((p ∨ q) ∧ (p ∨ (q ∧ r)))))
@@ -585,7 +585,7 @@ testNo24 = refl
 ---------------------------------------------------------------------
 
 caseNo25 : PropFormula
-caseNo25 = ¬ ((((p ∨ q) ∧ (p ∨ r)) ∧ (¬ p)) ⇒ q)
+caseNo25 = ¬ ((((p ∨ q) ∧ (p ∨ r)) ∧ (¬ p)) ⊃ q)
 
 ansNo25 : PropFormula
 ansNo25 = ((¬ p) ∧ ((¬ q) ∧ ((p ∨ q) ∧ (p ∨ r))))
@@ -604,7 +604,7 @@ testNo25 = refl
 ---------------------------------------------------------------------
 
 caseNo26 : PropFormula
-caseNo26 = ¬ ((¬ q) ⇒ p)
+caseNo26 = ¬ ((¬ q) ⊃ p)
 
 ansNo26 : PropFormula
 ansNo26 = ((¬ p) ∧ (¬ q))
@@ -624,7 +624,7 @@ testNo26 = refl
 ---------------------------------------------------------------------
 
 caseNo27 : PropFormula
-caseNo27 = ((p ⇒ q) ⇒ (p ⇒ r))
+caseNo27 = ((p ⊃ q) ⊃ (p ⊃ r))
 
 ansNo27 : PropFormula
 ansNo27 = ((¬ p) ∨ (r ∨ ((¬ q) ∧ p)))
@@ -644,7 +644,7 @@ testNo27 = refl
 ---------------------------------------------------------------------
 
 caseNo28 : PropFormula
-caseNo28 = ¬ (((p ∨ q) ∧ (((¬ p) ∨ q) ∧ (p ∨ (¬ q)))) ⇒ q)
+caseNo28 = ¬ (((p ∨ q) ∧ (((¬ p) ∨ q) ∧ (p ∨ (¬ q)))) ⊃ q)
 
 ansNo28 : PropFormula
 ansNo28 = ((¬ q) ∧ (((¬ p) ∨ q) ∧ (((¬ q) ∨ p) ∧ (p ∨ q))))
@@ -664,7 +664,7 @@ testNo28 = refl
 ---------------------------------------------------------------------
 
 caseNo29 : PropFormula
-caseNo29 = ¬ ((((p ∨ q) ∧ (((¬ p) ∨ q) ∧ (p ∨ (¬ q)))) ∧ (¬ (¬ q))) ⇒ q)
+caseNo29 = ¬ ((((p ∨ q) ∧ (((¬ p) ∨ q) ∧ (p ∨ (¬ q)))) ∧ (¬ (¬ q))) ⊃ q)
 
 ansNo29 : PropFormula
 ansNo29 = ⊥

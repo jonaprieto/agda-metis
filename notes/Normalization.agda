@@ -8,7 +8,7 @@ data nnf-Cases : PropFormula  → Set where
 
   case₁ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ∧ φ₂)
   case₂ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ∨ φ₂)
-  case₃ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ⇒ φ₂)
+  case₃ : (φ₁ φ₂ : PropFormula) → nnf-Cases (φ₁ ⊃ φ₂)
   case₄ : (φ : PropFormula)     → nnf-Cases (¬ φ)
   case₅ : (φ : PropFormula)     → nnf-Cases ⊥
   case₆ : (φ : PropFormula)     → nnf-Cases ⊤
@@ -17,7 +17,7 @@ data nnf-Cases : PropFormula  → Set where
 nnf-cases : (φ : PropFormula) → nnf-Cases φ
 nnf-cases (φ₁ ∧ φ₂) = case₁ _ _
 nnf-cases (φ₁ ∨ φ₂) = case₂ _ _
-nnf-cases (φ₁ ⇒ φ₂) = case₃ _ _
+nnf-cases (φ₁ ⊃ φ₂) = case₃ _ _
 nnf-cases (¬ φ)     = case₄ _
 nnf-cases ⊥         = case₅ ⊥
 nnf-cases ⊤         = case₆ ⊤
@@ -29,7 +29,7 @@ nnf₀ ⊕ φ
   with nnf-cases φ
 nnf₀ ⊕ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊕ φ₁ ∧ nnf₀ ⊕ φ₂))
 nnf₀ ⊕ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊕ φ₁ ∨ nnf₀ ⊕ φ₂))
-nnf₀ ⊕ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊖ φ₁ ∨ nnf₀ ⊕ φ₂))
+nnf₀ ⊕ .(φ₁ ⊃ φ₂) | case₃ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊖ φ₁ ∨ nnf₀ ⊕ φ₂))
 nnf₀ ⊕ .(¬ φ)     | case₄ φ     = nnf₀ ⊖ φ
 nnf₀ ⊕ .(⊥)       | case₅ φ     = ⊥
 nnf₀ ⊕ .(⊤)       | case₆ φ     = ⊤
@@ -38,7 +38,7 @@ nnf₀ ⊖ φ
   with nnf-cases φ
 nnf₀ ⊖ .(φ₁ ∧ φ₂) | case₁ φ₁ φ₂ = simplify-∨ (assoc-∨ (nnf₀ ⊖ φ₁ ∨ nnf₀ ⊖ φ₂))
 nnf₀ ⊖ .(φ₁ ∨ φ₂) | case₂ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊖ φ₁ ∧ nnf₀ ⊖ φ₂))
-nnf₀ ⊖ .(φ₁ ⇒ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊖ φ₂ ∧ nnf₀ ⊕ φ₁))
+nnf₀ ⊖ .(φ₁ ⊃ φ₂) | case₃ φ₁ φ₂ = simplify-∧ (assoc-∧ (nnf₀ ⊖ φ₂ ∧ nnf₀ ⊕ φ₁))
 nnf₀ ⊖ .(¬ φ)     | case₄ φ     = nnf₀ ⊕ φ
 nnf₀ ⊖ .(⊥)       | case₅ φ     = ⊤
 nnf₀ ⊖ .(⊤)       | case₆ φ     = ⊥

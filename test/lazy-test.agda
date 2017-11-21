@@ -43,12 +43,12 @@ d = Var (# 8)
 -- Conjecture.
 
 goal : PropFormula
-goal = (p ⇒ ((p ⇒ q) ⇒ q))
+goal = (p ⊃ ((p ⊃ q) ⊃ q))
 
 -- Subgoal.
 
 subgoal₀ : PropFormula
-subgoal₀ = ((p ∧ (p ⇒ q)) ⇒ q)
+subgoal₀ = ((p ∧ (p ⊃ q)) ⊃ q)
 
 tt : Γ , ¬ subgoal₀ ⊢ ¬ q ∧ (p ∧ ((¬ p) ∨ q))
 tt = thm-justCNF (assume {Γ = Γ} (¬ (strip goal to (subgoal₀))))

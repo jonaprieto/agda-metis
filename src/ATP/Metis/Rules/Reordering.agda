@@ -73,8 +73,8 @@ assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
 ... | case₁ φ₁ φ₂ φ₃ =
   assoc-∨₁-lem n(∨-assoc₂ Γ⊢φ)
 ... | case₂ φ₁ φ₂    =
-  ⇒-elim
-    (⇒-intro
+  ⊃-elim
+    (⊃-intro
       (∨-elim {Γ = Γ}
         (∨-intro₁ (assoc-∨₁ φ₂ n)
           (assume {Γ = Γ} φ₁))
@@ -97,8 +97,8 @@ from-assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢assocφ
 ... | case₁ φ₁ φ₂ φ₃ =
   ∨-assoc₁ (from-assoc-∨₁-lem n Γ⊢assocφ)
 ... | case₂ φ₁ φ₂    =
-  ⇒-elim
-    (⇒-intro
+  ⊃-elim
+    (⊃-intro
       (∨-elim {Γ = Γ}
         (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
         (∨-intro₂ φ₁ (from-assoc-∨₁-lem n
@@ -286,8 +286,8 @@ factor-lem {Γ}{φ} Γ⊢φ
 ...  | disjshape φ₁ φ₂
      with eq φ₁ (factor φ₂)
 ...     | yes φ₁≡factorφ₂ =
-           ⇒-elim
-             (⇒-intro
+           ⊃-elim
+             (⊃-intro
                (∨-elim {Γ = Γ}
                  (assume {Γ = Γ} φ₁)
                  (subst
@@ -317,8 +317,8 @@ sbuild-∨-lem {Γ} {φ} Γ⊢φ ψ
 ... | other _    = build-∨-lem Γ⊢φ ψ
 ... | disjshape φ₁ φ₂ =
         factor-lem
-         (⇒-elim
-            (⇒-intro
+         (⊃-elim
+            (⊃-intro
               (∨-elim {Γ = Γ}
                 (∨-intro₁ (sbuild-∨ φ₂ ψ)
                   (build-∨-lem (assume {Γ = Γ} φ₁) ψ))

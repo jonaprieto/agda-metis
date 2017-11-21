@@ -24,13 +24,13 @@ open import Data.PropFormula.Views    n
 ------------------------------------------------------------------------------
 
 data uhCases : PropFormula → Set where
-  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⇒ (φ₂ ⇒ φ₃))
-  case₂ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⇒ (φ₂ ∧ φ₃))
+  case₁ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⊃ (φ₂ ⊃ φ₃))
+  case₂ : (φ₁ φ₂ φ₃ : PropFormula) → uhCases (φ₁ ⊃ (φ₂ ∧ φ₃))
   other : (φ : PropFormula)        → uhCases φ
 
 uh-cases : (φ : PropFormula) → uhCases φ
-uh-cases (φ₁ ⇒ (φ₂ ⇒ φ₃)) = case₁ _ _ _
-uh-cases (φ₁ ⇒ (φ₂ ∧ φ₃)) = case₂ _ _ _
+uh-cases (φ₁ ⊃ (φ₂ ⊃ φ₃)) = case₁ _ _ _
+uh-cases (φ₁ ⊃ (φ₂ ∧ φ₃)) = case₂ _ _ _
 uh-cases φ                = other _
 
 -- Def.
@@ -38,8 +38,8 @@ uh₁ : PropFormula → Nat → PropFormula
 uh₁ φ zero = φ
 uh₁ φ (suc n)
   with uh-cases φ
-...  | case₁ φ₁ φ₂ φ₃ = uh₁ ((φ₁ ∧ φ₂) ⇒ φ₃) n
-...  | case₂ φ₁ φ₂ φ₃ = uh₁ (φ₁ ⇒ φ₂) n ∧ uh₁ (φ₁ ⇒ φ₃) n
+...  | case₁ φ₁ φ₂ φ₃ = uh₁ ((φ₁ ∧ φ₂) ⊃ φ₃) n
+...  | case₂ φ₁ φ₂ φ₃ = uh₁ (φ₁ ⊃ φ₂) n ∧ uh₁ (φ₁ ⊃ φ₃) n
 ...  | other _        = φ
 
 -- Complexity measure of uh₁.
@@ -62,11 +62,11 @@ uh₁-lem {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
 uh₁-lem {_} {φ} (suc n) Γ⊢ushuntnφ
   with uh-cases φ
 ...  | case₁ φ₁ φ₂ φ₃ =
-        ∧⇒-to-⇒⇒
+        ∧⊃-to-⊃⊃
           (uh₁-lem n
             Γ⊢ushuntnφ)
 ...  | case₂ φ₁ φ₂ φ₃ =
-        ⇒∧⇒-to-⇒∧
+        ⊃∧⊃-to-⊃∧
           (∧-intro
             (uh₁-lem n
               (∧-proj₁ Γ⊢ushuntnφ))
@@ -92,11 +92,11 @@ uh-lem {_} {φ} = uh₁-lem (uh-cm φ)
 data stripCases : PropFormula → Set where
   conj    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ∧ φ₂)
   disj    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ∨ φ₂)
-  impl    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ⇒ φ₂)
+  impl    : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ⊃ φ₂)
   biimpl  : (φ₁ φ₂ : PropFormula) → stripCases (φ₁ ⇔ φ₂)
   nconj   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ∧ φ₂))
   ndisj   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ∨ φ₂))
-  nimpl   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ⇒ φ₂))
+  nimpl   : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ⊃ φ₂))
   nbiimpl : (φ₁ φ₂ : PropFormula) → stripCases (¬ (φ₁ ⇔ φ₂))
   nneg    : (φ : PropFormula)    → stripCases (¬ ¬ φ)
   nbot    : stripCases (¬ ⊥)
@@ -106,13 +106,13 @@ data stripCases : PropFormula → Set where
 strip-cases : (φ : PropFormula) → stripCases φ
 strip-cases (φ₁ ∧ φ₂)     = conj _ _
 strip-cases (φ₁ ∨ φ₂)     = disj _ _
-strip-cases (φ₁ ⇒ φ₂)     = impl _ _
+strip-cases (φ₁ ⊃ φ₂)     = impl _ _
 strip-cases (φ₁ ⇔ φ₂)     = biimpl _ _
 strip-cases (¬ ⊤)         = ntop
 strip-cases (¬ ⊥)         = nbot
 strip-cases (¬ (φ₁ ∧ φ₂)) = nconj _ _
 strip-cases (¬ (φ₁ ∨ φ₂)) = ndisj _ _
-strip-cases (¬ (φ₁ ⇒ φ₂)) = nimpl _ _
+strip-cases (¬ (φ₁ ⊃ φ₂)) = nimpl _ _
 strip-cases (¬ (φ₁ ⇔ φ₂)) = nbiimpl _ _
 strip-cases (¬ (¬ φ))     = nneg _
 strip-cases φ₁            = other _
@@ -121,14 +121,14 @@ strip-cases φ₁            = other _
 strip₁ : PropFormula → Nat → PropFormula
 strip₁ φ (suc n)
   with strip-cases φ
-...  | conj φ₁ φ₂    = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⇒ strip₁ φ₂ n)
-...  | disj φ₁ φ₂    = uh (¬ φ₁ ⇒ strip₁ φ₂ n)
-...  | impl φ₁ φ₂    = uh (φ₁ ⇒ strip₁ φ₂ n)
-...  | biimpl φ₁ φ₂  = uh (φ₁ ⇒ strip₁ φ₂ n) ∧ uh (φ₂ ⇒ strip₁ φ₁ n)
-...  | nconj φ₁ φ₂   = uh (φ₁ ⇒ strip₁ (¬ φ₂) n)
-...  | ndisj φ₁ φ₂   = uh (strip₁ (¬ φ₁) n) ∧ uh (¬ φ₁ ⇒ strip₁ (¬ φ₂) n)
-...  | nimpl φ₁ φ₂   = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⇒ strip₁ (¬ φ₂) n)
-...  | nbiimpl φ₁ φ₂ = uh (φ₁ ⇒ strip₁ (¬ φ₂) n) ∧ uh ((¬ φ₂) ⇒ strip₁ φ₁ n)
+...  | conj φ₁ φ₂    = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⊃ strip₁ φ₂ n)
+...  | disj φ₁ φ₂    = uh (¬ φ₁ ⊃ strip₁ φ₂ n)
+...  | impl φ₁ φ₂    = uh (φ₁ ⊃ strip₁ φ₂ n)
+...  | biimpl φ₁ φ₂  = uh (φ₁ ⊃ strip₁ φ₂ n) ∧ uh (φ₂ ⊃ strip₁ φ₁ n)
+...  | nconj φ₁ φ₂   = uh (φ₁ ⊃ strip₁ (¬ φ₂) n)
+...  | ndisj φ₁ φ₂   = uh (strip₁ (¬ φ₁) n) ∧ uh (¬ φ₁ ⊃ strip₁ (¬ φ₂) n)
+...  | nimpl φ₁ φ₂   = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⊃ strip₁ (¬ φ₂) n)
+...  | nbiimpl φ₁ φ₂ = uh (φ₁ ⊃ strip₁ (¬ φ₂) n) ∧ uh ((¬ φ₂) ⊃ strip₁ φ₁ n)
 ...  | nneg φ₁       = uh (strip₁ φ₁ n)
 ...  | nbot          = ⊤
 ...  | ntop          = ⊥
@@ -166,7 +166,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
         ∧-intro
           helper
           (strip₁-lem n
-            (⇒-elim
+            (⊃-elim
               (uh-lem (∧-proj₂ Γ⊢strip₁))
               helper ))
         where
@@ -174,22 +174,22 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
           helper = strip₁-lem n (uh-lem (∧-proj₁ Γ⊢strip₁))
 
 ...  | disj φ₁ φ₂ =
-        ⇒-elim
-          (⇒-intro
+        ⊃-elim
+          (⊃-intro
             (∨-elim {Γ = Γ}
               (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
               (∨-intro₂ φ₁
                 (strip₁-lem n
-                  (⇒-elim
+                  (⊃-elim
                     (uh-lem
                       (weaken (¬ φ₁) Γ⊢strip₁))
                     (assume {Γ = Γ} (¬ φ₁)))))))
           (PEM {Γ = Γ} {φ = φ₁})
 
 ... | impl φ₁ φ₂ =
-        ⇒-intro
+        ⊃-intro
           (strip₁-lem n
-            (⇒-elim
+            (⊃-elim
               (weaken φ₁
                 (uh-lem Γ⊢strip₁))
                 (assume {Γ = Γ} φ₁)))
@@ -197,30 +197,30 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
 ... | biimpl φ₁ φ₂ =
         ⇔-equiv₂ (∧-intro helper₁ helper₂)
         where
-          helper₁ : Γ ⊢ φ₁ ⇒ φ₂
-          helper₁ = ⇒-intro
+          helper₁ : Γ ⊢ φ₁ ⊃ φ₂
+          helper₁ = ⊃-intro
                (strip₁-lem n
-                 (⇒-elim
+                 (⊃-elim
                    (weaken φ₁
                      (uh-lem (∧-proj₁ Γ⊢strip₁)))
                    (assume {Γ = Γ} φ₁)))
 
-          helper₂ : Γ ⊢ φ₂ ⇒ φ₁
-          helper₂ = ⇒-intro
+          helper₂ : Γ ⊢ φ₂ ⊃ φ₁
+          helper₂ = ⊃-intro
                 (strip₁-lem n
-                  (⇒-elim
+                  (⊃-elim
                     (weaken φ₂
                       (uh-lem (∧-proj₂ Γ⊢strip₁)))
                    (assume {Γ = Γ} φ₂)))
 
 ... |  nconj φ₁ φ₂ =
-  ¬∨¬-to-¬∧ (⇒-to-¬∨ helper)
+  ¬∨¬-to-¬∧ (⊃-to-¬∨ helper)
   where
-    helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
+    helper : Γ ⊢ φ₁ ⊃ ¬ φ₂
     helper =
-      (⇒-intro
+      (⊃-intro
         (strip₁-lem n
-          (⇒-elim
+          (⊃-elim
             (weaken φ₁
               (uh-lem Γ⊢strip₁))
           (assume {Γ = Γ} φ₁))))
@@ -230,7 +230,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
     (∧-intro
       helper
       (strip₁-lem n
-        (⇒-elim
+        (⊃-elim
           (uh-lem (∧-proj₂ Γ⊢strip₁))
           helper)))
   where
@@ -240,40 +240,40 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
 ... | nimpl φ₁ φ₂ =
   ¬-intro
     (¬-elim
-      (weaken (φ₁ ⇒ φ₂)
-        (⇒-elim
+      (weaken (φ₁ ⊃ φ₂)
+        (⊃-elim
           helper
           Γ⊢φ₁))
-      (⇒-elim
-        (assume {Γ = Γ} (φ₁ ⇒ φ₂))
-        (weaken (φ₁ ⇒ φ₂) Γ⊢φ₁)))
+      (⊃-elim
+        (assume {Γ = Γ} (φ₁ ⊃ φ₂))
+        (weaken (φ₁ ⊃ φ₂) Γ⊢φ₁)))
   where
     Γ⊢φ₁ : Γ ⊢ φ₁
     Γ⊢φ₁ = strip₁-lem n (uh-lem (∧-proj₁ Γ⊢strip₁))
 
-    helper : Γ ⊢ φ₁ ⇒ ¬ φ₂
+    helper : Γ ⊢ φ₁ ⊃ ¬ φ₂
     helper =
-      ⇒-intro
+      ⊃-intro
         (strip₁-lem n
-          (⇒-elim
+          (⊃-elim
             (uh-lem (weaken φ₁ (∧-proj₂ Γ⊢strip₁)))
             (assume {Γ = Γ} φ₁)))
 
-... | nbiimpl φ₁ φ₂ = ⇒¬∧¬⇒-to-¬⇔ (∧-intro helper₁ helper₂)
+... | nbiimpl φ₁ φ₂ = ⊃¬∧¬⊃-to-¬⇔ (∧-intro helper₁ helper₂)
   where
-    helper₁ : Γ ⊢ φ₁ ⇒ ¬ φ₂
+    helper₁ : Γ ⊢ φ₁ ⊃ ¬ φ₂
     helper₁ =
-      ⇒-intro
+      ⊃-intro
         (strip₁-lem n
-          (⇒-elim
+          (⊃-elim
             (uh-lem (weaken φ₁ (∧-proj₁ Γ⊢strip₁)))
             (assume {Γ = Γ} φ₁)))
 
-    helper₂ : Γ ⊢ ¬ φ₂ ⇒ φ₁
+    helper₂ : Γ ⊢ ¬ φ₂ ⊃ φ₁
     helper₂ =
-      ⇒-intro
+      ⊃-intro
         (strip₁-lem n
-          (⇒-elim
+          (⊃-elim
             (uh-lem (weaken (¬ φ₂) (∧-proj₂ Γ⊢strip₁)))
             (assume {Γ = Γ} (¬ φ₂))))
 
@@ -300,10 +300,10 @@ strip-lem {_} {φ} = strip₁-lem (strip-cm φ)
 -- Theorem.
 strip-thm
   : ∀ {Γ} {φ}
-  → Γ ⊢ strip φ ⇒ φ
+  → Γ ⊢ strip φ ⊃ φ
 
 -- Proof.
-strip-thm {Γ} {φ} = ⇒-intro (strip-lem (assume {Γ = Γ} (strip φ)))
+strip-thm {Γ} {φ} = ⊃-intro (strip-lem (assume {Γ = Γ} (strip φ)))
 --------------------------------------------------------------------------- ∎
 
 -- Extra:
