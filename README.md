@@ -9,7 +9,7 @@ Both libraries are intended to support output from the
 
 ### Prerequisites
 
-* [agda] 2.5.3
+* [Agda][agda] 2.5.3
 * [agda-prop]
 
 ### Installation
