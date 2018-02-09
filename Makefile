@@ -22,6 +22,6 @@ canonicalize:
 resolve:
 	$(AGDA) test/resolve.agda
 
-.PHONY : doc
-doc :
-	agda --html src/ATP.agda
+.PHONY: listings
+listings: 
+	agda -i. -isrc --html --html-dir=docs README.agda -v0
