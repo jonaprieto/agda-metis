@@ -1,0 +1,180 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>ATP.Metis.Rules.Checking</title><link rel="stylesheet" href="Agda.css"></head><body><pre><a id="1" class="Comment">------------------------------------------------------------------------------</a>
+<a id="80" class="Comment">-- Agda-Metis Library.</a>
+<a id="103" class="Comment">-- Check module.</a>
+<a id="120" class="Comment">--</a>
+<a id="123" class="Comment">-- * Description:</a>
+<a id="141" class="Comment">--</a>
+<a id="144" class="Comment">-- Some inference rules are composition of other rules.</a>
+<a id="200" class="Comment">-- Many of them work as follows:</a>
+<a id="233" class="Comment">--  - rule₁,₂,₃ : from Γ⊢ϕ try to construct Γ⊢ψ, for some ϕ, ψ ∈ PropFormula.</a>
+<a id="311" class="Comment">-- Then, we want to build a strong rule that compose other rules, and all rules</a>
+<a id="391" class="Comment">-- including the new one follows the same principle described above.</a>
+<a id="460" class="Comment">--</a>
+<a id="463" class="Comment">-- To compose in an efficient way, we propose the following algorithm:</a>
+<a id="534" class="Comment">--</a>
+<a id="537" class="Comment">-- Step 0 : Sort the rules in a convenient order.</a>
+<a id="587" class="Comment">-- Step 1 : Apply the first rule with Γ⊢ϕ and ψ and go to Step 3.</a>
+<a id="653" class="Comment">-- Step 2 : Apply the next rule to Γ⊢ϕ, ψ ∈ PropFormula,</a>
+<a id="710" class="Comment">-- Step 3 : If last step produces Γ⊢ψ, stop, else,</a>
+<a id="761" class="Comment">--          go to Step 2 but instead of Γ⊢ϕ, we use Γ⊢last-rule(ϕ) and ψ.</a>
+<a id="835" class="Comment">-- Step 4 : If there is more rules for applying go to Step 2. Otherwise stop.</a>
+<a id="913" class="Comment">------------------------------------------------------------------------------</a>
+
+<a id="993" class="Keyword">open</a> <a id="998" class="Keyword">import</a> <a id="1005" href="Data.Nat.html" class="Module">Data.Nat</a> <a id="1014" class="Keyword">using</a> <a id="1020" class="Symbol">(</a> <a id="1022" href="Agda.Builtin.Nat.html#Nat" class="Datatype">ℕ</a><a id="1023" class="Symbol">;</a> <a id="1025" href="Agda.Builtin.Nat.html#Nat.suc" class="InductiveConstructor">suc</a><a id="1028" class="Symbol">;</a> <a id="1030" href="Agda.Builtin.Nat.html#Nat.zero" class="InductiveConstructor">zero</a> <a id="1035" class="Symbol">)</a>
+
+<a id="1038" class="Keyword">module</a> <a id="1045" href="ATP.Metis.Rules.Checking.html" class="Module">ATP.Metis.Rules.Checking</a> <a id="1070" class="Symbol">(</a> <a id="1072" href="ATP.Metis.Rules.Checking.html#1072" class="Bound">n</a> <a id="1074" class="Symbol">:</a> <a id="1076" href="Agda.Builtin.Nat.html#%E2%84%95" class="Datatype">ℕ</a> <a id="1078" class="Symbol">)</a> <a id="1080" class="Keyword">where</a>
+
+<a id="1087" class="Comment">------------------------------------------------------------------------------</a>
+
+<a id="1167" class="Keyword">open</a> <a id="1172" class="Keyword">import</a> <a id="1179" href="Data.Bool.Base.html" class="Module">Data.Bool.Base</a> <a id="1194" class="Keyword">using</a>    <a id="1203" class="Symbol">(</a> <a id="1205" href="Agda.Builtin.Bool.html#Bool.true" class="InductiveConstructor">true</a><a id="1209" class="Symbol">;</a> <a id="1211" href="Agda.Builtin.Bool.html#Bool.false" class="InductiveConstructor">false</a> <a id="1217" class="Symbol">)</a>
+
+<a id="1220" class="Keyword">open</a> <a id="1225" class="Keyword">import</a> <a id="1232" href="Data.PropFormula.Dec.html" class="Module">Data.PropFormula.Dec</a> <a id="1253" href="ATP.Metis.Rules.Checking.html#1072" class="Bound">n</a>        <a id="1262" class="Keyword">using</a> <a id="1268" class="Symbol">(</a> ⌊_⌋  <a id="1275" class="Symbol">)</a>
+<a id="1277" class="Keyword">open</a> <a id="1282" class="Keyword">import</a> <a id="1289" href="Data.PropFormula.Properties.html" class="Module">Data.PropFormula.Properties</a> <a id="1317" href="ATP.Metis.Rules.Checking.html#1072" class="Bound">n</a> <a id="1319" class="Keyword">using</a> <a id="1325" class="Symbol">(</a> eq <a id="1330" class="Symbol">)</a>
+<a id="1332" class="Keyword">open</a> <a id="1337" class="Keyword">import</a> <a id="1344" href="Data.PropFormula.Syntax.html" class="Module">Data.PropFormula.Syntax</a> <a id="1368" href="ATP.Metis.Rules.Checking.html#1072" class="Bound">n</a>
+
+<a id="1371" class="Comment">------------------------------------------------------------------------------</a>
+
+<a id="1451" class="Comment">-- Many functions in Agda-Metis follow the same pattern:</a>
+<a id="1508" class="Comment">-- from a source formula, they try to build a target formula.</a>
+<a id="1570" class="Comment">-- that&#39;s the reason, many functions are binary and not unary functions.</a>
+<a id="1643" class="Comment">-- This module aims to help composition of such functions in a fancy way.</a>
+
+<a id="BinaryFunc" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a> <a id="1729" class="Symbol">:</a> <a id="1731" class="PrimitiveType">Set</a>
+<a id="1735" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a> <a id="1746" class="Symbol">=</a> <a id="1748" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="1760" class="Symbol">→</a> <a id="1762" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="1774" class="Symbol">→</a> <a id="1776" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a>
+
+<a id="1789" class="Keyword">data</a> <a id="Check" href="ATP.Metis.Rules.Checking.html#Check" class="Datatype">Check</a> <a id="1800" class="Symbol">:</a> <a id="1802" class="Symbol">(</a><a id="1803" href="ATP.Metis.Rules.Checking.html#1803" class="Bound">f</a> <a id="1805" class="Symbol">:</a> <a id="1807" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="1817" class="Symbol">)</a> <a id="1819" class="Symbol">(</a><a id="1820" href="ATP.Metis.Rules.Checking.html#1820" class="Bound">x</a> <a id="1822" href="ATP.Metis.Rules.Checking.html#1822" class="Bound">y</a> <a id="1824" class="Symbol">:</a> <a id="1826" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="1837" class="Symbol">)</a> <a id="1839" class="Symbol">→</a> <a id="1841" class="PrimitiveType">Set</a> <a id="1845" class="Keyword">where</a>
+  <a id="Check.Stop" href="ATP.Metis.Rules.Checking.html#Check.Stop" class="InductiveConstructor">Stop</a>     <a id="1862" class="Symbol">:</a> <a id="1864" class="Symbol">(</a><a id="1865" href="ATP.Metis.Rules.Checking.html#1865" class="Bound">f</a> <a id="1867" class="Symbol">:</a> <a id="1869" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="1879" class="Symbol">)</a> <a id="1881" class="Symbol">→</a> <a id="1883" class="Symbol">(</a><a id="1884" href="ATP.Metis.Rules.Checking.html#1884" class="Bound">x</a> <a id="1886" href="ATP.Metis.Rules.Checking.html#1886" class="Bound">y</a> <a id="1888" class="Symbol">:</a> <a id="1890" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="1901" class="Symbol">)</a> <a id="1903" class="Symbol">→</a> <a id="1905" href="ATP.Metis.Rules.Checking.html#Check" class="Datatype">Check</a> <a id="1911" href="ATP.Metis.Rules.Checking.html#1865" class="Bound">f</a> <a id="1913" href="ATP.Metis.Rules.Checking.html#1884" class="Bound">x</a> <a id="1915" href="ATP.Metis.Rules.Checking.html#1886" class="Bound">y</a>
+  <a id="Check.Continue" href="ATP.Metis.Rules.Checking.html#Check.Continue" class="InductiveConstructor">Continue</a> <a id="1928" class="Symbol">:</a> <a id="1930" class="Symbol">(</a><a id="1931" href="ATP.Metis.Rules.Checking.html#1931" class="Bound">f</a> <a id="1933" class="Symbol">:</a> <a id="1935" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="1945" class="Symbol">)</a> <a id="1947" class="Symbol">→</a> <a id="1949" class="Symbol">(</a><a id="1950" href="ATP.Metis.Rules.Checking.html#1950" class="Bound">x</a> <a id="1952" href="ATP.Metis.Rules.Checking.html#1952" class="Bound">y</a> <a id="1954" class="Symbol">:</a> <a id="1956" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="1967" class="Symbol">)</a> <a id="1969" class="Symbol">→</a> <a id="1971" href="ATP.Metis.Rules.Checking.html#Check" class="Datatype">Check</a> <a id="1977" href="ATP.Metis.Rules.Checking.html#1931" class="Bound">f</a> <a id="1979" href="ATP.Metis.Rules.Checking.html#1950" class="Bound">x</a> <a id="1981" href="ATP.Metis.Rules.Checking.html#1952" class="Bound">y</a>
+
+<a id="toCheck" href="ATP.Metis.Rules.Checking.html#toCheck" class="Function">toCheck</a>
+  <a id="1994" class="Symbol">:</a> <a id="1996" class="Symbol">(</a><a id="1997" href="ATP.Metis.Rules.Checking.html#1997" class="Bound">f</a> <a id="1999" class="Symbol">:</a> <a id="2001" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="2011" class="Symbol">)</a>
+  <a id="2015" class="Symbol">→</a> <a id="2017" class="Symbol">(</a><a id="2018" href="ATP.Metis.Rules.Checking.html#2018" class="Bound">x</a> <a id="2020" class="Symbol">:</a> <a id="2022" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="2033" class="Symbol">)</a>
+  <a id="2037" class="Symbol">→</a> <a id="2039" class="Symbol">(</a><a id="2040" href="ATP.Metis.Rules.Checking.html#2040" class="Bound">y</a> <a id="2042" class="Symbol">:</a> <a id="2044" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="2055" class="Symbol">)</a>
+  <a id="2059" class="Symbol">→</a> <a id="2061" href="ATP.Metis.Rules.Checking.html#Check" class="Datatype">Check</a> <a id="2067" href="ATP.Metis.Rules.Checking.html#1997" class="Bound">f</a> <a id="2069" href="ATP.Metis.Rules.Checking.html#2018" class="Bound">x</a> <a id="2071" href="ATP.Metis.Rules.Checking.html#2040" class="Bound">y</a>
+
+<a id="2074" href="ATP.Metis.Rules.Checking.html#toCheck" class="Function">toCheck</a> <a id="2082" href="ATP.Metis.Rules.Checking.html#2082" class="Bound">f</a> <a id="2084" href="ATP.Metis.Rules.Checking.html#2084" class="Bound">x</a> <a id="2086" href="ATP.Metis.Rules.Checking.html#2086" class="Bound">y</a>
+  <a id="2090" class="Keyword">with</a> <a id="2095" href="Data.PropFormula.Dec.html#975" class="Function Operator">⌊</a> <a id="2097" href="Data.PropFormula.Properties.html#1885" class="Function">eq</a> <a id="2100" class="Symbol">(</a><a id="2101" href="ATP.Metis.Rules.Checking.html#2082" class="Bound">f</a> <a id="2103" href="ATP.Metis.Rules.Checking.html#2084" class="Bound">x</a> <a id="2105" href="ATP.Metis.Rules.Checking.html#2086" class="Bound">y</a><a id="2106" class="Symbol">)</a> <a id="2108" href="ATP.Metis.Rules.Checking.html#2086" class="Bound">y</a> <a id="2110" href="Data.PropFormula.Dec.html#975" class="Function Operator">⌋</a>
+<a id="2112" class="Symbol">...</a> <a id="2116" class="Symbol">|</a> <a id="2118" href="Agda.Builtin.Bool.html#Bool.true" class="InductiveConstructor">true</a>  <a id="2124" class="Symbol">=</a> <a id="2126" href="ATP.Metis.Rules.Checking.html#Check.Stop" class="InductiveConstructor">Stop</a> <a id="2131" class="Symbol">_</a> <a id="2133" class="Symbol">_</a> <a id="2135" class="Symbol">_</a>
+<a id="2137" class="Symbol">...</a> <a id="2141" class="Symbol">|</a> <a id="2143" href="Agda.Builtin.Bool.html#Bool.false" class="InductiveConstructor">false</a> <a id="2149" class="Symbol">=</a> <a id="2151" href="ATP.Metis.Rules.Checking.html#Check.Continue" class="InductiveConstructor">Continue</a> <a id="2160" class="Symbol">_</a> <a id="2162" class="Symbol">_</a> <a id="2164" class="Symbol">_</a>
+
+<a id="fromCheck" href="ATP.Metis.Rules.Checking.html#fromCheck" class="Function">fromCheck</a>
+  <a id="2179" class="Symbol">:</a> <a id="2181" class="Symbol">∀</a> <a id="2183" class="Symbol">{</a><a id="2184" href="ATP.Metis.Rules.Checking.html#2184" class="Bound">g</a><a id="2185" class="Symbol">}</a> <a id="2187" class="Symbol">{</a><a id="2188" href="ATP.Metis.Rules.Checking.html#2188" class="Bound">x</a> <a id="2190" href="ATP.Metis.Rules.Checking.html#2190" class="Bound">y</a><a id="2191" class="Symbol">}</a>
+  <a id="2195" class="Symbol">(</a><a id="2196" href="ATP.Metis.Rules.Checking.html#2196" class="Bound">f</a> <a id="2198" class="Symbol">:</a> <a id="2200" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="2210" class="Symbol">)</a>
+  <a id="2214" class="Symbol">→</a> <a id="2216" href="ATP.Metis.Rules.Checking.html#Check" class="Datatype">Check</a> <a id="2222" href="ATP.Metis.Rules.Checking.html#2184" class="Bound">g</a> <a id="2224" href="ATP.Metis.Rules.Checking.html#2188" class="Bound">x</a> <a id="2226" href="ATP.Metis.Rules.Checking.html#2190" class="Bound">y</a>
+  <a id="2230" class="Symbol">→</a> <a id="2232" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a>
+
+<a id="2245" href="ATP.Metis.Rules.Checking.html#fromCheck" class="Function">fromCheck</a> <a id="2255" href="ATP.Metis.Rules.Checking.html#2255" class="Bound">f</a> <a id="2257" class="Symbol">(</a><a id="2258" href="ATP.Metis.Rules.Checking.html#Check.Stop" class="InductiveConstructor">Stop</a> <a id="2263" href="ATP.Metis.Rules.Checking.html#2263" class="Bound">g</a> <a id="2265" href="ATP.Metis.Rules.Checking.html#2265" class="Bound">x</a> <a id="2267" href="ATP.Metis.Rules.Checking.html#2267" class="Bound">y</a><a id="2268" class="Symbol">)</a>     <a id="2274" class="Symbol">=</a> <a id="2276" href="ATP.Metis.Rules.Checking.html#2263" class="Bound">g</a> <a id="2278" href="ATP.Metis.Rules.Checking.html#2265" class="Bound">x</a> <a id="2280" href="ATP.Metis.Rules.Checking.html#2267" class="Bound">y</a>
+<a id="2282" href="ATP.Metis.Rules.Checking.html#fromCheck" class="Function">fromCheck</a> <a id="2292" href="ATP.Metis.Rules.Checking.html#2292" class="Bound">f</a> <a id="2294" class="Symbol">(</a><a id="2295" href="ATP.Metis.Rules.Checking.html#Check.Continue" class="InductiveConstructor">Continue</a> <a id="2304" href="ATP.Metis.Rules.Checking.html#2304" class="Bound">g</a> <a id="2306" href="ATP.Metis.Rules.Checking.html#2306" class="Bound">x</a> <a id="2308" href="ATP.Metis.Rules.Checking.html#2308" class="Bound">y</a><a id="2309" class="Symbol">)</a> <a id="2311" class="Symbol">=</a> <a id="2313" href="ATP.Metis.Rules.Checking.html#2292" class="Bound">f</a> <a id="2315" class="Symbol">(</a><a id="2316" href="ATP.Metis.Rules.Checking.html#2304" class="Bound">g</a> <a id="2318" href="ATP.Metis.Rules.Checking.html#2306" class="Bound">x</a> <a id="2320" href="ATP.Metis.Rules.Checking.html#2308" class="Bound">y</a><a id="2321" class="Symbol">)</a> <a id="2323" href="ATP.Metis.Rules.Checking.html#2308" class="Bound">y</a>
+
+<a id="2326" class="Keyword">infixr</a> <a id="2333" class="Number">9</a> <a id="2335" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F_" class="Function Operator">_●_</a>
+
+<a id="_●_" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F_" class="Function Operator">_●_</a> <a id="2344" class="Symbol">:</a> <a id="2346" class="Symbol">(</a><a id="2347" href="ATP.Metis.Rules.Checking.html#2347" class="Bound">f</a> <a id="2349" class="Symbol">:</a> <a id="2351" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="2361" class="Symbol">)</a>
+  <a id="2365" class="Symbol">→</a> <a id="2367" class="Symbol">(</a><a id="2368" href="ATP.Metis.Rules.Checking.html#2368" class="Bound">g</a> <a id="2370" class="Symbol">:</a> <a id="2372" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="2382" class="Symbol">)</a>
+  <a id="2386" class="Symbol">→</a> <a id="2388" class="Symbol">(</a><a id="2389" href="ATP.Metis.Rules.Checking.html#BinaryFunc" class="Function">BinaryFunc</a><a id="2399" class="Symbol">)</a>
+<a id="2401" href="ATP.Metis.Rules.Checking.html#2401" class="Bound">f</a> <a id="2403" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F_" class="Function Operator">●</a> <a id="2405" href="ATP.Metis.Rules.Checking.html#2405" class="Bound">g</a> <a id="2407" class="Symbol">=</a> <a id="2409" class="Symbol">λ</a> <a id="2411" href="ATP.Metis.Rules.Checking.html#2411" class="Bound">x</a> <a id="2413" href="ATP.Metis.Rules.Checking.html#2413" class="Bound">y</a> <a id="2415" class="Symbol">→</a> <a id="2417" href="ATP.Metis.Rules.Checking.html#fromCheck" class="Function">fromCheck</a> <a id="2427" href="ATP.Metis.Rules.Checking.html#2401" class="Bound">f</a> <a id="2429" class="Symbol">(</a><a id="2430" href="ATP.Metis.Rules.Checking.html#toCheck" class="Function">toCheck</a> <a id="2438" href="ATP.Metis.Rules.Checking.html#2405" class="Bound">g</a> <a id="2440" href="ATP.Metis.Rules.Checking.html#2411" class="Bound">x</a> <a id="2442" href="ATP.Metis.Rules.Checking.html#2413" class="Bound">y</a><a id="2443" class="Symbol">)</a>
+
+<a id="2446" class="Keyword">infixr</a> <a id="2453" class="Number">9</a> <a id="2455" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F%E2%8A%A2_" class="Function Operator">_●⊢_</a>
+
+<a id="_●⊢_" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F%E2%8A%A2_" class="Function Operator">_●⊢_</a> <a id="2466" class="Symbol">:</a> <a id="2468" class="Symbol">∀</a> <a id="2470" class="Symbol">{</a><a id="2471" href="ATP.Metis.Rules.Checking.html#2471" class="Bound">Γ</a><a id="2472" class="Symbol">}</a> <a id="2474" class="Symbol">{</a><a id="2475" href="ATP.Metis.Rules.Checking.html#2475" class="Bound">ϕ</a><a id="2476" class="Symbol">}</a> <a id="2478" class="Symbol">{</a><a id="2479" href="ATP.Metis.Rules.Checking.html#2479" class="Bound">f</a> <a id="2481" href="ATP.Metis.Rules.Checking.html#2481" class="Bound">g</a><a id="2482" class="Symbol">}</a>
+    <a id="2488" class="Symbol">→</a> <a id="2490" class="Symbol">(</a><a id="2491" href="ATP.Metis.Rules.Checking.html#2491" class="Bound">rule₁</a> <a id="2497" class="Symbol">:</a> <a id="2499" class="Symbol">∀</a> <a id="2501" class="Symbol">{</a><a id="2502" href="ATP.Metis.Rules.Checking.html#2502" class="Bound">Γ</a><a id="2503" class="Symbol">}</a> <a id="2505" class="Symbol">{</a><a id="2506" href="ATP.Metis.Rules.Checking.html#2506" class="Bound">ϕ</a><a id="2507" class="Symbol">}</a> <a id="2509" class="Symbol">→</a> <a id="2511" href="ATP.Metis.Rules.Checking.html#2502" class="Bound">Γ</a> <a id="2513" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2515" href="ATP.Metis.Rules.Checking.html#2506" class="Bound">ϕ</a> <a id="2517" class="Symbol">→</a> <a id="2519" class="Symbol">(</a><a id="2520" href="ATP.Metis.Rules.Checking.html#2520" class="Bound">ψ</a> <a id="2522" class="Symbol">:</a> <a id="2524" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="2535" class="Symbol">)</a> <a id="2537" class="Symbol">→</a> <a id="2539" href="ATP.Metis.Rules.Checking.html#2502" class="Bound">Γ</a> <a id="2541" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2543" href="ATP.Metis.Rules.Checking.html#2479" class="Bound">f</a> <a id="2545" href="ATP.Metis.Rules.Checking.html#2506" class="Bound">ϕ</a> <a id="2547" href="ATP.Metis.Rules.Checking.html#2520" class="Bound">ψ</a><a id="2548" class="Symbol">)</a>
+    <a id="2554" class="Symbol">→</a> <a id="2556" class="Symbol">(</a><a id="2557" href="ATP.Metis.Rules.Checking.html#2557" class="Bound">rule₂</a> <a id="2563" class="Symbol">:</a> <a id="2565" class="Symbol">∀</a> <a id="2567" class="Symbol">{</a><a id="2568" href="ATP.Metis.Rules.Checking.html#2568" class="Bound">Γ</a><a id="2569" class="Symbol">}</a> <a id="2571" class="Symbol">{</a><a id="2572" href="ATP.Metis.Rules.Checking.html#2572" class="Bound">ϕ</a><a id="2573" class="Symbol">}</a> <a id="2575" class="Symbol">→</a> <a id="2577" href="ATP.Metis.Rules.Checking.html#2568" class="Bound">Γ</a> <a id="2579" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2581" href="ATP.Metis.Rules.Checking.html#2572" class="Bound">ϕ</a> <a id="2583" class="Symbol">→</a> <a id="2585" class="Symbol">(</a><a id="2586" href="ATP.Metis.Rules.Checking.html#2586" class="Bound">ψ</a> <a id="2588" class="Symbol">:</a> <a id="2590" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="2601" class="Symbol">)</a> <a id="2603" class="Symbol">→</a> <a id="2605" href="ATP.Metis.Rules.Checking.html#2568" class="Bound">Γ</a> <a id="2607" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2609" href="ATP.Metis.Rules.Checking.html#2481" class="Bound">g</a> <a id="2611" href="ATP.Metis.Rules.Checking.html#2572" class="Bound">ϕ</a> <a id="2613" href="ATP.Metis.Rules.Checking.html#2586" class="Bound">ψ</a><a id="2614" class="Symbol">)</a>
+    <a id="2620" class="Symbol">→</a> <a id="2622" href="ATP.Metis.Rules.Checking.html#2471" class="Bound">Γ</a> <a id="2624" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2626" href="ATP.Metis.Rules.Checking.html#2475" class="Bound">ϕ</a> <a id="2628" class="Symbol">→</a> <a id="2630" class="Symbol">(</a><a id="2631" href="ATP.Metis.Rules.Checking.html#2631" class="Bound">ψ</a> <a id="2633" class="Symbol">:</a> <a id="2635" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="2646" class="Symbol">)</a> <a id="2648" class="Symbol">→</a> <a id="2650" href="ATP.Metis.Rules.Checking.html#2471" class="Bound">Γ</a> <a id="2652" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="2654" class="Symbol">(</a><a id="2655" href="ATP.Metis.Rules.Checking.html#2479" class="Bound">f</a> <a id="2657" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F_" class="Function Operator">●</a> <a id="2659" href="ATP.Metis.Rules.Checking.html#2481" class="Bound">g</a><a id="2660" class="Symbol">)</a> <a id="2662" href="ATP.Metis.Rules.Checking.html#2475" class="Bound">ϕ</a> <a id="2664" href="ATP.Metis.Rules.Checking.html#2631" class="Bound">ψ</a>
+
+<a id="2667" href="ATP.Metis.Rules.Checking.html#_%E2%97%8F%E2%8A%A2_" class="Function Operator">_●⊢_</a> <a id="2672" class="Symbol">{</a><a id="2673" href="ATP.Metis.Rules.Checking.html#2673" class="Bound">Γ</a><a id="2674" class="Symbol">}{</a><a id="2676" href="ATP.Metis.Rules.Checking.html#2676" class="Bound">ϕ</a><a id="2677" class="Symbol">}{</a><a id="2679" href="ATP.Metis.Rules.Checking.html#2679" class="Bound">f</a><a id="2680" class="Symbol">}{</a><a id="2682" href="ATP.Metis.Rules.Checking.html#2682" class="Bound">g</a><a id="2683" class="Symbol">}</a> <a id="2685" href="ATP.Metis.Rules.Checking.html#2685" class="Bound">rule₁</a> <a id="2691" href="ATP.Metis.Rules.Checking.html#2691" class="Bound">rule₂</a> <a id="2697" href="ATP.Metis.Rules.Checking.html#2697" class="Bound">Γ⊢ϕ</a> <a id="2701" href="ATP.Metis.Rules.Checking.html#2701" class="Bound">ψ</a>
+  <a id="2705" class="Keyword">with</a> <a id="2710" href="ATP.Metis.Rules.Checking.html#toCheck" class="Function">toCheck</a> <a id="2718" href="ATP.Metis.Rules.Checking.html#2682" class="Bound">g</a> <a id="2720" href="ATP.Metis.Rules.Checking.html#2676" class="Bound">ϕ</a> <a id="2722" href="ATP.Metis.Rules.Checking.html#2701" class="Bound">ψ</a>
+<a id="2724" class="Symbol">...</a> <a id="2728" class="Symbol">|</a> <a id="2730" href="ATP.Metis.Rules.Checking.html#Check.Stop" class="InductiveConstructor">Stop</a> <a id="2735" href="ATP.Metis.Rules.Checking.html#2735" class="Bound">g₁</a> <a id="2738" href="ATP.Metis.Rules.Checking.html#2738" class="Bound">x</a> <a id="2740" class="DottedPattern Symbol">.</a><a id="2741" class="DottedPattern Bound">ψ</a>     <a id="2747" class="Symbol">=</a> <a id="2749" class="Bound">rule₂</a> <a id="2755" class="Bound">Γ⊢ϕ</a> <a id="2759" class="Bound">ψ</a>
+<a id="2761" class="Symbol">...</a> <a id="2765" class="Symbol">|</a> <a id="2767" href="ATP.Metis.Rules.Checking.html#Check.Continue" class="InductiveConstructor">Continue</a> <a id="2776" href="ATP.Metis.Rules.Checking.html#2776" class="Bound">g₁</a> <a id="2779" href="ATP.Metis.Rules.Checking.html#2779" class="Bound">x</a> <a id="2781" class="DottedPattern Symbol">.</a><a id="2782" class="DottedPattern Bound">ψ</a> <a id="2784" class="Symbol">=</a> <a id="2786" class="Bound">rule₁</a> <a id="2792" class="Symbol">(</a><a id="2793" class="Bound">rule₂</a> <a id="2799" class="Bound">Γ⊢ϕ</a> <a id="2803" class="Bound">ψ</a><a id="2804" class="Symbol">)</a> <a id="2806" class="Bound">ψ</a>
+
+<a id="2809" class="Comment">------------------------------------------------------------------------------</a>
+<a id="2888" class="Comment">-- Example</a>
+
+<a id="2900" class="Comment">{-
+f : BinaryFunc
+f x y = y
+
+postulate
+  thm-f : ∀ {Γ} {ϕ}
+    → Γ ⊢ ϕ
+    → (ψ : PropFormula)
+    → Γ ⊢ f ϕ ψ
+
+g : BinaryFunc
+g x y = y
+
+postulate
+  thm-g : ∀ {Γ} {ϕ}
+    → Γ ⊢ ϕ
+    → (ψ : PropFormula)
+    → Γ ⊢ g ϕ ψ
+
+h = f ● g
+
+thm-h
+  : ∀ {Γ} {ϕ}
+  → Γ ⊢ ϕ
+  → (ψ : PropFormula)
+  → Γ ⊢ h ϕ ψ
+thm-h = thm-f ●⊢ thm-g
+
+-}</a>
+
+<a id="3226" class="Comment">------------------------------------------------------------------------------</a>
+<a id="3305" class="Comment">-- Transform a unary function (or theorem) to a binary function (or theorem)</a>
+<a id="3382" class="Comment">-- f : X → X</a>
+<a id="3395" class="Comment">-- (↑f f) : X → X → Y</a>
+<a id="3417" class="Comment">-- For theorems, we use (↑t) function.</a>
+
+<a id="3457" class="Keyword">infixl</a> <a id="3464" class="Number">3</a> <a id="3466" href="ATP.Metis.Rules.Checking.html#%E2%86%91f_" class="Function Operator">↑f_</a>
+
+<a id="↑f_" href="ATP.Metis.Rules.Checking.html#%E2%86%91f_" class="Function Operator">↑f_</a> <a id="3475" class="Symbol">:</a> <a id="3477" class="Symbol">(</a><a id="3478" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="3490" class="Symbol">→</a> <a id="3492" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="3503" class="Symbol">)</a> <a id="3505" class="Symbol">→</a> <a id="3507" class="Symbol">(</a><a id="3508" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="3520" class="Symbol">→</a> <a id="3522" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="3534" class="Symbol">→</a> <a id="3536" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="3547" class="Symbol">)</a>
+<a id="3549" href="ATP.Metis.Rules.Checking.html#%E2%86%91f_" class="Function Operator">↑f</a> <a id="3552" href="ATP.Metis.Rules.Checking.html#3552" class="Bound">f</a> <a id="3554" class="Symbol">=</a> <a id="3556" class="Symbol">λ</a> <a id="3558" href="ATP.Metis.Rules.Checking.html#3558" class="Bound">x</a> <a id="3560" href="ATP.Metis.Rules.Checking.html#3560" class="Bound">y</a> <a id="3562" class="Symbol">→</a> <a id="3564" href="ATP.Metis.Rules.Checking.html#3552" class="Bound">f</a> <a id="3566" href="ATP.Metis.Rules.Checking.html#3558" class="Bound">x</a>
+
+<a id="↑t" href="ATP.Metis.Rules.Checking.html#%E2%86%91t" class="Function">↑t</a>
+  <a id="3574" class="Symbol">:</a> <a id="3576" class="Symbol">∀</a> <a id="3578" class="Symbol">{</a><a id="3579" href="ATP.Metis.Rules.Checking.html#3579" class="Bound">fun</a><a id="3582" class="Symbol">}</a>
+  <a id="3586" class="Symbol">→</a> <a id="3588" class="Symbol">(∀</a> <a id="3591" class="Symbol">{</a><a id="3592" href="ATP.Metis.Rules.Checking.html#3592" class="Bound">Γ</a><a id="3593" class="Symbol">}</a> <a id="3595" class="Symbol">{</a><a id="3596" href="ATP.Metis.Rules.Checking.html#3596" class="Bound">φ</a><a id="3597" class="Symbol">}</a> <a id="3599" class="Symbol">→</a> <a id="3601" href="ATP.Metis.Rules.Checking.html#3592" class="Bound">Γ</a> <a id="3603" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3605" href="ATP.Metis.Rules.Checking.html#3596" class="Bound">φ</a> <a id="3607" class="Symbol">→</a> <a id="3609" href="ATP.Metis.Rules.Checking.html#3592" class="Bound">Γ</a> <a id="3611" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3613" href="ATP.Metis.Rules.Checking.html#3579" class="Bound">fun</a> <a id="3617" href="ATP.Metis.Rules.Checking.html#3596" class="Bound">φ</a><a id="3618" class="Symbol">)</a>
+  <a id="3622" class="Symbol">→</a> <a id="3624" class="Symbol">(∀</a> <a id="3627" class="Symbol">{</a><a id="3628" href="ATP.Metis.Rules.Checking.html#3628" class="Bound">Γ</a><a id="3629" class="Symbol">}</a> <a id="3631" class="Symbol">{</a><a id="3632" href="ATP.Metis.Rules.Checking.html#3632" class="Bound">φ</a><a id="3633" class="Symbol">}</a> <a id="3635" class="Symbol">→</a> <a id="3637" href="ATP.Metis.Rules.Checking.html#3628" class="Bound">Γ</a> <a id="3639" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3641" href="ATP.Metis.Rules.Checking.html#3632" class="Bound">φ</a> <a id="3643" class="Symbol">→</a> <a id="3645" class="Symbol">(</a><a id="3646" href="ATP.Metis.Rules.Checking.html#3646" class="Bound">ψ</a> <a id="3648" class="Symbol">:</a> <a id="3650" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a><a id="3661" class="Symbol">)</a> <a id="3663" class="Symbol">→</a>  <a id="3666" href="ATP.Metis.Rules.Checking.html#3628" class="Bound">Γ</a> <a id="3668" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3670" class="Symbol">(</a><a id="3671" href="ATP.Metis.Rules.Checking.html#%E2%86%91f_" class="Function Operator">↑f</a> <a id="3674" href="ATP.Metis.Rules.Checking.html#3579" class="Bound">fun</a><a id="3677" class="Symbol">)</a> <a id="3679" href="ATP.Metis.Rules.Checking.html#3632" class="Bound">φ</a> <a id="3681" href="ATP.Metis.Rules.Checking.html#3646" class="Bound">ψ</a><a id="3682" class="Symbol">)</a>
+<a id="3684" href="ATP.Metis.Rules.Checking.html#%E2%86%91t" class="Function">↑t</a> <a id="3687" href="ATP.Metis.Rules.Checking.html#3687" class="Bound">rule</a> <a id="3692" class="Symbol">=</a> <a id="3694" class="Symbol">λ</a> <a id="3696" href="ATP.Metis.Rules.Checking.html#3696" class="Bound">z</a> <a id="3698" href="ATP.Metis.Rules.Checking.html#3698" class="Bound">ψ</a> <a id="3700" class="Symbol">→</a> <a id="3702" href="ATP.Metis.Rules.Checking.html#3687" class="Bound">rule</a> <a id="3707" href="ATP.Metis.Rules.Checking.html#3696" class="Bound">z</a>
+
+<a id="id" href="ATP.Metis.Rules.Checking.html#id" class="Function">id</a> <a id="3713" class="Symbol">:</a> <a id="3715" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a> <a id="3727" class="Symbol">→</a> <a id="3729" href="Data.PropFormula.Syntax.html#778" class="Datatype">PropFormula</a>
+<a id="3741" href="ATP.Metis.Rules.Checking.html#id" class="Function">id</a> <a id="3744" href="ATP.Metis.Rules.Checking.html#3744" class="Bound">x</a> <a id="3746" class="Symbol">=</a> <a id="3748" href="ATP.Metis.Rules.Checking.html#3744" class="Bound">x</a>
+
+<a id="id-lem" href="ATP.Metis.Rules.Checking.html#id-lem" class="Function">id-lem</a> <a id="3758" class="Symbol">:</a> <a id="3760" class="Symbol">∀</a> <a id="3762" class="Symbol">{</a><a id="3763" href="ATP.Metis.Rules.Checking.html#3763" class="Bound">Γ</a><a id="3764" class="Symbol">}</a> <a id="3766" class="Symbol">{</a><a id="3767" href="ATP.Metis.Rules.Checking.html#3767" class="Bound">φ</a><a id="3768" class="Symbol">}</a> <a id="3770" class="Symbol">→</a> <a id="3772" href="ATP.Metis.Rules.Checking.html#3763" class="Bound">Γ</a> <a id="3774" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3776" href="ATP.Metis.Rules.Checking.html#3767" class="Bound">φ</a> <a id="3778" class="Symbol">→</a> <a id="3780" href="ATP.Metis.Rules.Checking.html#3763" class="Bound">Γ</a> <a id="3782" href="Data.PropFormula.Syntax.html#1657" class="Datatype Operator">⊢</a> <a id="3784" href="ATP.Metis.Rules.Checking.html#id" class="Function">id</a> <a id="3787" href="ATP.Metis.Rules.Checking.html#3767" class="Bound">φ</a>
+<a id="3789" href="ATP.Metis.Rules.Checking.html#id-lem" class="Function">id-lem</a> <a id="3796" class="Symbol">{</a><a id="3797" href="ATP.Metis.Rules.Checking.html#3797" class="Bound">Γ</a><a id="3798" class="Symbol">}</a> <a id="3800" class="Symbol">{</a><a id="3801" href="ATP.Metis.Rules.Checking.html#3801" class="Bound">φ</a><a id="3802" class="Symbol">}</a> <a id="3804" href="ATP.Metis.Rules.Checking.html#3804" class="Bound">Γ⊢φ</a> <a id="3808" class="Symbol">=</a> <a id="3810" href="ATP.Metis.Rules.Checking.html#3804" class="Bound">Γ⊢φ</a>
+
+<a id="3815" class="Comment">-- Then we can check for equality in each step of a chain of composition (●) of</a>
+<a id="3895" class="Comment">-- unary functions.</a>
+
+<a id="3916" class="Comment">-- Example</a>
+
+<a id="3928" class="Comment">{-
+f : PropFormula → PropFormula
+f x = x
+
+postulate
+  thm-f : ∀ {Γ} {ϕ}
+  → Γ ⊢ ϕ
+  → Γ ⊢ f ϕ
+
+g : PropFormula → PropFormula → PropFormula
+g x y = y
+
+postulate
+  thm-g : ∀ {Γ} {ϕ}
+    → Γ ⊢ ϕ
+    → (ψ : PropFormula)
+    → Γ ⊢ g ϕ ψ
+
+-- h = f ● g -- This fails, the ● composition needs both binary functions.
+
+h = (↑f f) ● g
+
+thm-h
+  : ∀ {Γ} {ϕ}
+  → Γ ⊢ ϕ
+  → (ψ : PropFormula)
+  → Γ ⊢ h ϕ ψ
+thm-h = (↑t thm-f) ●⊢ thm-g
+
+-}</a>
+</pre></body></html>
