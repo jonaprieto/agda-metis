@@ -5,6 +5,8 @@
 open import Data.PropFormula  9 public
 open import Relation.Binary.PropositionalEquality
 open import ATP.Metis.Rules.Resolve 9
+  hiding   (resolve)
+  renaming (original-resolve to resolve)
 
 ----------------------------------------------------------------------------
 
@@ -45,6 +47,7 @@ r1 = resolve q (¬ q) q ⊥
 tr1 : ⌊ eq r1 ⊥ ⌋ ≡ true
 tr1 = refl
 
+
 ----------------------------------------------------------------------------
 
 r2 : PropFormula
@@ -52,6 +55,7 @@ r2 = resolve p ((¬ p) ∨ q) p q
 
 tr2 : ⌊ eq r2 q ⌋ ≡ true
 tr2 = refl
+
 
 ----------------------------------------------------------------------------
 
@@ -85,3 +89,4 @@ tr6 : ⌊ eq r6 (p ∨ q) ⌋ ≡ true
 tr6 = refl
 
 ----------------------------------------------------------------------------
+
