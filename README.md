@@ -12,6 +12,8 @@ Both libraries are intended to support output from the
 * [Agda][Agda] 2.5.4
 * [agda-prop]
 
+To install the required libraries see [Agda documentation](http://agda.readthedocs.io/en/latest/tools/package-system.html#installing-libraries).
+
 ### Installation
 
 1. Clone this repository:
@@ -28,14 +30,13 @@ you can run some tests.
 $ make test
 ```
 
-If some error raised about the installation of libraries, please take a look in the `.agda` file
-and the `AGDA_DIR` variable in your shell. See more information in the [documentation](http://agda.readthedocs.io/en/latest/tools/package-system.html#installing-libraries).
-
 ### References
 
-* Hurd, J. (2003). First-order Proof Tactics In Higher-order Logic Theorem Provers. Design and Application of Strategies/Tactics in Higher Order Logics, Number NASA/CP-2003-212448 in NASA Technical Reports, 56–68. Retrieved from http://www.gilith.com/research/papers
-* Böhme, S., & Weber, T. (2010). Fast LCF-Style Proof Reconstruction for Z3. In M. Kaufmann & L. C. Paulson (Eds.), Interactive Theorem Proving: First International Conference, ITP 2010, Edinburgh, UK, July 11-14, 2010. Proceedings (pp. 179–194). Berlin, Heidelberg: Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-14052-5_14
-* Kanso, K., & Setzer, A. (2016). A Light-weight Integration Of Automated And Interactive Theorem Proving. Mathematical Structures in Computer Science, 26(1), 129–153. https://doi.org/10.1017/S0960129514000140
+* Hurd, J. (2003). *First-order Proof Tactics In Higher-order Logic Theorem Provers*. Design and Application of Strategies/Tactics in Higher Order Logics, Number NASA/CP-2003-212448 in NASA Technical Reports, 56–68. Retrieved from http://www.gilith.com/research/papers
+
+* Böhme, S., & Weber, T. (2010). *Fast LCF-Style Proof Reconstruction for Z3*. In M. Kaufmann & L. C. Paulson (Eds.), Interactive Theorem Proving: First International Conference, ITP 2010, Edinburgh, UK, July 11-14, 2010. Proceedings (pp. 179–194). Berlin, Heidelberg: Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-14052-5_14
+
+* Kanso, K., & Setzer, A. (2016).*A Light-weight Integration Of Automated And Interactive Theorem Proving*. Mathematical Structures in Computer Science, 26(1), 129–153. https://doi.org/10.1017/S0960129514000140
 
 [haskell]: http://www.haskell.org
 [issue]: http://github.com/jonaprieto/athena/issues/new

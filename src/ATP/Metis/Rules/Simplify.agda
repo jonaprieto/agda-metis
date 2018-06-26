@@ -10,10 +10,7 @@ module ATP.Metis.Rules.Simplify ( n : ℕ ) where
 ------------------------------------------------------------------------------
 
 open import ATP.Metis.Synonyms n
-open import ATP.Metis.Rules.Normalization n
-open import ATP.Metis.Rules.Conjunct n
-open import ATP.Metis.Rules.Canonicalize n
-open import ATP.Metis.Rules.Resolve n
+open import ATP.Metis.Rules.Normalization n public
 
 open import Data.Bool.Base
   using    ( Bool; true; false )
@@ -22,16 +19,7 @@ open import Data.Bool.Base
 open import Data.PropFormula.Dec n        using ( ⌊_⌋; yes; no )
 open import Data.PropFormula.Properties n using ( eq ; subst )
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.Theorems n
 
-open import Data.PropFormula.Views n
-  using (literal-view ; disj-view; neg-view; conj-view; conj)
-  using (disj;neg;pos; other; yes; no )
-open import Data.PropFormula.NormalForms n
-  hiding ( dnf; cnf; nnf-lem; dnf-lem; cnf-lem)
-  renaming (nnf to justNNF )
-
-open import Function using ( id ; _∘_ ; _$_ )
 open import Relation.Binary.PropositionalEquality using ( _≡_; refl; sym )
 
 ------------------------------------------------------------------------------
@@ -96,6 +84,7 @@ reduce-ℓ-lem {Γ}{φ}{ℓ} Γ⊢φ Γ⊢ℓ
 ...     | no  _  = Γ⊢φ
 reduce-ℓ-lem Γ⊢φ _ | other _ = Γ⊢φ
 ---------------------------------------------------------------------------- ∎
+
 
 -- Def.
 simplify : Premise → Premise → Conclusion → PropFormula
