@@ -4,7 +4,7 @@
 
 open import Data.PropFormula 20 public
 open import ATP.Metis.Rules 20  public
-open import ATP.Metis.Rules.Normalization 20 public
+open import ATP.Metis.Rules.Normalization public
 open import Relation.Binary.PropositionalEquality
 
 -- Note: When the symbol `?` appears, it means

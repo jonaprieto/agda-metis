@@ -2,7 +2,7 @@
 -- To test `simplify` inference rule.
 ---------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms 20
+open import ATP.Metis.Synonyms { n = 20}
 open import Data.PropFormula 20 public
 open import Data.PropFormula.Views 20 public
 open import Data.PropFormula.NormalForms 20
@@ -10,8 +10,8 @@ open import Data.PropFormula.NormalForms 20
   renaming (nnf to justNNF )
 
 open import ATP.Metis.Rules 20  public
-open import ATP.Metis.Rules.Normalization 20 public
-open import ATP.Metis.Rules.Reordering 20 public
+open import ATP.Metis.Rules.Normalization public
+open import ATP.Metis.Rules.Reordering public
   hiding ( disj )
 
 open import Relation.Binary.PropositionalEquality

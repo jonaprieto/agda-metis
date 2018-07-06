@@ -4,7 +4,7 @@
 
 open import Data.PropFormula  9 public
 open import Relation.Binary.PropositionalEquality
-open import ATP.Metis.Rules.Resolve 9
+open import ATP.Metis.Rules.Resolve
   hiding   (resolve)
   renaming (original-resolve to resolve)
 
@@ -89,4 +89,3 @@ tr6 : ⌊ eq r6 (p ∨ q) ⌋ ≡ true
 tr6 = refl
 
 ----------------------------------------------------------------------------
-
