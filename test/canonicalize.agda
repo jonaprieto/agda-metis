@@ -7,11 +7,11 @@ open import Data.PropFormula.NormalForms 9
 --  hiding ( nnf-lem; from-nnf-lem; dnf; cnf-lem; dnf-lem; dist-∨)
   renaming ( nnf to justNNF; cnf to justCNF )
 
-open import ATP.Metis.Rules.Canonicalize 9 public
-open import ATP.Metis.Rules.Normalization 9 public
-open import ATP.Metis.Rules.Checking 9 public
-open import ATP.Metis.Rules.Reordering 9 public
-open import ATP.Metis.Rules.Resolve 9 public
+open import ATP.Metis.Rules.Canonicalize public
+open import ATP.Metis.Rules.Normalization public
+open import ATP.Metis.Rules.Checking public
+open import ATP.Metis.Rules.Reordering public
+open import ATP.Metis.Rules.Resolve public
 
 open import Relation.Binary.PropositionalEquality
 

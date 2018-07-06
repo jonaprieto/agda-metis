@@ -5,12 +5,12 @@
 
 open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Rules.Simplify ( n : ℕ ) where
+module ATP.Metis.Rules.Simplify { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms n
-open import ATP.Metis.Rules.Normalization n public
+open import ATP.Metis.Synonyms
+open import ATP.Metis.Rules.Normalization public
 
 open import Data.Bool.Base
   using    ( Bool; true; false )
@@ -61,7 +61,7 @@ reduce-ℓ-lem
   → Γ ⊢ reduce-ℓ φ ℓ
 
 -- Proof.
-reduce-ℓ-lem {Γ}{φ}{ℓ} Γ⊢φ Γ⊢ℓ
+reduce-ℓ-lem {φ = φ}{ℓ} Γ⊢φ Γ⊢ℓ
   with reduce-cases φ
 ...  | case-conj φ₁ φ₂ =
   simplify-∧-lem
@@ -72,11 +72,11 @@ reduce-ℓ-lem {Γ}{φ}{ℓ} Γ⊢φ Γ⊢ℓ
   simplify-∨-lem
     (⊃-elim
       (⊃-intro
-        (∨-elim {Γ = Γ}
+        (∨-elim
           (∨-intro₁ (reduce-ℓ φ₂ ℓ)
-            (reduce-ℓ-lem (assume {Γ = Γ} φ₁) (weaken φ₁ Γ⊢ℓ)))
+            (reduce-ℓ-lem (assume φ₁) (weaken φ₁ Γ⊢ℓ)))
           (∨-intro₂ (reduce-ℓ φ₁ ℓ)
-            (reduce-ℓ-lem (assume {Γ = Γ} φ₂) (weaken φ₂ Γ⊢ℓ)))))
+            (reduce-ℓ-lem (assume φ₂) (weaken φ₂ Γ⊢ℓ)))))
       Γ⊢φ)
 ...  | case-lit .φ
      with eq ℓ (nnf (¬ φ))
@@ -116,7 +116,7 @@ simplify-thm
   → Γ ⊢ simplify φ₁ φ₂ ψ
 
 -- Proof.
-simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
+simplify-thm {φ₁ = φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
   with eq φ₁ ψ
 ...  | yes φ₁≡ψ = subst φ₁≡ψ Γ⊢φ₁
 ...  | no  _
@@ -128,7 +128,7 @@ simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂
 ...  | no _
   with eq φ₂ ⊥
 ...  | yes φ₂≡⊥ = ⊥-elim ψ (subst φ₂≡⊥ Γ⊢φ₂)
-simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _ | no _ | no _
+simplify-thm {φ₁ = φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _ | no _ | no _
   with reduce-cases φ₂
 ... | case-conj φ₂₁ φ₂₂ =
         simplify-thm ψ
@@ -137,11 +137,11 @@ simplify-thm {Γ}{φ₁}{φ₂} ψ Γ⊢φ₁ Γ⊢φ₂ | no _ | no _ | no _ | 
         simplify-∨-lem
           (⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
+              (∨-elim
                 (∨-intro₁ (simplify φ₁ φ₂₂ ψ )
-                  (simplify-thm ψ (weaken φ₂₁ Γ⊢φ₁) (assume {Γ = Γ} φ₂₁)))
+                  (simplify-thm ψ (weaken φ₂₁ Γ⊢φ₁) (assume φ₂₁)))
                 (∨-intro₂ (simplify φ₁ φ₂₁ ψ)
-                  (simplify-thm ψ (weaken φ₂₂ Γ⊢φ₁) (assume {Γ = Γ} φ₂₂)))))
+                  (simplify-thm ψ (weaken φ₂₂ Γ⊢φ₁) (assume φ₂₂)))))
             Γ⊢φ₂)
 ... | case-lit ℓ        = reduce-ℓ-lem Γ⊢φ₁ Γ⊢φ₂
 ... | other _           = Γ⊢φ₁

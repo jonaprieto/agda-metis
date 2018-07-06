@@ -22,7 +22,7 @@
 
 open import Data.Nat using ( ℕ; suc; zero )
 
-module ATP.Metis.Rules.Checking ( n : ℕ ) where
+module ATP.Metis.Rules.Checking { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ id : PropFormula → PropFormula
 id x = x
 
 id-lem : ∀ {Γ} {φ} → Γ ⊢ φ → Γ ⊢ id φ
-id-lem {Γ} {φ} Γ⊢φ = Γ⊢φ
+id-lem Γ⊢φ = Γ⊢φ
 
 -- Then we can check for equality in each step of a chain of composition (●) of
 -- unary functions.

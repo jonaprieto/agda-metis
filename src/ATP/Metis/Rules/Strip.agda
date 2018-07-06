@@ -4,14 +4,15 @@
 ------------------------------------------------------------------------------
 
 open import Data.Nat
-  using    (zero ; suc; _+_)
-  renaming ( ℕ to Nat; _⊔_ to max)
+  using    (zero ; suc; _+_; ℕ)
+  renaming (_⊔_ to max)
 
-module ATP.Metis.Rules.Strip ( n : Nat ) where
+module ATP.Metis.Rules.Strip { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Rules.Conjunct n using ( conjunct )
+open import ATP.Metis.Synonyms {n = n}
+open import ATP.Metis.Rules.Conjunct using ( conjunct )
 
 open import Data.PropFormula.Syntax   n
 open import Data.PropFormula.Theorems n
@@ -34,7 +35,7 @@ uh-cases (φ₁ ⊃ (φ₂ ∧ φ₃)) = case₂ _ _ _
 uh-cases φ                = other _
 
 -- Def.
-uh₁ : PropFormula → Nat → PropFormula
+uh₁ : PropFormula → Bound → PropFormula
 uh₁ φ zero = φ
 uh₁ φ (suc n)
   with uh-cases φ
@@ -42,8 +43,8 @@ uh₁ φ (suc n)
 ...  | case₂ φ₁ φ₂ φ₃ = uh₁ (φ₁ ⊃ φ₂) n ∧ uh₁ (φ₁ ⊃ φ₃) n
 ...  | other _        = φ
 
--- Complexity measure of uh₁.
-uh-cm : PropFormula → Nat
+-- Bound search for uh₁.
+uh-cm : PropFormula → Bound
 uh-cm φ
   with uh-cases φ
 ...  | case₁ _ _ φ₃  = uh-cm φ₃ + 3
@@ -53,13 +54,13 @@ uh-cm φ
 -- Lemma.
 uh₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ uh₁ φ n
   → Γ ⊢ φ
 
 -- Proof.
-uh₁-lem {_} {φ} zero    Γ⊢ushuntnφ  = Γ⊢ushuntnφ
-uh₁-lem {_} {φ} (suc n) Γ⊢ushuntnφ
+uh₁-lem          zero   Γ⊢ushuntnφ  = Γ⊢ushuntnφ
+uh₁-lem {φ = φ} (suc n) Γ⊢ushuntnφ
   with uh-cases φ
 ...  | case₁ φ₁ φ₂ φ₃ =
         ∧⊃-to-⊃⊃
@@ -86,7 +87,7 @@ uh-lem
   → Γ ⊢ φ
 
 -- Proof.
-uh-lem {_} {φ} = uh₁-lem (uh-cm φ)
+uh-lem {φ = φ} = uh₁-lem (uh-cm φ)
 --------------------------------------------------------------------------- ∎
 
 data stripCases : PropFormula → Set where
@@ -118,7 +119,7 @@ strip-cases (¬ (¬ φ))     = nneg _
 strip-cases φ₁            = other _
 
 -- Def.
-strip₁ : PropFormula → Nat → PropFormula
+strip₁ : PropFormula → Bound → PropFormula
 strip₁ φ (suc n)
   with strip-cases φ
 ...  | conj φ₁ φ₂    = uh (strip₁ φ₁ n) ∧ uh (φ₁ ⊃ strip₁ φ₂ n)
@@ -135,8 +136,8 @@ strip₁ φ (suc n)
 ...  | other .φ      = φ
 strip₁ φ _  = φ
 
--- Complexity measure.
-strip-cm : PropFormula → Nat
+-- Bound search for strip₀
+strip-cm : PropFormula → Bound
 strip-cm φ with strip-cases φ
 ... | conj φ₁ φ₂    = max (strip-cm φ₁) (strip-cm φ₂) + 1
 ... | disj φ₁ φ₂    = strip-cm φ₂ + 1
@@ -154,12 +155,12 @@ strip-cm φ with strip-cases φ
 -- Lemma.
 strip₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ strip₁ φ n
   → Γ ⊢ φ
 
 -- Proof.
-strip₁-lem {_} {_} zero    Γ⊢strip₁ = Γ⊢strip₁
+strip₁-lem         zero    Γ⊢strip₁ = Γ⊢strip₁
 strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
   with strip-cases φ
 ...  | conj φ₁ φ₂ =
@@ -177,13 +178,13 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
         ⊃-elim
           (⊃-intro
             (∨-elim {Γ = Γ}
-              (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+              (∨-intro₁ φ₂ (assume φ₁))
               (∨-intro₂ φ₁
                 (strip₁-lem n
                   (⊃-elim
                     (uh-lem
                       (weaken (¬ φ₁) Γ⊢strip₁))
-                    (assume {Γ = Γ} (¬ φ₁)))))))
+                    (assume (¬ φ₁)))))))
           (PEM {Γ = Γ} {φ = φ₁})
 
 ... | impl φ₁ φ₂ =
@@ -192,7 +193,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
             (⊃-elim
               (weaken φ₁
                 (uh-lem Γ⊢strip₁))
-                (assume {Γ = Γ} φ₁)))
+                (assume φ₁)))
 
 ... | biimpl φ₁ φ₂ =
         ⇔-equiv₂ (∧-intro helper₁ helper₂)
@@ -203,7 +204,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
                  (⊃-elim
                    (weaken φ₁
                      (uh-lem (∧-proj₁ Γ⊢strip₁)))
-                   (assume {Γ = Γ} φ₁)))
+                   (assume φ₁)))
 
           helper₂ : Γ ⊢ φ₂ ⊃ φ₁
           helper₂ = ⊃-intro
@@ -211,7 +212,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
                   (⊃-elim
                     (weaken φ₂
                       (uh-lem (∧-proj₂ Γ⊢strip₁)))
-                   (assume {Γ = Γ} φ₂)))
+                   (assume φ₂)))
 
 ... |  nconj φ₁ φ₂ =
   ¬∨¬-to-¬∧ (⊃-to-¬∨ helper)
@@ -223,7 +224,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
           (⊃-elim
             (weaken φ₁
               (uh-lem Γ⊢strip₁))
-          (assume {Γ = Γ} φ₁))))
+          (assume φ₁))))
 
 ... | ndisj φ₁ φ₂ =
   ¬∧¬-to-¬∨
@@ -245,7 +246,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
           helper
           Γ⊢φ₁))
       (⊃-elim
-        (assume {Γ = Γ} (φ₁ ⊃ φ₂))
+        (assume (φ₁ ⊃ φ₂))
         (weaken (φ₁ ⊃ φ₂) Γ⊢φ₁)))
   where
     Γ⊢φ₁ : Γ ⊢ φ₁
@@ -257,7 +258,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
         (strip₁-lem n
           (⊃-elim
             (uh-lem (weaken φ₁ (∧-proj₂ Γ⊢strip₁)))
-            (assume {Γ = Γ} φ₁)))
+            (assume φ₁)))
 
 ... | nbiimpl φ₁ φ₂ = ⊃¬∧¬⊃-to-¬⇔ (∧-intro helper₁ helper₂)
   where
@@ -267,7 +268,7 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
         (strip₁-lem n
           (⊃-elim
             (uh-lem (weaken φ₁ (∧-proj₁ Γ⊢strip₁)))
-            (assume {Γ = Γ} φ₁)))
+            (assume φ₁)))
 
     helper₂ : Γ ⊢ ¬ φ₂ ⊃ φ₁
     helper₂ =
@@ -275,10 +276,10 @@ strip₁-lem {Γ} {φ} (suc n) Γ⊢strip₁
         (strip₁-lem n
           (⊃-elim
             (uh-lem (weaken (¬ φ₂) (∧-proj₂ Γ⊢strip₁)))
-            (assume {Γ = Γ} (¬ φ₂))))
+            (assume (¬ φ₂))))
 
 ... | nneg φ₁  = ¬¬-equiv₂ (strip₁-lem n (uh-lem Γ⊢strip₁))
-... | nbot     = ¬-intro (assume {Γ = Γ} ⊥)
+... | nbot     = ¬-intro (assume ⊥)
 ... | ntop     = ⊥-elim (¬ ⊤) Γ⊢strip₁
 ... | other φ₁ = Γ⊢strip₁
 --------------------------------------------------------------------------- ∎
@@ -294,7 +295,7 @@ strip-lem
   → Γ ⊢ φ
 
 -- Proof.
-strip-lem {_} {φ} = strip₁-lem (strip-cm φ)
+strip-lem {φ = φ} = strip₁-lem (strip-cm φ)
 --------------------------------------------------------------------------- ∎
 
 -- Theorem.
@@ -303,7 +304,7 @@ strip-thm
   → Γ ⊢ strip φ ⊃ φ
 
 -- Proof.
-strip-thm {Γ} {φ} = ⊃-intro (strip-lem (assume {Γ = Γ} (strip φ)))
+strip-thm {φ = φ} = ⊃-intro (strip-lem (assume (strip φ)))
 --------------------------------------------------------------------------- ∎
 
 -- Extra:

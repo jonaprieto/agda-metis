@@ -3,16 +3,17 @@
 -- Normalization functions.
 ------------------------------------------------------------------------------
 
-open import Data.Nat using (suc; zero; _+_;_*_)
-  renaming (_⊔_ to max; ℕ to Nat)
+open import Data.Nat using (suc; zero; _+_;_*_;  ℕ)
+  renaming (_⊔_ to max)
 
-module ATP.Metis.Rules.Normalization (n : Nat) where
+module ATP.Metis.Rules.Normalization { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Rules.Conjunct n
-open import ATP.Metis.Rules.Checking n
-open import ATP.Metis.Rules.Reordering n
+open import ATP.Metis.Synonyms {n = n}
+open import ATP.Metis.Rules.Conjunct
+open import ATP.Metis.Rules.Checking
+open import ATP.Metis.Rules.Reordering
   using ( disj; disj-lem; reorder-∨; reorder-∨-lem; assoc-∧; assoc-∨ )
   using ( assoc-∧-lem; assoc-∨-lem )
   using ( from-assoc-∧-lem; from-assoc-∨-lem )
@@ -100,28 +101,28 @@ simplify-∨-lem
   → Γ ⊢ simplify-∨ φ
 
 -- Proof.
-simplify-∨-lem {Γ} {φ} Γ⊢φ
+simplify-∨-lem {φ = φ} Γ⊢φ
   with simplify-∨-cases φ
-simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
+simplify-∨-lem {φ = .(⊥ ∨ φ)} Γ⊢φ | sdisj₁ φ =
   ⊃-elim
     (⊃-intro
-      (∨-elim {Γ = Γ}
-        (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))
-        (simplify-∨-lem (assume {Γ = Γ} φ))))
+      (∨-elim
+        (⊥-elim (simplify-∨ φ) (assume ⊥))
+        (simplify-∨-lem (assume φ))))
   Γ⊢φ
-simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ =
+simplify-∨-lem {φ = .(φ ∨ ⊥)} Γ⊢φ | sdisj₂ φ =
   ⊃-elim
     (⊃-intro
-    (∨-elim {Γ = Γ}
-      (simplify-∨-lem (assume {Γ = Γ} φ))
-      (⊥-elim (simplify-∨ φ) (assume {Γ = Γ} ⊥))))
+    (∨-elim
+      (simplify-∨-lem (assume φ))
+      (⊥-elim (simplify-∨ φ) (assume ⊥))))
     Γ⊢φ
-simplify-∨-lem {Γ} {.(⊤ ∨ φ)} Γ⊢φ | sdisj₃ φ = ⊤-intro
-simplify-∨-lem {Γ} {.(φ ∨ ⊤)} Γ⊢φ | sdisj₄ φ = ⊤-intro
-simplify-∨-lem {Γ} {.φ}       Γ⊢φ | other φ  = Γ⊢φ
-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
+simplify-∨-lem {φ = .(⊤ ∨ φ)} Γ⊢φ | sdisj₃ φ = ⊤-intro
+simplify-∨-lem {φ = .(φ ∨ ⊤)} Γ⊢φ | sdisj₄ φ = ⊤-intro
+simplify-∨-lem {φ = .φ}       Γ⊢φ | other φ  = Γ⊢φ
+simplify-∨-lem {φ = .(φ₁ ∨ φ₂)} Γ⊢φ | sdisj₅ φ₁ φ₂
   with neg-view  φ₁
-simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
+simplify-∨-lem {φ = .(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
   with ψ ∈∨ φ₂
 ... | yes p₁ = ⊤-intro
 ... | no _
@@ -129,10 +130,10 @@ simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | 
 ... | yes p₂ =
   ⊃-elim
     (⊃-intro
-      (∨-elim {Γ = Γ}
+      (∨-elim
         (simplify-∨-lem
-          (subst (sym p₂) (reorder-∨-lem (assume {Γ = Γ} (¬ ψ)) φ₂)))
-        (simplify-∨-lem (assume {Γ = Γ} φ₂))))
+          (subst (sym p₂) (reorder-∨-lem (assume (¬ ψ)) φ₂)))
+        (simplify-∨-lem (assume φ₂))))
     Γ⊢φ
 ... | no _
     with eq (simplify-∨ φ₂) ⊤
@@ -142,19 +143,19 @@ simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢φ  | sdisj₅ .(¬ ψ) φ₂ | 
 ...     | yes p₄ =
           ⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
-                (assume {Γ = Γ} (¬ ψ))
+              (∨-elim
+                (assume (¬ ψ))
                 (⊥-elim (¬ ψ)
-                  (subst p₄ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
+                  (subst p₄ (simplify-∨-lem (assume φ₂))))))
             Γ⊢φ
 ...     | no _ =
   ⊃-elim
     (⊃-intro
-      (∨-elim {Γ = Γ}
-        (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} (¬ ψ)))
-        (∨-intro₂ (¬ ψ) (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
+      (∨-elim
+        (∨-intro₁ (simplify-∨ φ₂) (assume (¬ ψ)))
+        (∨-intro₂ (¬ ψ) (simplify-∨-lem (assume φ₂)))))
     Γ⊢φ
-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos .φ₁
+simplify-∨-lem {φ = .(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos .φ₁
   with (¬ φ₁) ∈∨ φ₂
 ... | yes p₅ = ⊤-intro
 ... | no _
@@ -162,10 +163,10 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
 ... | yes p₆ =
           ⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
+              (∨-elim
                 (simplify-∨-lem
-                  (subst (sym p₆) (reorder-∨-lem (assume {Γ = Γ} φ₁) φ₂)))
-                (simplify-∨-lem (assume {Γ = Γ} φ₂))))
+                  (subst (sym p₆) (reorder-∨-lem (assume φ₁) φ₂)))
+                (simplify-∨-lem (assume φ₂))))
             Γ⊢φ
 ... | no _
     with eq (simplify-∨ φ₂) ⊤
@@ -175,16 +176,16 @@ simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢φ  | sdisj₅ φ₁ φ₂ | pos
 ...     | yes p₈ =
           ⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
-                (assume {Γ = Γ} φ₁)
-                (⊥-elim φ₁ (subst p₈ (simplify-∨-lem (assume {Γ = Γ} φ₂))))))
+              (∨-elim
+                (assume φ₁)
+                (⊥-elim φ₁ (subst p₈ (simplify-∨-lem (assume φ₂))))))
             Γ⊢φ
 ...     | no _ =
           ⊃-elim
             (⊃-intro
-            (∨-elim {Γ = Γ}
-               (∨-intro₁ (simplify-∨ φ₂) (assume {Γ = Γ} φ₁))
-               (∨-intro₂ φ₁ (simplify-∨-lem (assume {Γ = Γ} φ₂)))))
+            (∨-elim
+               (∨-intro₁ (simplify-∨ φ₂) (assume φ₁))
+               (∨-intro₂ φ₁ (simplify-∨-lem (assume φ₂)))))
             Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
@@ -195,28 +196,28 @@ from-simplify-∨-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-simplify-∨-lem {Γ} {φ} Γ⊢simplifyφ
+from-simplify-∨-lem {φ = φ} Γ⊢simplifyφ
   with simplify-∨-cases φ
-from-simplify-∨-lem {Γ} {.(⊥ ∨ φ)} Γ⊢simplifyφ | sdisj₁ φ =
+from-simplify-∨-lem {φ = .(⊥ ∨ φ)} Γ⊢simplifyφ | sdisj₁ φ =
   ∨-intro₂ ⊥ (from-simplify-∨-lem Γ⊢simplifyφ)
-from-simplify-∨-lem {Γ} {.(φ ∨ ⊥)} Γ⊢simplifyφ | sdisj₂ φ =
+from-simplify-∨-lem {φ = .(φ ∨ ⊥)} Γ⊢simplifyφ | sdisj₂ φ =
   ∨-intro₁ ⊥ (from-simplify-∨-lem Γ⊢simplifyφ)
-from-simplify-∨-lem {Γ} {.(⊤ ∨ φ)} Γ⊢simplifyφ | sdisj₃ φ =
+from-simplify-∨-lem {φ = .(⊤ ∨ φ)} Γ⊢simplifyφ | sdisj₃ φ =
   ∨-intro₁ φ Γ⊢simplifyφ
-from-simplify-∨-lem {Γ} {.(φ ∨ ⊤)} Γ⊢simplifyφ | sdisj₄ φ =
+from-simplify-∨-lem {φ = .(φ ∨ ⊤)} Γ⊢simplifyφ | sdisj₄ φ =
   ∨-intro₂ φ Γ⊢simplifyφ
-from-simplify-∨-lem {Γ} {.φ}       Γ⊢simplifyφ | other φ  = Γ⊢simplifyφ
-from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ | sdisj₅ φ₁ φ₂
+from-simplify-∨-lem {φ = .φ}       Γ⊢simplifyφ | other φ  = Γ⊢simplifyφ
+from-simplify-∨-lem {φ = .(φ₁ ∨ φ₂)} Γ⊢simplifyφ | sdisj₅ φ₁ φ₂
   with neg-view  φ₁
-from-simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
+from-simplify-∨-lem {φ = .(¬ ψ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ .(¬ ψ) φ₂ | neg ψ
   with ψ ∈∨ φ₂
 ... | yes p₁ =
       ⊃-elim
         (⊃-intro
-          (∨-elim {Γ = Γ}
+          (∨-elim
             (∨-intro₂ (¬ ψ)
-              (subst (sym p₁) (reorder-∨-lem (assume {Γ = Γ} ψ) φ₂)))
-            (∨-intro₁ φ₂ (assume {Γ = Γ} (¬ ψ)))))
+              (subst (sym p₁) (reorder-∨-lem (assume ψ) φ₂)))
+            (∨-intro₁ φ₂ (assume (¬ ψ)))))
       (PEM {φ = ψ})
 ... | no _
     with (¬ ψ) ∈∨ φ₂
@@ -232,20 +233,20 @@ from-simplify-∨-lem {Γ} {.(¬ ψ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ .(¬
 ...     | no _ =
         ⊃-elim
           (⊃-intro
-            (∨-elim {Γ = Γ}
-              (∨-intro₁ φ₂ (assume {Γ = Γ} (¬ ψ)))
+            (∨-elim
+              (∨-intro₁ φ₂ (assume (¬ ψ)))
               (∨-intro₂ (¬ ψ)
-                (from-simplify-∨-lem (assume {Γ = Γ} (simplify-∨ φ₂))))))
+                (from-simplify-∨-lem (assume (simplify-∨ φ₂))))))
           Γ⊢simplifyφ
-from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ₁ φ₂ | pos .φ₁
+from-simplify-∨-lem {φ = .(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ₁ φ₂ | pos .φ₁
   with (¬ φ₁) ∈∨ φ₂
 ... | yes p₅ =
       ⊃-elim
         (⊃-intro
-          (∨-elim {Γ = Γ}
-            (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+          (∨-elim
+            (∨-intro₁ φ₂ (assume φ₁))
             (∨-intro₂ φ₁
-              (subst (sym p₅) (reorder-∨-lem (assume {Γ = Γ} (¬ φ₁)) φ₂)))))
+              (subst (sym p₅) (reorder-∨-lem (assume (¬ φ₁)) φ₂)))))
         (PEM {φ = φ₁})
 ... | no _
     with φ₁ ∈∨ φ₂
@@ -260,10 +261,10 @@ from-simplify-∨-lem {Γ} {.(φ₁ ∨ φ₂)} Γ⊢simplifyφ  | sdisj₅ φ�
 ...     | no _ =
           ⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
-                (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+              (∨-elim
+                (∨-intro₁ φ₂ (assume φ₁))
                 (∨-intro₂ φ₁
-                  (from-simplify-∨-lem (assume {Γ = Γ} (simplify-∨ φ₂))))))
+                  (from-simplify-∨-lem (assume (simplify-∨ φ₂))))))
               Γ⊢simplifyφ
 --------------------------------------------------------------------------- ∎
 
@@ -453,7 +454,7 @@ nnf-cases (¬ ⊥)         = case₉
 nnf-cases φ             = other _
 
 -- Def.
-nnf₁ : PropFormula → Nat → PropFormula
+nnf₁ : PropFormula → Bound → PropFormula
 nnf₁ φ (suc n)
   with nnf-cases φ
 ...  | case₁ φ₁ φ₂  = simplify-∧ (assoc-∧ (nnf₁ φ₁ n ∧ nnf₁ φ₂ n))
@@ -471,12 +472,12 @@ nnf₁ φ  zero        = φ
 -- Lemma.
 nnf₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ φ
   → Γ ⊢ nnf₁ φ n
 
 -- Proof.
-nnf₁-lem {Γ} {φ} (suc n) Γ⊢φ
+nnf₁-lem {Γ}{φ} (suc n) Γ⊢φ
   with nnf-cases φ
 ...  | case₁ φ₁ φ₂ =
   simplify-∧-lem
@@ -489,13 +490,13 @@ nnf₁-lem {Γ} {φ} (suc n) Γ⊢φ
     (assoc-∨-lem
       (⊃-elim
         (⊃-intro
-         (∨-elim {Γ = Γ}
+         (∨-elim
            (∨-intro₁
              (nnf₁ φ₂ n)
-             (nnf₁-lem n (assume {Γ = Γ} φ₁)))
+             (nnf₁-lem n (assume φ₁)))
            (∨-intro₂
              (nnf₁ φ₁ n)
-             (nnf₁-lem n (assume {Γ = Γ} φ₂)))))
+             (nnf₁-lem n (assume φ₂)))))
           Γ⊢φ))
 ...  | case₃ φ₁ φ₂   =
   simplify-∨-lem
@@ -517,7 +518,7 @@ nnf₁-lem {Γ} {φ} (suc n) Γ⊢φ
  where
 
    helper₂ : Γ ⊢ φ₂ ∨ ¬ φ₁ ⊃ (φ₁ ⊃ φ₂)
-   helper₂ = ⊃-intro (¬∨-to-⊃ (∨-comm (assume {Γ = Γ} (φ₂ ∨ ¬ φ₁))))
+   helper₂ = ⊃-intro (¬∨-to-⊃ (∨-comm (assume (φ₂ ∨ ¬ φ₁))))
 
    helper₁ : Γ ⊢ ¬ (φ₂ ∨ ¬ φ₁)
    helper₁ = subst⊢¬ helper₂ Γ⊢φ
@@ -541,7 +542,7 @@ from-nnf₁-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-nnf₁-lem {Γ} {φ} {(suc n)} Γ⊢φ
+from-nnf₁-lem {Γ}{φ} {(suc n)} Γ⊢φ
   with nnf-cases φ
 ...  | case₁ φ₁ φ₂ =
   ∧-intro
@@ -553,9 +554,9 @@ from-nnf₁-lem {Γ} {φ} {(suc n)} Γ⊢φ
 ...  | case₂ φ₁ φ₂ =
    ⊃-elim
      (⊃-intro
-       (∨-elim {Γ = Γ}
-         (∨-intro₁ φ₂ (from-nnf₁-lem {n = n} (assume {Γ = Γ} (nnf₁ φ₁ n))))
-         (∨-intro₂ φ₁ (from-nnf₁-lem {n = n} (assume {Γ = Γ} (nnf₁ φ₂ n))))))
+       (∨-elim
+         (∨-intro₁ φ₂ (from-nnf₁-lem {n = n} (assume (nnf₁ φ₁ n))))
+         (∨-intro₂ φ₁ (from-nnf₁-lem {n = n} (assume (nnf₁ φ₂ n))))))
      helper
   where
     helper : Γ ⊢ nnf₁ φ₁ n ∨ nnf₁ φ₂ n
@@ -581,32 +582,32 @@ from-nnf₁-lem {Γ} {φ} {(suc n)} Γ⊢φ
           (¬-elim
             (weaken (φ₁ ⊃ φ₂) (∧-proj₁ helper₁))
             (⊃-elim
-              (assume {Γ = Γ} (φ₁ ⊃ φ₂))
+              (assume (φ₁ ⊃ φ₂))
               (weaken (φ₁ ⊃ φ₂) (∧-proj₂ helper₁)))))
   where
     helper₁ : Γ ⊢ (¬ φ₂ ∧ φ₁)
     helper₁ =
       from-nnf₁-lem {n = n} (from-assoc-∧-lem (from-simplify-∧-lem Γ⊢φ))
 
-...  | case₈       = ⊥-elim (¬ ⊤) Γ⊢φ
-...  | case₉       = ¬-intro (assume {Γ = Γ} ⊥)
-...  | other .φ   = Γ⊢φ
+...  | case₈    = ⊥-elim (¬ ⊤) Γ⊢φ
+...  | case₉    = ¬-intro (assume ⊥)
+...  | other .φ = Γ⊢φ
 from-nnf₁-lem {_} {_} {zero} Γ⊢φ = Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
 -- Complexity measure.
-nnf-cm : PropFormula → Nat
+nnf-cm : PropFormula → Bound
 nnf-cm φ with nnf-cases φ
-... | case₁ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm φ₂ + 1
-... | case₂ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm φ₂ + 1
-... | case₃ φ₁ φ₂   = 2 * nnf-cm φ₁  + nnf-cm φ₂ + 1
-... | case₄ φ₁ φ₂   = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
-... | case₅ φ₁ φ₂   = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
-... | case₆ φ₁      = nnf-cm (¬ φ₁) + 1
-... | case₇ φ₁ φ₂   = nnf-cm φ₁ + nnf-cm (¬ φ₂) + 3
-... | case₈         = 1
-... | case₉         = 1
-... | other .φ      = 1
+... | case₁ φ₁ φ₂ = nnf-cm φ₁ + nnf-cm φ₂ + 1
+... | case₂ φ₁ φ₂ = nnf-cm φ₁ + nnf-cm φ₂ + 1
+... | case₃ φ₁ φ₂ = 2 * nnf-cm φ₁  + nnf-cm φ₂ + 1
+... | case₄ φ₁ φ₂ = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
+... | case₅ φ₁ φ₂ = nnf-cm (¬ φ₁) + nnf-cm (¬ φ₂) + 1
+... | case₆ φ₁    = nnf-cm (¬ φ₁) + 1
+... | case₇ φ₁ φ₂ = nnf-cm φ₁ + nnf-cm (¬ φ₂) + 3
+... | case₈       = 1
+... | case₉       = 1
+... | other .φ    = 1
 
 -- Def.
 nnf : PropFormula → PropFormula
@@ -619,7 +620,7 @@ nnf-lem
   → Γ ⊢ nnf φ
 
 -- Proof.
-nnf-lem {_} {φ} Γ⊢φ = nnf₁-lem (nnf-cm φ) Γ⊢φ
+nnf-lem {φ = φ} Γ⊢φ = nnf₁-lem (nnf-cm φ) Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
 -- Lemma.
@@ -628,7 +629,7 @@ from-nnf-lem
   → Γ ⊢ nnf φ
   → Γ ⊢ φ
 -- Proof.
-from-nnf-lem {Γ} {φ} Γ⊢nnf = from-nnf₁-lem {Γ = Γ} {n = nnf-cm φ} Γ⊢nnf
+from-nnf-lem {φ = φ} Γ⊢nnf = from-nnf₁-lem {n = nnf-cm φ} Γ⊢nnf
 --------------------------------------------------------------------------- ∎
 
 ------------------------------------------------------------------------------
@@ -656,7 +657,7 @@ from-cnf-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-cnf-lem {Γ} {φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
+from-cnf-lem {φ = φ} Γ⊢cnfφ = from-nnf-lem (from-cnf-dist-lem  Γ⊢cnfφ)
 --------------------------------------------------------------------------- ∎
 
 ------------------------------------------------------------------------------
@@ -684,5 +685,5 @@ from-dnf-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-dnf-lem {Γ} {φ} Γ⊢dnfφ = from-nnf-lem (from-dnf-dist-lem  Γ⊢dnfφ)
+from-dnf-lem {φ = φ} Γ⊢dnfφ = from-nnf-lem (from-dnf-dist-lem  Γ⊢dnfφ)
 --------------------------------------------------------------------------- ∎

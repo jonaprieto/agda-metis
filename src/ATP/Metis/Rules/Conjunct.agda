@@ -3,14 +3,13 @@
 -- Conjunct inference rule.
 ------------------------------------------------------------------------------
 
-open import Data.Nat
-  renaming ( ℕ to Nat )
+open import Data.Nat using ( ℕ )
 
-module ATP.Metis.Rules.Conjunct ( n : Nat ) where
+module ATP.Metis.Rules.Conjunct { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms n
+open import ATP.Metis.Synonyms
 
 open import Data.Bool.Base using ( false; true )
 
@@ -47,7 +46,7 @@ conjunct-thm
   → Γ ⊢ conjunct φ ψ
 
 -- Proof.
-conjunct-thm {Γ} {φ} ψ Γ⊢φ
+conjunct-thm {φ = φ} ψ Γ⊢φ
   with eq φ ψ
 ... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no _

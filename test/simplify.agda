@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------
 
 open import Data.PropFormula 20 public
-open import ATP.Metis.Rules.Simplify 20  public
+open import ATP.Metis.Rules.Simplify public
 open import Relation.Binary.PropositionalEquality
 
 -- Note: When the symbol `?` appears, it means

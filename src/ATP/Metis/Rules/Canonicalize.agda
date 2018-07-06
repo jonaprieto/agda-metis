@@ -5,17 +5,17 @@
 
 open import Data.Nat using ( ℕ; suc; zero )
 
-module ATP.Metis.Rules.Canonicalize ( n : ℕ ) where
+module ATP.Metis.Rules.Canonicalize { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms n
-open import ATP.Metis.Rules.Normalization n
+open import ATP.Metis.Synonyms
+open import ATP.Metis.Rules.Normalization
 
-open import ATP.Metis.Rules.Checking n using (_●_; _●⊢_; ↑f_; ↑t; id; id-lem)
+open import ATP.Metis.Rules.Checking using (_●_; _●⊢_; ↑f_; ↑t; id; id-lem)
 
-open import ATP.Metis.Rules.Reordering n
-open import ATP.Metis.Rules.Resolve n
+open import ATP.Metis.Rules.Reordering
+open import ATP.Metis.Rules.Resolve
 
 open import Data.Bool.Base
   using    ( true; false )
@@ -50,7 +50,7 @@ canonicalize₀-lem
   → Γ ⊢ canonicalize₀ φ ψ
 
 -- Proof.
-canonicalize₀-lem {Γ} {φ} Γ⊢φ ψ
+canonicalize₀-lem {φ = φ} Γ⊢φ ψ
   with eq φ ψ
 ...  | yes p₁ = subst p₁ Γ⊢φ
 ...  | no _
@@ -80,6 +80,9 @@ canonicalize-thm
   → Γ ⊢ canonicalize φ ψ
 
 -- Proof.
-canonicalize-thm {Γ} {φ} ψ Γ⊢φ =
-  (canonicalize₀-lem ●⊢ (↑t nnf-lem) ●⊢ ↑t id-lem) Γ⊢φ ψ
+canonicalize-thm ψ Γ⊢φ =
+   (  canonicalize₀-lem
+   ●⊢ (↑t nnf-lem)
+   ●⊢ ↑t id-lem
+   ) Γ⊢φ ψ
 --------------------------------------------------------------------------- ∎

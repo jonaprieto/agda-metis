@@ -4,13 +4,13 @@ open import Data.PropFormula 9 public
 open import Data.PropFormula.NormalForms 9
   renaming (cnf to justCNF; cnf-lem to thm-justCNF )
 
-open import ATP.Metis.Rules.Normalization 9
-open import ATP.Metis.Rules.Reordering 9
-open import ATP.Metis.Rules.Strip 9
-open import ATP.Metis.Rules.Conjunct 9
-open import ATP.Metis.Rules.Clausify 9
-open import ATP.Metis.Rules.Simplify 9
-open import ATP.Metis.Rules.Resolve 9
+open import ATP.Metis.Rules.Normalization
+open import ATP.Metis.Rules.Reordering
+open import ATP.Metis.Rules.Strip
+open import ATP.Metis.Rules.Conjunct
+open import ATP.Metis.Rules.Clausify
+open import ATP.Metis.Rules.Simplify
+open import ATP.Metis.Rules.Resolve
   hiding (resolve)
   renaming (original-resolve to resolve)
 

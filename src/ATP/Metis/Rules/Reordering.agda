@@ -4,14 +4,13 @@
 ------------------------------------------------------------------------------
 
 open import Data.Nat
-  using ( suc; zero; _+_ )
-  renaming ( ℕ to Nat )
+  using ( suc; zero; _+_ ; ℕ)
 
-module ATP.Metis.Rules.Reordering ( n : Nat ) where
+module ATP.Metis.Rules.Reordering { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms n
+open import ATP.Metis.Synonyms {n = n}
 
 open import Data.PropFormula.Syntax n
 open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
@@ -26,7 +25,7 @@ open import Data.Bool                             using ( true; false )
 open import Function                              using ( _$_; id; _∘_ )
 open import Relation.Binary.PropositionalEquality using ( sym )
 
-open import ATP.Metis.Rules.Conjunct n using ( conjunct; conjunct-thm )
+open import ATP.Metis.Rules.Conjunct using ( conjunct; conjunct-thm )
 
 ------------------------------------------------------------------------------
 
@@ -43,7 +42,7 @@ assoc-∨-cases (φ ∨ ψ)          = case₂ _ _
 assoc-∨-cases φ                = other _
 
 -- Def.
-assoc-∨₁ : PropFormula → Nat → PropFormula
+assoc-∨₁ : PropFormula → Bound → PropFormula
 assoc-∨₁ φ (suc n)
   with assoc-∨-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = assoc-∨₁ (φ₁ ∨ (φ₂ ∨ φ₃)) n
@@ -52,7 +51,7 @@ assoc-∨₁ φ (suc n)
 assoc-∨₁ φ _  = φ
 
 -- Complexity measure.
-assoc-∨-cm : PropFormula → Nat
+assoc-∨-cm : PropFormula → Bound
 assoc-∨-cm φ
   with assoc-∨-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = assoc-∨-cm φ₂ + assoc-∨-cm φ₃ + 2
@@ -62,31 +61,31 @@ assoc-∨-cm φ
 -- Lemma.
 assoc-∨₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ φ
   → Γ ⊢ assoc-∨₁ φ n
 
 -- Proof.
 assoc-∨₁-lem zero Γ⊢φ = Γ⊢φ
-assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢φ
+assoc-∨₁-lem {φ = φ} (suc n) Γ⊢φ
   with assoc-∨-cases φ
 ... | case₁ φ₁ φ₂ φ₃ =
   assoc-∨₁-lem n(∨-assoc₂ Γ⊢φ)
 ... | case₂ φ₁ φ₂    =
   ⊃-elim
     (⊃-intro
-      (∨-elim {Γ = Γ}
+      (∨-elim
         (∨-intro₁ (assoc-∨₁ φ₂ n)
-          (assume {Γ = Γ} φ₁))
+          (assume φ₁))
         (∨-intro₂ φ₁ (assoc-∨₁-lem n
-          (assume {Γ = Γ} φ₂)))))
+          (assume φ₂)))))
     Γ⊢φ
 ... | other _ = Γ⊢φ
 
 -- Lemma.
 from-assoc-∨₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ assoc-∨₁ φ n
   → Γ ⊢ φ
 
@@ -99,10 +98,10 @@ from-assoc-∨₁-lem {Γ} {φ} (suc n) Γ⊢assocφ
 ... | case₂ φ₁ φ₂    =
   ⊃-elim
     (⊃-intro
-      (∨-elim {Γ = Γ}
-        (∨-intro₁ φ₂ (assume {Γ = Γ} φ₁))
+      (∨-elim
+        (∨-intro₁ φ₂ (assume φ₁))
         (∨-intro₂ φ₁ (from-assoc-∨₁-lem n
-          (assume {Γ = Γ} (assoc-∨₁ φ₂ n))))))
+          (assume (assoc-∨₁ φ₂ n))))))
     Γ⊢assocφ
 ... | other _ = Γ⊢assocφ  -- ■
 
@@ -118,7 +117,7 @@ assoc-∨-lem
   → Γ ⊢ assoc-∨ φ
 
 -- Proof.
-assoc-∨-lem {_}{φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ
+assoc-∨-lem {φ = φ} Γ⊢φ = assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
 -- Lemma.
@@ -128,7 +127,7 @@ from-assoc-∨-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-assoc-∨-lem {Γ} {φ} Γ⊢assocφ =
+from-assoc-∨-lem {φ = φ} Γ⊢assocφ =
   from-assoc-∨₁-lem (assoc-∨-cm φ) Γ⊢assocφ
 --------------------------------------------------------------------------- ∎
 
@@ -145,7 +144,7 @@ assoc-∧-cases (φ ∧ ψ)          = case₂ _ _
 assoc-∧-cases φ                = other _
 
 -- Def.
-assoc-∧₁ : PropFormula → Nat → PropFormula
+assoc-∧₁ : PropFormula → Bound → PropFormula
 assoc-∧₁ φ (suc n)
   with assoc-∧-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = assoc-∧₁ (φ₁ ∧ (φ₂ ∧ φ₃)) n
@@ -153,8 +152,8 @@ assoc-∧₁ φ (suc n)
 ... | other .φ       = φ
 assoc-∧₁ φ _  = φ
 
--- Complexity measure.
-assoc-∧-cm : PropFormula → Nat
+-- Bound search
+assoc-∧-cm : PropFormula → Bound
 assoc-∧-cm φ
   with assoc-∧-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = assoc-∧-cm φ₂ + assoc-∧-cm φ₃ + 2
@@ -164,13 +163,13 @@ assoc-∧-cm φ
 -- Lemma.
 assoc-∧₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ φ
   → Γ ⊢ assoc-∧₁ φ n
 
 -- Proof.
 assoc-∧₁-lem zero Γ⊢φ = Γ⊢φ
-assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢φ
+assoc-∧₁-lem {φ = φ} (suc n) Γ⊢φ
   with assoc-∧-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = assoc-∧₁-lem n (∧-assoc₂ Γ⊢φ)
 ... | case₂ φ₁ φ₂ =
@@ -183,13 +182,13 @@ assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢φ
 -- Lemma.
 from-assoc-∧₁-lem
   : ∀ {Γ} {φ}
-  → (n : Nat)
+  → (n : Bound)
   → Γ ⊢ assoc-∧₁ φ n
   → Γ ⊢ φ
 
 -- Proof.
-from-assoc-∧₁-lem {Γ} {φ} zero Γ⊢assoc∧φ = Γ⊢assoc∧φ
-from-assoc-∧₁-lem {Γ} {φ} (suc n) Γ⊢assoc∧φ
+from-assoc-∧₁-lem zero Γ⊢assoc∧φ = Γ⊢assoc∧φ
+from-assoc-∧₁-lem {φ = φ} (suc n) Γ⊢assoc∧φ
   with assoc-∧-cases φ
 ... | case₁ φ₁ φ₂ φ₃ = ∧-assoc₁ (from-assoc-∧₁-lem n Γ⊢assoc∧φ)
 ... | case₂ φ₁ φ₂ =
@@ -210,7 +209,7 @@ assoc-∧-lem
   → Γ ⊢ assoc-∧ φ
 
 -- Proof.
-assoc-∧-lem {_}{φ} Γ⊢φ = assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢φ
+assoc-∧-lem {φ = φ} Γ⊢φ = assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
 -- Lemma.
@@ -220,7 +219,7 @@ from-assoc-∧-lem
   → Γ ⊢ φ
 
 -- Proof.
-from-assoc-∧-lem {Γ} {φ} Γ⊢assoc∧φ =
+from-assoc-∧-lem {φ = φ} Γ⊢assoc∧φ =
   from-assoc-∧₁-lem (assoc-∧-cm φ) Γ⊢assoc∧φ
 --------------------------------------------------------------------------- ∎
 
@@ -248,7 +247,7 @@ build-∨-lem
   → Γ ⊢ build-∨ φ ψ
 
 -- Proof.
-build-∨-lem {_} {φ} Γ⊢φ ψ
+build-∨-lem {φ = φ} Γ⊢φ ψ
   with eq φ ψ
 ... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no  _
@@ -280,7 +279,7 @@ factor-lem
     → Γ ⊢ factor φ
 
 -- Proof.
-factor-lem {Γ}{φ} Γ⊢φ
+factor-lem {φ = φ} Γ⊢φ
   with disj-view φ
 ...  | other _ = Γ⊢φ
 ...  | disjshape φ₁ φ₂
@@ -288,11 +287,11 @@ factor-lem {Γ}{φ} Γ⊢φ
 ...     | yes φ₁≡factorφ₂ =
            ⊃-elim
              (⊃-intro
-               (∨-elim {Γ = Γ}
-                 (assume {Γ = Γ} φ₁)
+               (∨-elim
+                 (assume φ₁)
                  (subst
                    (sym φ₁≡factorφ₂)
-                   (factor-lem $ assume {Γ = Γ} φ₂))))
+                   (factor-lem $ assume φ₂))))
              Γ⊢φ
 ...     | no _ = Γ⊢φ
 --------------------------------------------------------------------------- ∎
@@ -302,7 +301,7 @@ sbuild-∨ : Premise → Conclusion → PropFormula
 sbuild-∨ φ ψ
   with disj-view φ
 ... | disjshape φ₁ φ₂ = factor (build-∨ φ₁ ψ ∨ sbuild-∨ φ₂ ψ)
-... | other _    = build-∨ φ ψ
+... | other _         = build-∨ φ ψ
 
 -- Lemma.
 sbuild-∨-lem
@@ -312,18 +311,18 @@ sbuild-∨-lem
   → Γ ⊢ sbuild-∨ φ ψ
 
 -- Proof.
-sbuild-∨-lem {Γ} {φ} Γ⊢φ ψ
+sbuild-∨-lem {φ = φ} Γ⊢φ ψ
   with disj-view φ
 ... | other _    = build-∨-lem Γ⊢φ ψ
 ... | disjshape φ₁ φ₂ =
         factor-lem
          (⊃-elim
             (⊃-intro
-              (∨-elim {Γ = Γ}
+              (∨-elim
                 (∨-intro₁ (sbuild-∨ φ₂ ψ)
-                  (build-∨-lem (assume {Γ = Γ} φ₁) ψ))
+                  (build-∨-lem (assume φ₁) ψ))
                 (∨-intro₂ (build-∨ φ₁ ψ)
-                  (sbuild-∨-lem (assume {Γ = Γ} φ₂) ψ))))
+                  (sbuild-∨-lem (assume φ₂) ψ))))
             Γ⊢φ)
 --------------------------------------------------------------------------- ∎
 
@@ -370,7 +369,7 @@ reorder-∧-lem
   → Γ ⊢ reorder-∧ φ ψ
 
 -- Proof.
-reorder-∧-lem {Γ} {φ} Γ⊢φ ψ
+reorder-∧-lem {φ = φ} Γ⊢φ ψ
   with ⌊ eq φ ψ ⌋
 ...  | true = Γ⊢φ
 ...  | false
@@ -429,7 +428,7 @@ disj-lem
   → Γ ⊢ disj φ ψ
 
 -- Proof.
-disj-lem {Γ}{φ} ψ Γ⊢φ
+disj-lem {φ = φ} ψ Γ⊢φ
   with eq φ ψ
 ... | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ... | no  _
@@ -437,7 +436,7 @@ disj-lem {Γ}{φ} ψ Γ⊢φ
 ... | yes p₁ = subst (sym p₁) (reorder-∨-lem Γ⊢φ ψ)
 ... | no _
     with conj-view ψ
-disj-lem {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | no _ | conj ψ₁ ψ₂
+disj-lem {φ = φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | no _ | conj ψ₁ ψ₂
   with  eq ψ₁ (disj φ ψ₁)
 ... | no _ = Γ⊢φ
 ... | yes p₂
@@ -447,17 +446,17 @@ disj-lem {Γ}{φ} .(ψ₁ ∧ ψ₂) Γ⊢φ | no _ | no _ | conj ψ₁ ψ₂
         ∧-intro
           (subst (sym p₂) (disj-lem ψ₁ Γ⊢φ))
           (subst (sym p₃) (reorder-∨-lem Γ⊢φ ψ₂))
-disj-lem {Γ}{φ} ψ Γ⊢φ          | no _ | no _ | other .ψ
+disj-lem {φ = φ} ψ Γ⊢φ          | no _ | no _ | other .ψ
   with conj-view φ
-disj-lem {Γ}{φ} ψ Γ⊢φ          | no _ | no _ | other .ψ | (other .φ)
+disj-lem {φ = φ} ψ Γ⊢φ          | no _ | no _ | other .ψ | (other .φ)
   = Γ⊢φ
-disj-lem {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ | no _ | no _ | other .ψ | (conj φ₁ φ₂)
+disj-lem {Γ}{.(φ₁ ∧ φ₂)} ψ Γ⊢φ  | no _ | no _ | other .ψ | (conj φ₁ φ₂)
   with eq ψ (disj φ₁ ψ)
 ... | yes p₄ = subst (sym p₄) (disj-lem ψ (∧-proj₁ Γ⊢φ))
 ... | no _
   with eq ψ (disj φ₂ ψ)
 ... | yes p₅ = subst (sym p₅) (disj-lem ψ (∧-proj₂ Γ⊢φ))
-... | no  _ = Γ⊢φ
+... | no  _  = Γ⊢φ
 --------------------------------------------------------------------------- ∎
 
 -- Def.
@@ -487,7 +486,7 @@ reorder-∧∨-lem
   → Γ ⊢ reorder-∧∨ φ ψ
 
 -- Proof.
-reorder-∧∨-lem {Γ} {φ} Γ⊢φ ψ
+reorder-∧∨-lem {φ = φ} Γ⊢φ ψ
   with eq φ ψ
 ...  | yes φ≡ψ = subst φ≡ψ Γ⊢φ
 ...  | no  _

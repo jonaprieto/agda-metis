@@ -5,17 +5,17 @@
 
 open import Data.Nat using ( ℕ; suc; zero; _+_ )
 
-module ATP.Metis.Rules.Resolve ( n : ℕ ) where
+module ATP.Metis.Rules.Resolve { n : ℕ } where
 
 ------------------------------------------------------------------------------
 
-open import ATP.Metis.Synonyms n
-open import ATP.Metis.Rules.Reordering n
-open import ATP.Metis.Rules.Simplify n
+open import ATP.Metis.Synonyms
+open import ATP.Metis.Rules.Reordering
+open import ATP.Metis.Rules.Simplify
 
 open import Data.PropFormula.Syntax n
-open import Data.PropFormula.Dec n                  using ( yes; no; ⌊_⌋ )
-open import Data.PropFormula.Properties n           using ( eq; subst )
+open import Data.PropFormula.Dec n         using ( yes; no; ⌊_⌋ )
+open import Data.PropFormula.Properties n         using ( eq; subst )
 
 open import Data.PropFormula.Theorems.Classical n
 open import Data.PropFormula.Theorems.Disjunction n
@@ -106,10 +106,10 @@ rsol-lem
 
 -- [ DEPRECATED]
 -- Proof.
-rsol-lem {Γ} {φ} Γ⊢φ
+rsol-lem {φ = φ} Γ⊢φ
   with rsol-cases φ
-rsol-lem {Γ} {_} Γ⊢φ                        | other _     = Γ⊢φ
-rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
+rsol-lem                               Γ⊢φ | other _ = Γ⊢φ
+rsol-lem {Γ}{.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ₁ φ₂ φ₃ φ₄
   with eq φ₃ (¬ φ₁)
 ...    | no  _ = Γ⊢φ
 ...    | yes p₁
@@ -117,13 +117,13 @@ rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
 ...       | yes p₂ =
             ⊃-elim
               (⊃-intro
-                (∨-elim {Γ = Γ}
-                  (assume {Γ = Γ} φ₂)
-                  (subst p₂ (assume {Γ = Γ} φ₄))))
+                (∨-elim
+                  (assume φ₂)
+                  (subst p₂ (assume φ₄))))
               (resolve₀
                 (∧-proj₁ Γ⊢φ)
                 (subst⊢∨₁
-                  (⊃-intro (subst p₁ (assume {Γ = Γ} φ₃)))
+                  (⊃-intro (subst p₁ (assume φ₃)))
                   (∧-proj₂ Γ⊢φ)))
 ...       | no _   = helper
           where
@@ -131,7 +131,7 @@ rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
             helper = resolve₀
               (∧-proj₁ Γ⊢φ)
               (subst⊢∨₁
-                (⊃-intro (subst p₁ (assume {Γ = Γ} φ₃)))
+                (⊃-intro (subst p₁ (assume φ₃)))
                 (∧-proj₂ Γ⊢φ))
 --------------------------------------------------------------------------- ∎
 
@@ -148,7 +148,8 @@ rsol-lem {Γ} {.((φ₁ ∨ φ₂) ∧ (φ₃ ∨ φ₄))} Γ⊢φ | case₁ φ�
 -- [ DEPRECATED]
 -- Def.
 original-resolve : Premise → Premise → Lit → Conclusion → PropFormula
-original-resolve φ₁ φ₂ ℓ ψ = rsol ((reorder-∨ φ₁ (ℓ ∨ ψ)) ∧ (reorder-∨ φ₂ (¬ ℓ ∨ ψ)))
+original-resolve φ₁ φ₂ ℓ ψ =
+  rsol ((reorder-∨ φ₁ (ℓ ∨ ψ)) ∧ (reorder-∨ φ₂ (¬ ℓ ∨ ψ)))
 
 -- [ DEPRECATED]
 -- Theorem.
